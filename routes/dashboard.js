@@ -24,7 +24,10 @@ router.post('/course',[authMiddleware.checkAuthDasboard],  dashController.addCou
 router.post('/subcourse',[authMiddleware.checkAuthDasboard],  dashController.addSubCourse);
 router.post('/video',[authMiddleware.checkAuthDasboard],  dashController.addVideo);
 router.post('/uploadVideo',[authMiddleware.checkAuthDasboard], uploadStt.single("video") ,(req, res) =>{
-    res.status(200).send({message:'saved successfully'})
+  res.status(200).send({message:'saved successfully'})
 })
+
+router.post('/login',  dashController.login);
+router.post('/signup',[authMiddleware.checkAuthDasboard],  dashController.signup);
 
 module.exports = router;

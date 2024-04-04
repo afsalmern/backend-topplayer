@@ -1,0 +1,555 @@
+  246  cd .ssh/
+  247  sudo nano config
+  248  sudo cat id_tp_website.pub
+  249  cd
+  250  pm2 delete tp_website
+  251  sudo rm -rf tp_website
+  252  clear
+  253  git clone git@github.com:mohamedEzatADU/topplayer_website.git
+  254  cd .ssh
+  255  sudo nano  config
+  256  eval "$(ssh-agent -s)"
+  257  ssh-add ~/.ssh/id_tp_website
+  258  cd
+  259  git clone git@github.com:mohamedEzatADU/topplayer_website.git tp_website
+  260  cd tp_website/
+  261  git pull git@github.com:mohamedEzatADU/topplayer_website.git
+  262  clear
+  263  npm install
+  264  npm run build
+  265  clear
+  266  cd tp_website/
+  267  sudo rm -rf .next
+  268  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  269  clear
+  270  cd tp_website/
+  271  sudo rm -rf .next
+  272  npm run build
+  273  pm2 status
+  274  cd ..
+  275  cd tp_backend/
+  276  pm2 start npm --name "tp_backend" -- start
+  277  cd ..
+  278  cd tp_website/
+  279  pm2 start npm --name "tp_website" -- start
+  280  cd
+  281  sudo systemctl restart nginx
+  282  clear
+  283  exit
+  284  clear
+  285  exit
+  286  clear
+  287  cd .pm2/logs/
+  288  ll
+  289  sudo cat tp-backend-error.log
+  290  mysql -u root -p
+  291  clear
+  292  mysql -uroot -p -A
+  293  exit
+  294  sudo systemctl restart mysql
+  295  systemctl status mysql.service
+  296  clear
+  297  pm2 stop tp_backend
+  298  pm2 status
+  299  clear
+  300  ll
+  301  cd tp_backend/
+  302  clear
+  303  npm start
+  304  clear
+  305  npm start
+  306  du -h
+  307  clear
+  308  df -h
+  309  clear
+  310  cd tp_website/
+  311  npm start
+  312  cd
+  313  cd tp_backend/
+  314  npm start
+  315  exit
+  316  cd tp_backend/
+  317  clear
+  318  npm start
+  319  exit
+  320  clear
+  321  cd tp_backend/
+  322  npm start
+  323  clear
+  324  pm2 start npm --name "tp_backend" -- start
+  325  cd
+  326  cd tp_website/
+  327  pm2 start npm --name "tp_website" -- start
+  328  exit
+  329  cd tp_backend/
+  330  cler
+  331  clear
+  332  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  333  pm2 restart tp_backend
+  334  exit
+  335  clear
+  336  cd tp_website/
+  337  sudo rm -rf .next
+  338  git pull git@github.com:mohamedEzatADU/topplayer_website.git
+  339  cd
+  340  cd .ssh/
+  341  sudo nano config
+  342  cd
+  343  cd tp_website/
+  344  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  345  clear
+  346  npm run build
+  347  exit
+  348  clear
+  349  cd tp_backend/
+  350  cd
+  351  cd tp_website/
+  352  ll
+  353  cd
+  354  cd tp_website/
+  355  sudo rm -rf .next
+  356  npm run build
+  357  clear
+  358  cd tp_backend/
+  359  pm2 start npm --name "tp_backend" -- start
+  360  cd
+  361  cd tp_website/
+  362  pm2 start npm --name "tp_website" -- start
+  363  pm2 stop tp_website
+  364  sudo rm -rf .next
+  365  npm run build
+  366  cd tp_website/
+  367  clear
+  368  sudo rm -rf .next
+  369  npm run build
+  370  cd tp_website/
+  371  clear
+  372  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  373  clear
+  374  sudo rm -rf .next
+  375  npm run build
+  376  cd tp_backend/
+  377  clear
+  378  pm2 start npm --name "tp_backend" -- start
+  379  cd
+  380  cd tp_website/
+  381  pm2 start npm --name "tp_website" -- start
+  382  clear
+  383  sudo systemctl restart nginx
+  384  clear
+  385  cd tp_website/
+  386  sudo rm -rf .next
+  387  npm run build
+  388  clear
+  389  cd
+  390  cd tp_backend/
+  391  pm2 start npm --name "tp_backend" -- start
+  392  cd
+  393  cd tp_website/
+  394  pm2 start npm --name "tp_website" -- start
+  395  cd
+  396  sudo systemctl restart nginx
+  397  clear
+  398  cd tp_website/
+  399  npm run build
+  400  exit
+  401  cd tp_website/
+  402  clear
+  403  sudo rm -rf .next
+  404  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  405  npm run build
+  406  clear
+  407  cd
+  408  cd tp_backend
+  409  pm2 start npm --name "tp_backend" -- start
+  410  cd ../tp_website/
+  411  pm2 start npm --name "tp_website" -- start
+  412  sudo systemctl restart nginx
+  413  exit
+  414  systemctl status mysql.service
+  415  mysql -uroot -p
+  416  exit
+  417  cd tp_backend/
+  418  clear
+  419  sudo nano .env
+  420  pm2 status
+  421  pm2 restart tp_backend
+  422  exit
+  423  clear
+  424  cd tp_website/
+  425  sudo rm -rf .next
+  426  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  427  clear
+  428  npm run build
+  429  clear
+  430  cd tp_website/
+  431  sudo rm -rf .next
+  432  npm run build
+  433  cd tp_website/
+  434  clear
+  435  ll
+  436  cd
+  437  cd tp_backend/
+  438  pm2 start npm --name "tp_backend" -- start
+  439  cd ../tp_website/
+  440  pm2 start npm --name "tp_website" -- start
+  441  sudo systemctl restart nginx
+  442  clear
+  443  mysql -uroot -p
+  444  clear
+  445  cd tp_backend/
+  446  sudo nano .env
+  447  pm2 restart tp_backend
+  448  clear
+  449  cd tp_we
+  450  cd tp_website/
+  451  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  452  sudo rm -rf .next
+  453  npm run build
+  454  clear
+  455  cd
+  456  cd tp_backend/
+  457  pm2 start npm --name "tp_backend" -- start
+  458  cd
+  459  cd tp_website/
+  460  pm2 start npm --name "tp_website" -- start
+  461  sudo systemctl restart nginx
+  462  exit
+  463  pm2 stop tp_backend
+  464  cd tp_backend
+  465  clear
+  466  npm start
+  467  sudo nano ,env
+  468  sudo nano .env
+  469  cd tp_backend/
+  470  sudo nano .env
+  471  npm start
+  472  tp_backend/
+  473  cd tp_backend/
+  474  pm2 restart tp_backend
+  475  cd tp_website/
+  476  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  477  sudo rm -rf .next
+  478  npm run build
+  479  clear
+  480  mysql -uroot -p
+  481  clear
+  482  cd tp_website/
+  483  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  484  sudo rm -rf .next
+  485  npm run build
+  486  cd ../tp_backend/
+  487  clear
+  488  pm2 start npm --name "tp_backend" -- start
+  489  cd ../tp_website/
+  490  pm2 start npm --name "tp_website" -- start
+  491  sudo systemctl restart nginx
+  492  mysql -uroot -p
+  493  exit
+  494  cd tp_website/
+  495  clear
+  496  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  497  mysql -uroot -p
+  498  exit
+  499  cd tp_website/
+  500  clear
+  501  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  502  sudo rm -rf .next
+  503  npm run build
+  504  npm install
+  505  sudo rm -rf .next
+  506  npm run build
+  507  cd ../tp_backend/
+  508  clear
+  509  pm2 start npm --name "tp_backend" -- start
+  510  cd ../tp_website/
+  511  pm2 start npm --name "tp_website" -- start
+  512  clear
+  513  sudo systemctl restart nginx
+  514  mysql -uroot -p
+  515  clear
+  516  cd tp_backend/
+  517  pm2 start npm --name "tp_backend" -- start
+  518  cd ../tp_website/
+  519  pm2 start npm --name "tp_website" -- start
+  520  sudo systemctl restart nginx
+  521  clear
+  522  cd tp_website/
+  523  pm2 stop tp_website
+  524  pm2 stop tp_backend
+  525  cd
+  526  cd tp_backend/
+  527  clear
+  528  npm start
+  529  clear
+  530  cd tp_backend/
+  531  sudo nano .env
+  532  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  533  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  534  clear
+  535  npm start
+  536  cd tp_backend/
+  537  clear
+  538  sudo nano .env
+  539  npm start
+  540  clear
+  541  cd tp_website/
+  542  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  543  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  544  sudo rm -rf .next
+  545  npm install
+  546  npm run build
+  547  clear
+  548  cd ../tp_backend/
+  549  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  550  pm2 start npm --name "tp_backend" -- start
+  551  pm2 start npm --name "tp_website" -- start
+  552  clear
+  553  pm2 status
+  554  pm2 stop all
+  555  pm2 delete all
+  556  pm2 start npm --name "tp_backend" -- start
+  557  cd ../tp_website/
+  558  pm2 start npm --name "tp_website" -- start
+  559  sudo systemctl restart nginx
+  560  mysql -uroot -p
+  561  exit
+  562  clear
+  563  mysql -uroot -p
+  564  clear
+  565  cd tp_backend/
+  566  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  567  pm2 restart tp_backend
+  568  mysql -uroot -p
+  569  exit
+  570  cd tp_backend/
+  571  clear
+  572  sudo nano controller/website.js
+  573  npm install
+  574  sudo cat package.json
+  575  clear
+  576  npm start
+  577  pm2 stop tp_backend
+  578  clear
+  579  npm start
+  580  sudo nano .env
+  581  clear
+  582  pm2 restart tp_backend
+  583  mysql -uroot -p
+  584  exit
+  585  clear
+  586  cd tp_website/
+  587  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  588  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  589  sudo rm -rf .next
+  590  npm run build
+  591  clear
+  592  cd ..
+  593  cd tp_backend/
+  594  pm2 start npm --name "tp_backend" -- start
+  595  cd ../tp_website/
+  596  pm2 start npm --name "tp_website" -- start
+  597  sudo systemctl restart nginx
+  598  exit
+  599  clear
+  600  cd tp_website/
+  601  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  602  clear
+  603  sudo rm -rf .next
+  604  npm run build
+  605  cd ../tp_b
+  606  cd ../tp_backend/
+  607  m2 start npm --name "tp_backend" -- start
+  608  pm2 start npm --name "tp_backend" -- start
+  609  cd ../tp_website/
+  610  m2 start npm --name "tp_website" -- start
+  611  pm2 start npm --name "tp_website" -- start
+  612  sudo systemctl restart nginx
+  613  exit
+  614  cd tp_backend/
+  615  pm2 start npm --name "tp_backend" -- start
+  616  sudo systemctl restart nginx
+  617  exit
+  618  clear
+  619  cd tp_website/
+  620  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  621  sudo rm -rf .next
+  622  npm run build
+  623  clear
+  624  cd tp_backend/
+  625  pm2 start npm --name "tp_backend" -- start
+  626  cd ../tp_website/
+  627  pm2 start npm --name "tp_website" -- start
+  628  sudo systemctl restart nginx
+  629  exit
+  630  clear
+  631  cd tp_website/
+  632  sudo rm -rf .next
+  633  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  634  npm run build
+  635  clear
+  636  cd tp_website/
+  637  npm run build
+  638  cd ../tp_backend/
+  639  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  640  pm2 start npm --name "tp_backend" -- start
+  641  cd ../tp_website/
+  642  pm2 start npm --name "tp_website" -- start
+  643  sudo systemctl restart nginx
+  644  mysql -uroot -p
+  645  exit
+  646  clear
+  647  cd tp_backend/
+  648  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  649  sudo nano .env
+  650  pm2 status
+  651  pm2 restart tp_backend
+  652  mysql -uroot -p
+  653  exit
+  654  cd tp_backend/
+  655  clear
+  656  sudo cat .env
+  657  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  658  pm2 stop tp_backend
+  659  clear
+  660  npm start
+  661  sudo cat package.json
+  662  sudo nano package.json
+  663  clear
+  664  npm install
+  665  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  666  npm start
+  667  pm2 restart tp_backend
+  668  clear
+  669  mysql -uroot -p
+  670  exit
+  671  clear
+  672  mysql -uroot -p
+  673  exit
+  674  clear
+  675  mysql -uroot -p
+  676  exit
+  677  clear
+  678  cd tp_website/
+  679  sudo rm -rf .next
+  680  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  681  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  682  npm run build
+  683  cd tp_website/
+  684  npm run build
+  685  clear
+  686  cd tp_website/
+  687  ll
+  688  cd ../tp_backend/
+  689  pm2 start npm --name "tp_backend" -- start
+  690  cd ../tp_website/
+  691  pm2 start npm --name "tp_website" -- start
+  692  sudo systemctl restart nginx
+  693  clear
+  694  mysql -uroot -p
+  695  clear
+  696  mysql -uroot -p
+  697  exit
+  698  clear
+  699  mysql -uroot -p
+  700  exit
+  701  ll
+  702  cd tp_backend/
+  703  clear
+  704  sudo mkdir .well-known
+  705  cd .well-known/
+  706  cd ../..
+  707  cd tp_backend/
+  708  clear
+  709  sudo rm -rf .well-known
+  710  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  711  pm2 status
+  712  pm2 restart tp_backend
+  713  clear
+  714  exit
+  715  clear
+  716  mysql -uroot -p
+  717  clear
+  718  cd tp_website/
+  719  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  720  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  721  clear
+  722  sudo rm -rf .next
+  723  npm run build
+  724  cd tp_website/
+  725  clear
+  726  sudo rm -rf .next
+  727  npm run build
+  728  clear
+  729  tp_backend/
+  730  cd tp_backend/
+  731  pm2 start npm --name "tp_backend" -- start
+  732  cd ../tp_website/
+  733  pm2 start npm --name "tp_website" -- start
+  734  sudo systemctl restart nginx
+  735  mysql -uroot -p
+  736  exit
+  737  clear
+  738  mysql -uroot -p
+  739  exit
+  740  cleare
+  741  clear
+  742  mysql -uroot -p
+  743  exit
+  744  clear
+  745  mysql -uroot -p
+  746  exit
+  747  mysql -uroot -p
+  748  exit
+  749  mysql -uroot -p
+  750  cd tp_website/
+  751  clear
+  752  git pull git@github-work:mohamedEzatADU/topplayer_website.git
+  753  clear
+  754  sudo rm -rf .next
+  755  npm run build
+  756  cd tp_website/
+  757  clear
+  758  npm run build
+  759  cd tp_website/
+  760  clear
+  761  ll
+  762  cd ..
+  763  cd tp_backend/
+  764  pm2 start npm --name "tp_backend" -- start
+  765  cd ../tp_website/
+  766  pm2 start npm --name "tp_website" -- start
+  767  sudo systemctl restart nginx
+  768  exit
+  769  cd tp_website/
+  770  clear
+  771  npm run build
+  772  clear
+  773  cd tp_website/
+  774  sudo rm -rf .next
+  775  cd tp_website/
+  776  npm run build
+  777  clear
+  778  cd tp_backend/
+  779  pm2 start npm --name "tp_backend" -- start
+  780  cd ../tp_website/
+  781  pm2 start npm --name "tp_website" -- start
+  782  sudo systemctl restart nginx
+  783  exit
+  784  mysql -uroot -p
+  785  exit'
+  786  ;
+  787  exit
+  788  mysql -uroot -p
+  789  exit
+  790  mysql -uroot -p
+  791  exit
+  792  clear
+  793  mysql -uroot -p
+  794  exit
+  795  clear
+  796  cd tp_backend/
+  797  git pull git@github.com:mohamedEzatADU/topplayer_backend_new.git
+  798  pm2 status
+  799  pm2 restart tp_backend
+  800  sudo systemctl restart nginx

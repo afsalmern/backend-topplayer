@@ -22,6 +22,7 @@ db.subscriber = require('./subscriber')(sequelize, Sequelize);
 db.payment = require('./payment')(sequelize, Sequelize);
 db.device = require('./device')(sequelize, Sequelize);
 db.forgetPAss = require('./forgot_pass_rq')(sequelize, Sequelize);
+db.adminUser = require('./adminUser')(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: 'cascade' });

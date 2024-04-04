@@ -1,19 +1,23 @@
 module.exports = (sequelize, Sequelize) => {
-    const Course = sequelize.define('courses', {
+    const AdminUser = sequelize.define('admin_user', {
         id: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             allowNull: false,
             primaryKey: true
         },
-        name: {
+        username: {
             type: Sequelize.STRING,
             allowNull: false,
-        }, 
-        amount:{
-            type: Sequelize.FLOAT,
-        }
+        },
+        email: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
+        password: {
+            type: Sequelize.STRING
+        },
     });
 
-    return Course;
+    return AdminUser;
 }
