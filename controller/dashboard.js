@@ -106,7 +106,7 @@ exports.login = async (req, res, next) => {
 
     if (!user) {
       const error = new Error("User not found.");
-      error.code = 404; // Not Found
+      error.code = 401; // Not Found
       throw error;
     }
 
@@ -132,7 +132,9 @@ exports.login = async (req, res, next) => {
   } catch (error) {
     console.error(`Error in login: ${error.toString()}`);
     const statusCode = error.code || 500;
-    res.status(statusCode).send({ message: error.message });
+    res
+      .status(statusCode)
+      .send({ message: error.message, status_code: error.code, status: false });
   }
 };
 
