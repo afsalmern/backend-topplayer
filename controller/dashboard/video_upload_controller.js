@@ -82,12 +82,10 @@ exports.updateVideo = (req, res, next) => {
           })
           .then((updatedVideo) => {
             console.log(`Video with ID ${videoId} updated successfully`);
-            res
-              .status(200)
-              .send({
-                message: "Video updated successfully",
-                video: updatedVideo,
-              });
+            res.status(200).send({
+              message: "Video updated successfully",
+              video: updatedVideo,
+            });
           })
           .catch((err) => {
             console.error(`Error in updating video: ${err.toString()}`);
