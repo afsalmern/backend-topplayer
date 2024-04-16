@@ -257,8 +257,8 @@ exports.login = async (req, res, next) => {
     const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
-      if (devices.length >= 5) {
-        let err = new Error("Maximum device limit exceeded. ");
+      if (devices.length >= 3) {
+        let err = new Error("Maximum device limit exceeded.");
         err.code = 401;
         throw err;
       } else {
