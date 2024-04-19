@@ -7,6 +7,8 @@ const categoryController = require('../controller/dashboard/category_controller'
 const courseController = require('../controller/dashboard/course_controller')
 const subCourseController = require('../controller/dashboard/subcourse_controller')
 const videoUploadController = require('../controller/dashboard/video_upload_controller')
+const newsController = require('../controller/dashboard/news_controller')
+const whoAreWeDataController = require('../controller/dashboard/who_are_we_controller')
 
 const router = express.Router();
 
@@ -37,6 +39,18 @@ router.post('/subcourse',[authMiddleware.checkUserAuth],  subCourseController.ad
 router.get('/subcourse',[authMiddleware.checkUserAuth],  subCourseController.getAllSubCourses);
 router.put('/subcourse/:id',[authMiddleware.checkUserAuth],  subCourseController.updateSubCourse);
 router.delete('/subcourse/:id',[authMiddleware.checkUserAuth],  subCourseController.deleteSubCourse);
+
+router.post('/news',[authMiddleware.checkUserAuth],  newsController.addNews);
+router.get('/news',[authMiddleware.checkUserAuth],  newsController.getAllNews);
+router.put('/news/:id',[authMiddleware.checkUserAuth],  newsController.updateNews);
+router.delete('/news/:id',[authMiddleware.checkUserAuth],  newsController.deleteNews);
+router.get('/news/:id',[authMiddleware.checkUserAuth],  newsController.getNewsById);
+
+router.post('/who_are_we_data',[authMiddleware.checkUserAuth],  whoAreWeDataController.addWhoAreWeData);
+router.get('/who_are_we_data',[authMiddleware.checkUserAuth],  whoAreWeDataController.getAllWhoAreWeData);
+router.put('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.updateWhoAreWeData);
+router.delete('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.deleteWhoAreWeData);
+router.get('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.getAllWhoAreWeData);
 
 router.post('/video',[authMiddleware.checkUserAuth], uploadStt.single("video"),  videoUploadController.addVideo);
 router.get('/video',[authMiddleware.checkUserAuth], uploadStt.single("video"),  videoUploadController.getAllVideos);

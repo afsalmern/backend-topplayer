@@ -23,6 +23,8 @@ db.payment = require('./payment')(sequelize, Sequelize);
 db.device = require('./device')(sequelize, Sequelize);
 db.forgetPAss = require('./forgot_pass_rq')(sequelize, Sequelize);
 db.adminUser = require('./adminUser')(sequelize, Sequelize);
+db.news = require("./news")(sequelize, Sequelize);
+db.whoAreWe = require("./whoAreWe")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: 'cascade' });
@@ -45,7 +47,6 @@ const RegisteredCourse = sequelize.define('registered_course', {
 });
 
 db.registeredCourse = RegisteredCourse;
-
 
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
