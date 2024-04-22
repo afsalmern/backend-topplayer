@@ -1,14 +1,15 @@
 const express = require("express");
 const multer = require("multer");
 // test
-const authMiddleware = require("../middleware/auth");
-const dashController = require("../controller/dashboard");
-const categoryController = require("../controller/dashboard/category_controller");
-const courseController = require("../controller/dashboard/course_controller");
-const subCourseController = require("../controller/dashboard/subcourse_controller");
-const videoUploadController = require("../controller/dashboard/video_upload_controller");
-const newsController = require("../controller/dashboard/news_controller");
-const whoAreWeDataController = require("../controller/dashboard/who_are_we_controller");
+const authMiddleware = require('../middleware/auth')
+const dashController = require('../controller/dashboard')
+const categoryController = require('../controller/dashboard/category_controller')
+const courseController = require('../controller/dashboard/course_controller')
+const subCourseController = require('../controller/dashboard/subcourse_controller')
+const videoUploadController = require('../controller/dashboard/video_upload_controller')
+const newsController = require('../controller/dashboard/news_controller')
+const whoAreWeDataController = require('../controller/dashboard/who_are_we_controller')
+const faqController = require('../controller/dashboard/faq_controller')
 
 const router = express.Router();
 
@@ -107,31 +108,16 @@ router.get(
   newsController.getNewsById
 );
 
-router.post(
-  "/who_are_we_data",
-  [authMiddleware.checkUserAuth],
-  whoAreWeDataController.addWhoAreWeData
-);
-router.get(
-  "/who_are_we_data",
-  [authMiddleware.checkUserAuth],
-  whoAreWeDataController.getAllWhoAreWeData
-);
-router.put(
-  "/who_are_we_data/:id",
-  [authMiddleware.checkUserAuth],
-  whoAreWeDataController.updateWhoAreWeData
-);
-router.delete(
-  "/who_are_we_data/:id",
-  [authMiddleware.checkUserAuth],
-  whoAreWeDataController.deleteWhoAreWeData
-);
-router.get(
-  "/who_are_we_data/:id",
-  [authMiddleware.checkUserAuth],
-  whoAreWeDataController.getAllWhoAreWeData
-);
+router.post('/who_are_we_data',[authMiddleware.checkUserAuth],  whoAreWeDataController.addWhoAreWeData);
+router.get('/who_are_we_data',[authMiddleware.checkUserAuth],  whoAreWeDataController.getAllWhoAreWeData);
+router.put('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.updateWhoAreWeData);
+router.delete('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.deleteWhoAreWeData);
+router.get('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.getAllWhoAreWeData);
+
+router.post('/faq',[authMiddleware.checkUserAuth],  faqController.addFAQ);
+router.get('/faq',[authMiddleware.checkUserAuth],  faqController.getAllFAQs);
+router.put('/faq/:id',[authMiddleware.checkUserAuth],  faqController.updateFAQ);
+router.delete('/faq/:id',[authMiddleware.checkUserAuth],  faqController.deleteFAQ);
 
 router.post(
   "/video",
