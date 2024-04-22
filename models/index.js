@@ -25,6 +25,7 @@ db.forgetPAss = require('./forgot_pass_rq')(sequelize, Sequelize);
 db.adminUser = require('./adminUser')(sequelize, Sequelize);
 db.news = require("./news")(sequelize, Sequelize);
 db.whoAreWe = require("./whoAreWe")(sequelize, Sequelize);
+db.faq = require("./faq")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: 'cascade' });

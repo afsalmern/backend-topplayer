@@ -53,7 +53,14 @@ exports.signup = async (req, res, next) => {
 
     const [user, created] = await db.user.findOrCreate({
       where: { email: userEmail },
-      defaults: { username: username, email: userEmail, verification_code: code, verified: false, password: password, mobile: mobile },
+      defaults: {
+        username: username,
+        email: userEmail,
+        verification_code: code,
+        verified: false,
+        password: password,
+        mobile: mobile,
+      },
     });
 
     if (created) {
@@ -80,7 +87,12 @@ exports.signup = async (req, res, next) => {
         to: userEmail,
         subject: "TheTopPlayer verification",
         text: "Please confirm your TheTopPlayer account", // plain text body
-        html: "Hello " + username + " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" + code + "</strong><br>Thank you!</p>", // html body
+        html:
+          "Hello " +
+          username +
+          " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
+          code +
+          "</strong><br>Thank you!</p>", // html body
       };
 
       let emailTransporter = await createTransporter();
@@ -91,7 +103,8 @@ exports.signup = async (req, res, next) => {
         if (error) {
           console.error("Error sending email:", error);
           res.status(500).send({
-            message: "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+            message:
+              "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
             // accessToken: token
           });
         } else {
@@ -150,7 +163,12 @@ exports.resendVerification = async (req, res, next) => {
       to: userEmail,
       subject: "TheTopPlayer verification",
       text: "Please confirm your TheTopPlayer account", // plain text body
-      html: "Hello " + user.username + " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" + code + "</strong><br>Thank you!</p>", // html body
+      html:
+        "Hello " +
+        user.username +
+        " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
+        code +
+        "</strong><br>Thank you!</p>", // html body
     };
 
     let emailTransporter = await createTransporter();
@@ -161,7 +179,8 @@ exports.resendVerification = async (req, res, next) => {
       if (error) {
         console.error("Error sending email:", error);
         res.status(500).send({
-          message: "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+          message:
+            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
           // accessToken: token
         });
       } else {
@@ -229,7 +248,10 @@ exports.login = async (req, res, next) => {
     }
 
     console.log(secret);
-    const passwordIsValid = await bcrypt.compareSync(password + secret, userDB.password);
+    const passwordIsValid = await bcrypt.compareSync(
+      password + secret,
+      userDB.password
+    );
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -242,7 +264,9 @@ exports.login = async (req, res, next) => {
     }
 
     if (!userDB.verified) {
-      console.error(`user ${userDB.username} loged in faild at ${date} because not verified`);
+      console.error(
+        `user ${userDB.username} loged in faild at ${date} because not verified`
+      );
       let err = new Error("Email not verified, please verify your email");
       err.code = 402;
       throw err;
@@ -254,7 +278,9 @@ exports.login = async (req, res, next) => {
       },
     });
 
-    const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
+    const isDevicePresent = devices.some(
+      (device) => device.deviceID === deviceID
+    );
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
       if (devices.length >= 3) {
@@ -279,13 +305,98 @@ exports.login = async (req, res, next) => {
   } catch (error) {
     if (error.code == undefined) error.code = 500;
     if (error.code == 402) {
-      res.status(error.code).send({ message: error.toString(), verified: false });
+      res
+        .status(error.code)
+        .send({ message: error.toString(), verified: false });
     } else {
       console.error(`error in login ${error.toString()}`);
       res.status(error.code).send({ message: error.toString() });
     }
   }
 };
+
+// exports.login = async (req, res, next) => {
+//   try {
+//     const email = req.body.email;
+//     const password = req.body.password;
+//     const secret = process.env.SECRET;
+//     const deviceID = req.body.deviceId;
+
+//     const userDB = await db.user.findOne({
+//       where: {
+//         email: email,
+//       },
+//     });
+
+//     if (!userDB) {
+//       let err = new Error("User Not found.");
+//       err.code = 500;
+//       throw err;
+//     }
+
+//     const passwordIsValid = await bcrypt.compareSync(password + secret, userDB.password);
+
+//     const timestamp = Date.now();
+//     const date = new Date(timestamp);
+
+//     if (!passwordIsValid) {
+//       console.error(`User ${userDB.username} login failed at ${date}`);
+//       let err = new Error("Invalid Password!");
+//       err.code = 401;
+//       throw err;
+//     }
+
+//     if (!userDB.verified) {
+//       console.error(`User ${userDB.username} login failed at ${date} because not verified`);
+//       let err = new Error("Email not verified, please verify your email");
+//       err.code = 402;
+//       throw err;
+//     }
+
+//     let deviceLimit = 3; // Default device limit
+//     if (email === "azsx4736@gmail.com") {
+//       deviceLimit = 10; // Increase the device limit for specified user
+//     }
+
+//     const devices = await db.device.findAll({
+//       where: {
+//         userId: userDB.id,
+//       },
+//     });
+
+//     // Check if the user has reached the device limit
+//     if (devices.length >= deviceLimit) {
+//       let err = new Error("Maximum device limit exceeded.");
+//       err.code = 403;
+//       throw err;
+//     }
+
+//     const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
+//     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
+//     if (!isDevicePresent) {
+//       await db.device.create({
+//         userId: userDB.id,
+//         deviceID: deviceID,
+//       });
+//     }
+
+//     const token = jwt.sign({ id: userDB.id }, secret, { expiresIn: "90d" });
+
+//     console.log(`User ${userDB.username} logged in successfully at ${date}`);
+//     res.status(200).send({
+//       accessToken: token,
+//       message: "Login successful",
+//     });
+//   } catch (error) {
+//     if (error.code === undefined) error.code = 500;
+//     if (error.code === 402) {
+//       res.status(error.code).send({ message: error.toString(), verified: false });
+//     } else {
+//       console.error(`Error in login ${error.toString()}`);
+//       res.status(error.code).send({ message: error.toString() });
+//     }
+//   }
+// };
 
 exports.getUserDetails = (req, res, next) => {
   db.user
@@ -338,7 +449,10 @@ exports.resetPassWebsite = async (req, res, next) => {
       throw err;
     }
 
-    const passwordIsValid = await bcrypt.compareSync(oldPassword + secret, userDB.password);
+    const passwordIsValid = await bcrypt.compareSync(
+      oldPassword + secret,
+      userDB.password
+    );
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -428,7 +542,8 @@ exports.forgotPass = async (req, res, next) => {
       if (error) {
         console.error("Error sending email:", error);
         res.status(500).send({
-          message: "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+          message:
+            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
           // accessToken: token
         });
       } else {
@@ -451,7 +566,8 @@ exports.verifyresetPass = async (req, res) => {
     const symbol = req.query.symbol;
 
     console.log(`user trying to verify his email ${req.query.id}`);
-    if (req.query.id == undefined || req.query.id == null) res.send("unverified code");
+    if (req.query.id == undefined || req.query.id == null)
+      res.send("unverified code");
     else {
       const token = req.query.id;
       jwt.verify(token, secret, (err, decoded) => {
@@ -474,9 +590,13 @@ exports.verifyresetPass = async (req, res) => {
               console.log("user can reset his password");
               //  res.send(token)
 
-              res.redirect(`${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`);
+              res.redirect(
+                `${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`
+              );
             } else {
-              res.status(401).send({ message: "Sorry but the user does not found" });
+              res
+                .status(401)
+                .send({ message: "Sorry but the user does not found" });
             }
           })
           .catch((error) => {
@@ -485,7 +605,11 @@ exports.verifyresetPass = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).send({ message: `error in verifying reset password ${error.toString()}` });
+    res
+      .status(500)
+      .send({
+        message: `error in verifying reset password ${error.toString()}`,
+      });
   }
 };
 

@@ -9,6 +9,7 @@ const subCourseController = require('../controller/dashboard/subcourse_controlle
 const videoUploadController = require('../controller/dashboard/video_upload_controller')
 const newsController = require('../controller/dashboard/news_controller')
 const whoAreWeDataController = require('../controller/dashboard/who_are_we_controller')
+const faqController = require('../controller/dashboard/faq_controller')
 
 const router = express.Router();
 
@@ -51,6 +52,11 @@ router.get('/who_are_we_data',[authMiddleware.checkUserAuth],  whoAreWeDataContr
 router.put('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.updateWhoAreWeData);
 router.delete('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.deleteWhoAreWeData);
 router.get('/who_are_we_data/:id',[authMiddleware.checkUserAuth],  whoAreWeDataController.getAllWhoAreWeData);
+
+router.post('/faq',[authMiddleware.checkUserAuth],  faqController.addFAQ);
+router.get('/faq',[authMiddleware.checkUserAuth],  faqController.getAllFAQs);
+router.put('/faq/:id',[authMiddleware.checkUserAuth],  faqController.updateFAQ);
+router.delete('/faq/:id',[authMiddleware.checkUserAuth],  faqController.deleteFAQ);
 
 router.post('/video',[authMiddleware.checkUserAuth], uploadStt.single("video"),  videoUploadController.addVideo);
 router.get('/video',[authMiddleware.checkUserAuth], uploadStt.single("video"),  videoUploadController.getAllVideos);
