@@ -24,7 +24,7 @@ exports.getAllCourses = (req, res, next) => {
     .findAll()
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
-      res.status(200).send({ courses });
+      res.status(200).json({ courses });
     })
     .catch((err) => {
       console.error(`Error in retrieving courses: ${err.toString()}`);

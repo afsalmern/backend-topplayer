@@ -18,6 +18,8 @@ exports.checkUserAuth = (req, res, next) => {
   let token = req.header("X-Access-Token");
   const secret = process.env.SECRET;
 
+console.log(token,"TOKEN");
+
   if (!token) {
     return res.status(401).send({
       authentication: false,

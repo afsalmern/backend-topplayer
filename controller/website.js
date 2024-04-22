@@ -28,6 +28,34 @@ const createTransporter = async () => {
   }
 };
 
+// Retrieve all courses
+exports.getAllCourses = (req, res, next) => {
+  db.course
+    .findAll()
+    .then((courses) => {
+      console.log(`Retrieved all courses successfully`);
+      res.status(200).json({ courses });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving courses: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
+    });
+};
+
+// Retrieve all news
+exports.getAllNews = (req, res, next) => {
+  db.news
+    .findAll()
+    .then((news) => {
+      console.log(`Retrieved all news successfully`);
+      res.status(200).json({ news });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving news: ${err.toString()}`);
+      res.status(500).send({ message: messages_en.server_error });
+    });
+};
+
 exports.getCourseMaterial = async (req, res, next) => {
   try {
     const courseId = req.params.courseId;
@@ -92,17 +120,27 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day < 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+          let videos_day_id = course_videos
+            .filter((video) => video.day === day)
+            .map((item) => item.id);
 
-          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
+          if (
+            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
+            videos_day_id.length > 0
+          )
+            finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item)))
+          finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item)))
+          finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item)))
+          finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item)))
+          finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -177,20 +215,32 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day < 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+        let videos_day_id = course_videos
+          .filter((video) => video.day === day)
+          .map((item) => item.id);
 
-        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
+        if (
+          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
+          videos_day_id.length > 0
+        )
+          finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item)))
+        finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item)))
+        finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item)))
+        finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item)))
+        finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
-      (final_sub_course.name = subCourseDB.name), (final_sub_course.finished_days = finished_days), (final_sub_course.finished_weeks = finished_weeks);
+      (final_sub_course.name = subCourseDB.name),
+        (final_sub_course.finished_days = finished_days),
+        (final_sub_course.finished_weeks = finished_weeks);
 
       res.status(200).send(final_sub_course);
     } else {
@@ -333,7 +383,15 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video.url);
+        const videoPath = path.join(
+          __dirname,
+          "..",
+          "assets",
+          "trojanTTt",
+          "videos",
+          "new",
+          video.url
+        );
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -390,7 +448,10 @@ exports.getSubscribedCourse = (req, res, next) => {
             userId: req.userDecodeId,
           },
           {
-            [db.Sequelize.Op.or]: [{ createdAt: { [db.Sequelize.Op.gt]: monthsAgo } }, { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } }],
+            [db.Sequelize.Op.or]: [
+              { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
+              { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } },
+            ],
           },
         ],
       },
@@ -498,7 +559,11 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature);
       try {
-        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          signature,
+          endpointSecret
+        );
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -516,7 +581,10 @@ exports.stripeWebhook = async (req, res) => {
         const userId = paymentIntent.metadata.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(`PaymentIntent was successful for customer ${customerId}:`, paymentIntent.id);
+        console.log(
+          `PaymentIntent was successful for customer ${customerId}:`,
+          paymentIntent.id
+        );
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -565,18 +633,24 @@ exports.stripeWebhook = async (req, res) => {
         };
 
         let emailTransporter = await createTransporter();
-        await emailTransporter.sendMail(mailOptions, async function (error, info) {
-          if (error) {
-            console.error("Error sending email in payment:", error);
-          } else {
-            console.log("Email sent:", info.response);
+        await emailTransporter.sendMail(
+          mailOptions,
+          async function (error, info) {
+            if (error) {
+              console.error("Error sending email in payment:", error);
+            } else {
+              console.log("Email sent:", info.response);
+            }
           }
-        });
+        );
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
+        console.log(
+          `PaymentIntent failed for customer ${failedCustomerId}:`,
+          failedPaymentIntent.id
+        );
         break;
       // Add more cases for other events as needed
       default:
@@ -601,7 +675,9 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
+      res
+        .status(500)
+        .send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
@@ -614,7 +690,9 @@ exports.contactUS = async (req, res, next) => {
     })
     .then((result) => {
       console.log("contact us message saved successfully");
-      res.status(200).send({ message: "contact us message saved successfully" });
+      res
+        .status(200)
+        .send({ message: "contact us message saved successfully" });
     })
     .catch((error) => {
       console.log(`error in saving contact us ${error.toString()}`);

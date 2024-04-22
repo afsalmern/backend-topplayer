@@ -6,6 +6,9 @@ const websiteController = require('../controller/website')
 
 const router = express.Router();
 
+router.get('/courses',websiteController.getAllCourses);
+router.get('/news',websiteController.getAllNews);
+
 router.get('/subscribedCourse',[authMiddleware.checkUserAuth],  websiteController.getSubscribedCourse);
 router.get('/course/:courseId',[authMiddleware.checkUserAuth],  websiteController.getCourseMaterial);
 router.get('/subcourse/:courseId/:subCourseId',[authMiddleware.checkUserAuth],  websiteController.getSubCourseMaterial);
