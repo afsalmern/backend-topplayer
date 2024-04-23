@@ -9,6 +9,8 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 
+const FAQ = db.faq;
+
 const createTransporter = async () => {
   try {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -53,6 +55,19 @@ exports.getAllNews = (req, res, next) => {
     .catch((err) => {
       console.error(`Error in retrieving news: ${err.toString()}`);
       res.status(500).send({ message: messages_en.server_error });
+    });
+};
+
+// Retrieve all FAQs
+exports.getAllFAQs = (req, res, next) => {
+  FAQ.findAll()
+    .then((faqs) => {
+      console.log(`Retrieved all FAQs successfully`);
+      res.status(200).json({ faqs });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving FAQs: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
     });
 };
 
