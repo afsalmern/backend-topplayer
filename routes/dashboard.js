@@ -10,6 +10,7 @@ const videoUploadController = require('../controller/dashboard/video_upload_cont
 const newsController = require('../controller/dashboard/news_controller')
 const whoAreWeDataController = require('../controller/dashboard/who_are_we_controller')
 const faqController = require('../controller/dashboard/faq_controller')
+const testimonialController = require('../controller/dashboard/testimonial_controller')
 
 const router = express.Router();
 
@@ -58,6 +59,7 @@ router.get(
   [authMiddleware.checkUserAuth],
   courseController.getAllCourses
 );
+
 router.put(
   "/course/:id",
   [authMiddleware.checkUserAuth],
@@ -118,6 +120,11 @@ router.post('/faq',[authMiddleware.checkUserAuth],  faqController.addFAQ);
 router.get('/faq',[authMiddleware.checkUserAuth],  faqController.getAllFAQs);
 router.put('/faq/:id',[authMiddleware.checkUserAuth],  faqController.updateFAQ);
 router.delete('/faq/:id',[authMiddleware.checkUserAuth],  faqController.deleteFAQ);
+
+router.post('/testimonial',[authMiddleware.checkUserAuth],  testimonialController.addTestimonial);
+router.get('/testimonial',[authMiddleware.checkUserAuth],  testimonialController.getAllTestimonials);
+router.put('/testimonial/:id',[authMiddleware.checkUserAuth],  testimonialController.updateTestimonial);
+router.delete('/testimonial/:id',[authMiddleware.checkUserAuth],  testimonialController.deleteTestimonial);
 
 router.post(
   "/video",
