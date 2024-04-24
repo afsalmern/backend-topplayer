@@ -9,10 +9,6 @@ module.exports = (sequelize, Sequelize) => {
         name: {
             type: Sequelize.STRING,
             allowNull: false,
-        },
-        description: {
-            type: Sequelize.TEXT, // Assuming description can be longer than a string
-            allowNull: true, // Depending on your requirements
         }
     });
 

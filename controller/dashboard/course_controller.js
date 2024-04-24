@@ -7,6 +7,7 @@ exports.addCourse = (req, res, next) => {
       name: req.body.name,
       categoryId: req.body.categoryId,
       amount: req.body.amount,
+      description: req.body.description
     })
     .then((result) => {
       console.log(`A course added successfully`);
@@ -20,26 +21,67 @@ exports.addCourse = (req, res, next) => {
     });
 };
 
+// exports.getAllCourses = (req, res, next) => {
+//   db.course
+//     .findAll({
+//       include: {
+//         model: db.category, // Assuming your Category model is named 'category' in your Sequelize instance
+//         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
+//       },
+//     })
+//     .then((courses) => {
+//       console.log(`Retrieved all courses successfully`);
+
+//       // Manipulating the response to have category_name instead of category object
+//       const modifiedCourses = courses.map((course) => ({
+//         ...course.toJSON(),
+//         category_name: course.category ? course.category.name : null,
+//       }));
+
+//       // Remove the nested category object
+//       modifiedCourses.forEach((course) => {
+//         delete course.category;
+//       });
+
+//       res.status(200).json({ courses: modifiedCourses });
+//     })
+//     .catch((err) => {
+//       console.error(`Error in retrieving courses: ${err.toString()}`);
+//       res.status(500).send({ message: err.toString() });
+//     });
+// };
+
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
       include: {
-        model: db.category, // Assuming your Category model is named 'category' in your Sequelize instance
+        model: db.category, // Include the Category model
         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
       },
+      attributes: ["id", "name", "amount", "description", "categoryId"], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
 
       // Manipulating the response to have category_name instead of category object
-      const modifiedCourses = courses.map((course) => ({
-        ...course.toJSON(),
-        category_name: course.category ? course.category.name : null,
-      }));
+      const modifiedCourses = courses?.map((course) => {
+        // Splitting the description into checklist items
+        const checklistItems = course?.description?.split('\n');
+        // Generating HTML markup for the checklist
+        const checklistHTML = checklistItems?.map(item => `<li>${item}</li>`).join('');
 
-      // Remove the nested category object
+        return {
+          ...course.toJSON(),
+          category_name: course.category ? course.category?.name : null,
+          descriptionHTML: `<ul>${checklistHTML}</ul>`, // Wrap checklist items in <ul> element
+          description: course?.description || null 
+        };
+      });
+
+      // Remove the nested category object and original description field
       modifiedCourses.forEach((course) => {
         delete course.category;
+        delete course.description;
       });
 
       res.status(200).json({ courses: modifiedCourses });
@@ -49,6 +91,7 @@ exports.getAllCourses = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
+
 
 // Retrieve a single course by ID
 exports.getCourseById = (req, res, next) => {
