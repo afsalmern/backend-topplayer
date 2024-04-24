@@ -8,6 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
+const { count } = require("console");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
