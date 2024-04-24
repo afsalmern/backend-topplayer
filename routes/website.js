@@ -6,9 +6,11 @@ const websiteController = require("../controller/website");
 const router = express.Router();
 
 router.get("/courses", websiteController.getAllCourses);
-router.get("/news", websiteController.getAllNews);
-router.get("/news/:id", websiteController.getNewsById);
+router.get("/news/:dataCount", websiteController.getAllNews);
+router.get("/news_count", websiteController.getAllNewsCount);
+router.get("/news_by_id/:id", websiteController.getNewsById);
 router.get("/faq", websiteController.getAllFAQs);
+router.get("/testimonial", websiteController.getAllTestimonials);
 
 router.get(
   "/subscribedCourse",
