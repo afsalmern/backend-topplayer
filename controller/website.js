@@ -18,6 +18,7 @@ const messages_en = {
 };
 
 const FAQ = db.faq;
+const Testimonial = db.testimonial;
 
 const createTransporter = async () => {
   try {
@@ -83,9 +84,11 @@ exports.getAllCourses = (req, res, next) => {
 };
 
 // Retrieve all news
-exports.getAllNews = (req, res, next) => {
+exports.getAllNews = async (req, res, next) => {
+  const dataCount = req.params.dataCount;
+
   db.news
-    .findAll()
+    .findAll({ limit: dataCount * 9 })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
       res.status(200).json({ news });
@@ -96,8 +99,21 @@ exports.getAllNews = (req, res, next) => {
     });
 };
 
+// Retrieve news count
+exports.getAllNewsCount = async (req, res, next) => {
+  try {
+    const count = await db.news.count();
+    console.log(`Retrieved all news successfully`);
+    res.status(200).json({ count });
+  } catch (err) {
+    console.error(`Error in retrieving news: ${err.toString()}`);
+    res.status(500).send({ message: messages_en.server_error });
+  }
+};
+
 //get single news
 exports.getNewsById = (req, res, next) => {
+  console.log(req.params, "ID");
   const newsId = req.params.id;
   db.news
     .findByPk(newsId)
@@ -123,6 +139,19 @@ exports.getAllFAQs = (req, res, next) => {
     })
     .catch((err) => {
       console.error(`Error in retrieving FAQs: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
+    });
+};
+
+// Retrieve all Testimonials
+exports.getAllTestimonials = (req, res, next) => {
+  Testimonial.findAll()
+    .then((testimonials) => {
+      console.log(`Retrieved all testimonials successfully`);
+      res.status(200).json({ testimonials });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving testimonials: ${err.toString()}`);
       res.status(500).send({ message: err.toString() });
     });
 };
