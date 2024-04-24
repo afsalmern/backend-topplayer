@@ -11,6 +11,7 @@ router.get("/news_count", websiteController.getAllNewsCount);
 router.get("/news_by_id/:id", websiteController.getNewsById);
 router.get("/faq", websiteController.getAllFAQs);
 router.get("/testimonial", websiteController.getAllTestimonials);
+router.get("/banner", websiteController.getAllBanners);
 
 router.get(
   "/subscribedCourse",

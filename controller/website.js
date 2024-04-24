@@ -8,7 +8,6 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const { count } = require("console");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -38,6 +37,20 @@ const createTransporter = async () => {
     console.log(`error in create transporter ${err}`);
     return err;
   }
+};
+
+// Retrieve all banners
+exports.getAllBanners = (req, res, next) => {
+  db.banner
+    .findAll()
+    .then((banners) => {
+      console.log(`Retrieved all banners successfully`);
+      res.status(200).json({ banners });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving banners: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
+    });
 };
 
 // Retrieve all courses
