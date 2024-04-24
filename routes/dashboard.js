@@ -41,6 +41,19 @@ const uploadImage = multer({
   storage: multerStorageImage,
 });
 
+const multerStorageNewsImage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/newsImages");
+  },
+  filename: (req, file, cb) => {
+    // const ext = file.mimetype.split("/")[1];
+    cb(null, `${file.originalname}`);
+  },
+});
+const uploadNewsImage = multer({
+  storage: multerStorageNewsImage,
+});
+
 router.post("/category", [authMiddleware.checkUserAuth], categoryController.addCategory);
 router.get("/category", [authMiddleware.checkUserAuth], categoryController.getAllCategories);
 router.put("/category/:id", [authMiddleware.checkUserAuth], categoryController.updateCategory);
@@ -58,7 +71,7 @@ router.get("/subcourse", [authMiddleware.checkUserAuth], subCourseController.get
 router.put("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.updateSubCourse);
 router.delete("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.deleteSubCourse);
 
-router.post("/news", [authMiddleware.checkUserAuth], newsController.addNews);
+router.post("/news", [authMiddleware.checkUserAuth], uploadNewsImage.array("images", 5), newsController.addNews);
 router.get("/news", [authMiddleware.checkUserAuth], newsController.getAllNews);
 router.put("/news/:id", [authMiddleware.checkUserAuth], newsController.updateNews);
 router.delete("/news/:id", [authMiddleware.checkUserAuth], newsController.deleteNews);

@@ -6,30 +6,75 @@ const messages_en = {
   news_not_found: "News not found",
   server_error: "Server error",
   news_updated_successfully: "News updated successfully",
-  news_deleted_successfully: "News deleted successfully"
+  news_deleted_successfully: "News deleted successfully",
 };
 
-// // Define messages in Arabic
-// const messages_ar = {
-//   news_added_successfully: "تم إضافة الخبر بنجاح",
-//   news_not_found: "الخبر غير موجود",
-//   server_error: "خطأ في الخادم",
-//   news_updated_successfully: "تم تحديث الخبر بنجاح",
-//   news_deleted_successfully: "تم حذف الخبر بنجاح"
+// exports.addNews = (req, res, next) => {
+//   db.news
+//     .create({
+//       title_en: req.body.title_en,
+//       title_ar: req.body.title_ar,
+//       description_en: req.body.description_en,
+//       description_ar: req.body.description_ar
+//     })
+//     .then((result) => {
+//       console.log(`A news added successfully`);
+//       res.status(200).send({ message: messages_en.news_added_successfully, news: result });
+//     })
+//     .catch((err) => {
+//       console.error(`Error in adding news: ${err.toString()}`);
+//       res.status(500).send({ message: messages_en.server_error });
+//     });
 // };
 
-// Create a new news
 exports.addNews = (req, res, next) => {
+  const { title_en, title_ar, description_en, description_ar } = req.body;
+  const imageUrls = [];
+
+  console.log("req.files===>", req.body);
+
+  // Check if files are uploaded
+  if (!req.files) {
+    return res.status(400).send({ message: "Please upload at least one image." });
+  }
+
+  // Extract image URLs from the uploaded files
+  for (const image of req.files) {
+    // Assuming each image object has a `buffer` property containing the image data
+    const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+    imageUrls.push(imageUrl);
+  }
+
+  // First, create the news
   db.news
     .create({
-      title_en: req.body.title_en,
-      title_ar: req.body.title_ar,
-      description_en: req.body.description_en,
-      description_ar: req.body.description_ar
+      title_en,
+      title_ar,
+      description_en,
+      description_ar,
     })
-    .then((result) => {
-      console.log(`A news added successfully`);
-      res.status(200).send({ message: messages_en.news_added_successfully, news: result });
+    .then((createdNews) => {
+      // If news creation is successful, associate the images with the news
+      Promise.all(imageUrls.map((imageUrl) => db.newsImage.create({ imageUrl })))
+        .then((createdImages) => {
+          // Associate the created images with the created news
+          createdNews
+            .addImages(createdImages)
+            .then(() => {
+              console.log(`A news with images added successfully`);
+              res
+                .status(200)
+                .send({ message: messages_en.news_added_successfully, news: createdNews, images: createdImages });
+            })
+            .catch((err) => {
+              console.error(`Error in associating images with news: ${err.toString()}`);
+              res.status(500).send({ message: messages_en.server_error });
+            });
+        })
+        .catch((err) => {
+          console.error(`Error in creating images: ${err.toString()}`);
+          res.status(500).send({ message: messages_en.server_error });
+        });
     })
     .catch((err) => {
       console.error(`Error in adding news: ${err.toString()}`);
@@ -37,10 +82,16 @@ exports.addNews = (req, res, next) => {
     });
 };
 
-// Retrieve all news
 exports.getAllNews = (req, res, next) => {
   db.news
-    .findAll()
+    .findAll({
+      include: [
+        {
+          model: db.newsImage,
+          as: "images", // Alias defined in the association
+        },
+      ],
+    })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
       res.status(200).send({ news });
