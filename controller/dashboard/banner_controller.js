@@ -1,5 +1,5 @@
 const db = require("../../models");
-const fs = require('fs').promises;
+const fs = require("fs");
 
 // Upload a banner image using Multer
 exports.uploadBanner = async (req, res, next) => {
@@ -9,7 +9,7 @@ exports.uploadBanner = async (req, res, next) => {
     }
 
     const { filename } = req.file;
-    const imagePath = `/uploads/${filename}`; // Assuming uploads directory is accessible publicly
+    const imagePath = `${filename}`; // Assuming uploads directory is accessible publicly
 
     // Save banner image to the database
     const result = await db.banner.create({ image: imagePath });
@@ -77,7 +77,7 @@ exports.deleteBanner = (req, res, next) => {
         return res.status(404).send({ message: "Banner not found" });
       }
       // Delete the associated file from the server
-      fs.unlinkSync(`.${banner.image}`);
+      fs.unlinkSync(`assets/images/${banner.image}`);
 
       return banner.destroy();
     })
