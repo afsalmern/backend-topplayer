@@ -46,6 +46,8 @@ exports.addCategory = (req, res, next) => {
 //     });
 // };
 
+
+
 exports.getAllCategories = (req, res) => {
   db.category
     .findAll()
