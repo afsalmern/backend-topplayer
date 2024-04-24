@@ -10,7 +10,9 @@ exports.addCourse = (req, res, next) => {
     })
     .then((result) => {
       console.log(`A course added successfully`);
-      res.status(200).send({ message: "Course added successfully", course: result });
+      res
+        .status(200)
+        .send({ message: "Course added successfully", course: result });
     })
     .catch((err) => {
       console.error(`Error in adding course: ${err.toString()}`);
@@ -18,13 +20,29 @@ exports.addCourse = (req, res, next) => {
     });
 };
 
-// Retrieve all courses
 exports.getAllCourses = (req, res, next) => {
   db.course
-    .findAll()
+    .findAll({
+      include: {
+        model: db.category, // Assuming your Category model is named 'category' in your Sequelize instance
+        attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
+      },
+    })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
-      res.status(200).json({ courses });
+
+      // Manipulating the response to have category_name instead of category object
+      const modifiedCourses = courses.map((course) => ({
+        ...course.toJSON(),
+        category_name: course.category ? course.category.name : null,
+      }));
+
+      // Remove the nested category object
+      modifiedCourses.forEach((course) => {
+        delete course.category;
+      });
+
+      res.status(200).json({ courses: modifiedCourses });
     })
     .catch((err) => {
       console.error(`Error in retrieving courses: ${err.toString()}`);
@@ -67,7 +85,12 @@ exports.updateCourse = (req, res, next) => {
     })
     .then((updatedCourse) => {
       console.log(`Course with ID ${courseId} updated successfully`);
-      res.status(200).send({ message: "Course updated successfully", course: updatedCourse });
+      res
+        .status(200)
+        .send({
+          message: "Course updated successfully",
+          course: updatedCourse,
+        });
     })
     .catch((err) => {
       console.error(`Error in updating course: ${err.toString()}`);
