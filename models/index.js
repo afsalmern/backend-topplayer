@@ -73,3 +73,6 @@ db.user.hasMany(db.payment);
 db.user.hasMany(db.device);
 
 module.exports = db;
+
+
+

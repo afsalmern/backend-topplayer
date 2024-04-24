@@ -9,6 +9,14 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 
+const messages_en = {
+  news_added_successfully: "News added successfully",
+  news_not_found: "News not found",
+  server_error: "Server error",
+  news_updated_successfully: "News updated successfully",
+  news_deleted_successfully: "News deleted successfully",
+};
+
 const FAQ = db.faq;
 
 const createTransporter = async () => {
@@ -33,10 +41,40 @@ const createTransporter = async () => {
 // Retrieve all courses
 exports.getAllCourses = (req, res, next) => {
   db.course
-    .findAll()
+    .findAll({
+      include: [
+        {
+          model: db.category,
+          attributes: ["name"],
+        },
+      ],
+    })
     .then((courses) => {
+      const groupedCourses = {};
+
+      // Iterate through courses and group them by categoryName
+      courses.forEach((course) => {
+        const categoryName = course.category.name;
+
+        // If the category doesn't exist in groupedCourses, create a new array for it
+        if (!groupedCourses[categoryName]) {
+          groupedCourses[categoryName] = [];
+        }
+
+        // Push the course to the array corresponding to its categoryName
+        groupedCourses[categoryName].push(course);
+      });
+
+      // Convert the groupedCourses object to an array of objects
+      const groupedCoursesArray = Object.entries(groupedCourses).map(
+        ([categoryName, courses]) => ({
+          categoryName,
+          courses,
+        })
+      );
+
       console.log(`Retrieved all courses successfully`);
-      res.status(200).json({ courses });
+      res.status(200).json({ courses: groupedCoursesArray });
     })
     .catch((err) => {
       console.error(`Error in retrieving courses: ${err.toString()}`);
@@ -50,6 +88,24 @@ exports.getAllNews = (req, res, next) => {
     .findAll()
     .then((news) => {
       console.log(`Retrieved all news successfully`);
+      res.status(200).json({ news });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving news: ${err.toString()}`);
+      res.status(500).send({ message: messages_en.server_error });
+    });
+};
+
+//get single news
+exports.getNewsById = (req, res, next) => {
+  const newsId = req.params.id;
+  db.news
+    .findByPk(newsId)
+    .then((news) => {
+      if (!news) {
+        return res.status(404).send({ message: messages_en.news_not_found });
+      }
+      console.log(`Retrieved news with ID ${newsId} successfulllllly`);
       res.status(200).json({ news });
     })
     .catch((err) => {
