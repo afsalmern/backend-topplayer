@@ -73,7 +73,7 @@ exports.getAllCourses = (req, res, next) => {
         return {
           ...course.toJSON(),
           category_name: course.category ? course.category?.name : null,
-          descriptionHTML: `<ul>${checklistHTML}</ul>`, // Wrap checklist items in <ul> element
+          descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
           description: course?.description || null 
         };
       });
