@@ -130,7 +130,14 @@ exports.getNewsById = (req, res, next) => {
   console.log(req.params, "ID");
   const newsId = req.params.id;
   db.news
-    .findByPk(newsId)
+    .findByPk(newsId, {
+      include: [
+        {
+          model: db.newsImage,
+          as: "images", // Alias defined in the association
+        },
+      ],
+    })
     .then((news) => {
       if (!news) {
         return res.status(404).send({ message: messages_en.news_not_found });
