@@ -30,7 +30,7 @@ const uploadStt = multer({
 
 const multerStorageImage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "assets/images");
+    cb(null, "public/bannerImages");
   },
   filename: (req, file, cb) => {
     // const ext = file.mimetype.split("/")[1];

@@ -77,7 +77,7 @@ exports.deleteBanner = (req, res, next) => {
         return res.status(404).send({ message: "Banner not found" });
       }
       // Delete the associated file from the server
-      fs.unlinkSync(`assets/images/${banner.image}`);
+      fs.unlinkSync(`public/bannerImages/${banner.image}`);
 
       return banner.destroy();
     })
