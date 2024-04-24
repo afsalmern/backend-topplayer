@@ -68,7 +68,7 @@ exports.getAllCourses = (req, res, next) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split('\n');
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map(item => `<li>${item}</li>`).join('');
+        const checklistHTML = checklistItems?.map(item => `<li><p>${item}</p></li>`).join('');
 
         return {
           ...course.toJSON(),
