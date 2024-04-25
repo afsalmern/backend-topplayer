@@ -54,6 +54,63 @@ exports.getAllBanners = (req, res, next) => {
 };
 
 // Retrieve all courses
+// exports.getAllCourses = (req, res, next) => {
+//   db.course
+//     .findAll({
+//       include: [
+//         {
+//           model: db.category,
+//           attributes: ["name"],
+//         },
+//       ],
+//     })
+//     .then((courses) => {
+//       const groupedCourses = {};
+
+//       // Iterate through courses and group them by categoryName
+//       courses.forEach((course) => {
+//         const categoryName = course.category.name;
+
+//         const modifiedCourses = courses?.map((course) => {
+//           // Splitting the description into checklist items
+//           const checklistItems = course?.description?.split('\n');
+//           // Generating HTML markup for the checklist
+//           const checklistHTML = checklistItems?.map(item => `<li><p>${item}</p></li>`).join('');
+
+//           return {
+//             ...course.toJSON(),
+//             category_name: course.category ? course.category?.name : null,
+//             descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
+//             description: course?.description || null
+//           };
+//         });
+
+//         // If the category doesn't exist in groupedCourses, create a new array for it
+//         if (!groupedCourses[categoryName]) {
+//           groupedCourses[categoryName] = [];
+//         }
+
+//         // Push the course to the array corresponding to its categoryName
+//         groupedCourses[categoryName].push(course);
+//       });
+
+//       // Convert the groupedCourses object to an array of objects
+//       const groupedCoursesArray = Object.entries(groupedCourses).map(
+//         ([categoryName, courses]) => ({
+//           categoryName,
+//           courses,
+//         })
+//       );
+
+//       console.log(`Retrieved all courses successfully`);
+//       res.status(200).json({ courses: groupedCoursesArray });
+//     })
+//     .catch((err) => {
+//       console.error(`Error in retrieving courses: ${err.toString()}`);
+//       res.status(500).send({ message: err.toString() });
+//     });
+// };
+
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
@@ -71,22 +128,34 @@ exports.getAllCourses = (req, res, next) => {
       courses.forEach((course) => {
         const categoryName = course.category.name;
 
+        // Splitting the description into checklist items
+        const checklistItems = course?.description?.split("\n");
+        // Generating HTML markup for the checklist
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
+
+        const modifiedCourse = {
+          ...course.toJSON(),
+          category_name: course.category ? course.category.name : null,
+          descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+          description: course.description || null,
+        };
+
         // If the category doesn't exist in groupedCourses, create a new array for it
         if (!groupedCourses[categoryName]) {
-          groupedCourses[categoryName] = [];
+          groupedCourses[categoryName] = {
+            categoryName,
+            courses: [],
+          };
         }
 
-        // Push the course to the array corresponding to its categoryName
-        groupedCourses[categoryName].push(course);
+        // Push the modifiedCourse to the array corresponding to its categoryName
+        groupedCourses[categoryName].courses.push(modifiedCourse);
       });
 
       // Convert the groupedCourses object to an array of objects
-      const groupedCoursesArray = Object.entries(groupedCourses).map(
-        ([categoryName, courses]) => ({
-          categoryName,
-          courses,
-        })
-      );
+      const groupedCoursesArray = Object.values(groupedCourses);
 
       console.log(`Retrieved all courses successfully`);
       res.status(200).json({ courses: groupedCoursesArray });
