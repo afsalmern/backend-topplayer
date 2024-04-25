@@ -170,8 +170,15 @@ exports.getAllCourses = (req, res, next) => {
 exports.getAllNews = async (req, res, next) => {
   const dataCount = req.params.dataCount;
 
-  db.news
-    .findAll({ limit: dataCount * 9 })
+  db.news.findAll({
+    limit: dataCount * 9,
+    include: [
+      {
+        model: db.newsImage,
+        as: "images",
+      },
+    ],
+  })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
       res.status(200).json({ news });
