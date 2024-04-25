@@ -53,6 +53,17 @@ exports.getAllBanners = (req, res, next) => {
     });
 };
 
+exports.getAllWhoAreWeData = async (req, res, next) => {
+  try {
+    const data = await db.whoAreWe.findAll();
+    console.log(`Retrieved all who are we data successfully`);
+    res.status(200).json({ data });
+  } catch (err) {
+    console.error(`Error in retrieving who are we data: ${err.toString()}`);
+    res.status(500).send({ message: messages_en.server_error });
+  }
+};
+
 // Retrieve all courses
 // exports.getAllCourses = (req, res, next) => {
 //   db.course
