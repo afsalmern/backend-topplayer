@@ -53,17 +53,6 @@ exports.getAllBanners = (req, res, next) => {
     });
 };
 
-exports.getAllWhoAreWeData = async (req, res, next) => {
-  try {
-    const data = await db.whoAreWe.findAll();
-    console.log(`Retrieved all who are we data successfully`);
-    res.status(200).json({ data });
-  } catch (err) {
-    console.error(`Error in retrieving who are we data: ${err.toString()}`);
-    res.status(500).send({ message: messages_en.server_error });
-  }
-};
-
 // Retrieve all courses
 // exports.getAllCourses = (req, res, next) => {
 //   db.course
@@ -146,21 +135,11 @@ exports.getAllCourses = (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
-        const checklistItems2 = course?.description_ar?.split("\n");
-        // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
-
-        console.log(checklistHTML2, "LIST");
-
         const modifiedCourse = {
           ...course.toJSON(),
           category_name: course.category ? course.category.name : null,
           descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
-          descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
           description: course.description || null,
-          description_ar: course.description_ar || null,
         };
 
         // If the category doesn't exist in groupedCourses, create a new array for it
@@ -191,16 +170,15 @@ exports.getAllCourses = (req, res, next) => {
 exports.getAllNews = async (req, res, next) => {
   const dataCount = req.params.dataCount;
 
-  db.news
-    .findAll({
-      limit: dataCount * 9,
-      include: [
-        {
-          model: db.newsImage,
-          as: "images",
-        },
-      ],
-    })
+  db.news.findAll({
+    limit: dataCount * 9,
+    include: [
+      {
+        model: db.newsImage,
+        as: "images",
+      },
+    ],
+  })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
       res.status(200).json({ news });
@@ -677,7 +655,6 @@ exports.getSubscribedCourse = (req, res, next) => {
       attributes: ["courseId"],
     })
     .then((result) => {
-      console.log(result);
       res.status(200).send(result);
     })
     .catch((error) => {
