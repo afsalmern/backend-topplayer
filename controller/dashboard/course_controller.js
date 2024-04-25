@@ -13,9 +13,7 @@ exports.addCourse = (req, res, next) => {
     })
     .then((result) => {
       console.log(`A course added successfully`);
-      res
-        .status(200)
-        .send({ message: "Course added successfully", course: result });
+      res.status(200).send({ message: "Course added successfully", course: result });
     })
     .catch((err) => {
       console.error(`Error in adding course: ${err.toString()}`);
@@ -71,21 +69,17 @@ exports.getAllCourses = (req, res, next) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
 
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML2 = checklistItems2?.map((item) => `<li><p>${item}</p></li>`).join("");
 
         return {
           ...course.toJSON(),
           category_name: course.category ? course.category?.name : null,
-          descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
-          descriptionHTMLAr: `${checklistHTML2}`, // Wrap checklist items in <ul> element
+          descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+          descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
           description: course?.description || null,
           description_ar: course?.description_ar || null,
         };
@@ -94,7 +88,6 @@ exports.getAllCourses = (req, res, next) => {
       // Remove the nested category object and original description field
       modifiedCourses.forEach((course) => {
         delete course.category;
-        delete course.description;
       });
 
       res.status(200).json({ courses: modifiedCourses });
