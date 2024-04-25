@@ -9,30 +9,14 @@ const messages_en = {
   news_deleted_successfully: "News deleted successfully",
 };
 
-// exports.addNews = (req, res, next) => {
-//   db.news
-//     .create({
-//       title_en: req.body.title_en,
-//       title_ar: req.body.title_ar,
-//       description_en: req.body.description_en,
-//       description_ar: req.body.description_ar
-//     })
-//     .then((result) => {
-//       console.log(`A news added successfully`);
-//       res.status(200).send({ message: messages_en.news_added_successfully, news: result });
-//     })
-//     .catch((err) => {
-//       console.error(`Error in adding news: ${err.toString()}`);
-//       res.status(500).send({ message: messages_en.server_error });
-//     });
-// };
-
 exports.addNews = (req, res, next) => {
   const { title_en, title_ar, description_en, description_ar } = req.body;
+  console.log("images", req.body);
   const imageUrls = [];
 
   console.log("req.files===>", req.body);
 
+  console.log("files==============>", req.files);
   // Check if files are uploaded
   if (!req.files) {
     return res.status(400).send({ message: "Please upload at least one image." });

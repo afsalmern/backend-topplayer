@@ -71,7 +71,7 @@ router.get("/subcourse", [authMiddleware.checkUserAuth], subCourseController.get
 router.put("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.updateSubCourse);
 router.delete("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.deleteSubCourse);
 
-router.post("/news", [authMiddleware.checkUserAuth], uploadNewsImage.array("images", 5), newsController.addNews);
+router.post("/news", [authMiddleware.checkUserAuth], uploadNewsImage.any(), newsController.addNews);
 router.get("/news", [authMiddleware.checkUserAuth], newsController.getAllNews);
 router.put("/news/:id", [authMiddleware.checkUserAuth], newsController.updateNews);
 router.delete("/news/:id", [authMiddleware.checkUserAuth], newsController.deleteNews);
