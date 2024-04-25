@@ -5,9 +5,11 @@ exports.addCourse = (req, res, next) => {
   db.course
     .create({
       name: req.body.name,
+      name_arabic: req.body.name_arabic,
       categoryId: req.body.categoryId,
       amount: req.body.amount,
-      description: req.body.description
+      description: req.body.description,
+      description_ar: req.body.description_ar,
     })
     .then((result) => {
       console.log(`A course added successfully`);
@@ -62,19 +64,22 @@ exports.getAllCourses = (req, res, next) => {
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
+      console.log(courses);
 
       // Manipulating the response to have category_name instead of category object
       const modifiedCourses = courses?.map((course) => {
         // Splitting the description into checklist items
-        const checklistItems = course?.description?.split('\n');
+        const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map(item => `<li><p>${item}</p></li>`).join('');
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         return {
           ...course.toJSON(),
           category_name: course.category ? course.category?.name : null,
           descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
-          description: course?.description || null 
+          description: course?.description || null,
         };
       });
 
@@ -91,7 +96,6 @@ exports.getAllCourses = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
-
 
 // Retrieve a single course by ID
 exports.getCourseById = (req, res, next) => {
@@ -128,12 +132,10 @@ exports.updateCourse = (req, res, next) => {
     })
     .then((updatedCourse) => {
       console.log(`Course with ID ${courseId} updated successfully`);
-      res
-        .status(200)
-        .send({
-          message: "Course updated successfully",
-          course: updatedCourse,
-        });
+      res.status(200).send({
+        message: "Course updated successfully",
+        course: updatedCourse,
+      });
     })
     .catch((err) => {
       console.error(`Error in updating course: ${err.toString()}`);
