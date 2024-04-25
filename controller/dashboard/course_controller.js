@@ -75,11 +75,19 @@ exports.getAllCourses = (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
+        const checklistItems2 = course?.description_ar?.split("\n");
+        // Generating HTML markup for the checklist
+        const checklistHTML2 = checklistItems2
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
+
         return {
           ...course.toJSON(),
           category_name: course.category ? course.category?.name : null,
           descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
+          descriptionHTMLAr: `${checklistHTML2}`, // Wrap checklist items in <ul> element
           description: course?.description || null,
+          description_ar: course?.description_ar || null,
         };
       });
 
