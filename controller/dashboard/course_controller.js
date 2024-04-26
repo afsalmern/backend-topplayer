@@ -127,8 +127,11 @@ exports.updateCourse = (req, res, next) => {
       }
       return course.update({
         name: req.body.name || course.name,
+        name_arabic: req.body.name_arabic || course.name_arabic,
         categoryId: req.body.categoryId || course.categoryId,
         amount: req.body.amount || course.amount,
+        description: req.body.description || course.description,
+        description_ar: req.body.description_ar || course.description_ar,
       });
     })
     .then((updatedCourse) => {
