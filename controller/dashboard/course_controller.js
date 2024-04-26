@@ -53,18 +53,19 @@ exports.addCourse = (req, res, next) => {
 //     });
 // };
 
-exports.getAllCourses = (req, res, next) => {
+exports.getAllCourses = async(req, res, next) => {
+
   db.course
     .findAll({
       include: {
         model: db.category, // Include the Category model
         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
       },
-      attributes: ["id", "name", "amount", "description", "categoryId"], // Include the necessary attributes from the Course model
+      attributes: ["id", "name", "amount", "description", "categoryId","description_ar","name_arabic"], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
-      console.log(courses);
+
 
       // Manipulating the response to have category_name instead of category object
       const modifiedCourses = courses?.map((course) => {
@@ -94,7 +95,7 @@ exports.getAllCourses = (req, res, next) => {
       // Remove the nested category object and original description field
       modifiedCourses.forEach((course) => {
         delete course.category;
-        delete course.description;
+        // delete course.description;
       });
 
       res.status(200).json({ courses: modifiedCourses });
