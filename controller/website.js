@@ -131,9 +131,7 @@ exports.getAllCourses = (req, res, next) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
 
         const modifiedCourse = {
           ...course.toJSON(),
@@ -170,15 +168,16 @@ exports.getAllCourses = (req, res, next) => {
 exports.getAllNews = async (req, res, next) => {
   const dataCount = req.params.dataCount;
 
-  db.news.findAll({
-    limit: dataCount * 9,
-    include: [
-      {
-        model: db.newsImage,
-        as: "images",
-      },
-    ],
-  })
+  db.news
+    .findAll({
+      limit: dataCount * 9,
+      include: [
+        {
+          model: db.newsImage,
+          as: "images",
+        },
+      ],
+    })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
       res.status(200).json({ news });
@@ -317,27 +316,18 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day < 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos
-            .filter((video) => video.day === day)
-            .map((item) => item.id);
+          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-          if (
-            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-            videos_day_id.length > 0
-          )
+          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
             finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item)))
-          finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item)))
-          finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item)))
-          finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item)))
-          finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -412,27 +402,18 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day < 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos
-          .filter((video) => video.day === day)
-          .map((item) => item.id);
+        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-        if (
-          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-          videos_day_id.length > 0
-        )
+        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
           finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item)))
-        finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item)))
-        finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item)))
-        finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item)))
-        finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
       (final_sub_course.name = subCourseDB.name),
@@ -580,15 +561,7 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(
-          __dirname,
-          "..",
-          "assets",
-          "trojanTTt",
-          "videos",
-          "new",
-          video.url
-        );
+        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video.url);
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -630,6 +603,40 @@ exports.getVideo = async (req, res, next) => {
   }
 };
 
+// exports.getSubscribedCourse = (req, res, next) => {
+//   const monthsAgo = new Date();
+//   monthsAgo.setMonth(monthsAgo.getMonth() - 3);
+
+//   const monthsAgo2 = new Date();
+//   monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
+
+//   db.registeredCourse
+//     .findAll({
+//       where: {
+//         [db.Sequelize.Op.and]: [
+//           {
+//             userId: req.userDecodeId,
+//           },
+//           {
+//             [db.Sequelize.Op.or]: [
+//               { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
+//               { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } },
+//             ],
+//           },
+//         ],
+//       },
+//       attributes: ["courseId"],
+//     })
+//     .then((result) => {
+//       console.log("result ===============>", result);
+//       res.status(200).send(result);
+//     })
+//     .catch((error) => {
+//       console.log(`error in getting subscribed course ${error.toString()}`);
+//       res.status(500).send({ message: error.toString() });
+//     });
+// };
+
 exports.getSubscribedCourse = (req, res, next) => {
   const monthsAgo = new Date();
   monthsAgo.setMonth(monthsAgo.getMonth() - 3);
@@ -637,31 +644,45 @@ exports.getSubscribedCourse = (req, res, next) => {
   const monthsAgo2 = new Date();
   monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
 
-  db.registeredCourse
-    .findAll({
+  db.user
+    .findOne({
       where: {
-        [db.Sequelize.Op.and]: [
-          {
-            userId: req.userDecodeId,
-          },
-          {
-            [db.Sequelize.Op.or]: [
-              { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
-              { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } },
-            ],
-          },
-        ],
+        id: req.userDecodeId,
       },
-      attributes: ["courseId"],
+      include: [
+        {
+          model: db.course,
+          through: {
+            model: db.registeredCourse,
+            where: {
+              [db.Sequelize.Op.or]: [
+                { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
+                { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } },
+              ],
+            },
+          },
+        },
+      ],
     })
-    .then((result) => {
-      res.status(200).send(result);
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      
+      const subscribedCourses = user.courses.map(course => ({
+        courseId: course.id,
+        courseName: course.courseName, // Assuming this is the column name for the course name
+        // Include other course details as needed
+      }));
+
+      res.status(200).send(subscribedCourses);
     })
     .catch((error) => {
-      console.log(`error in getting subscribed course ${error.toString()}`);
-      res.status(500).send({ message: error.toString() });
+      console.log(`Error in getting subscribed courses: ${error.toString()}`);
+      res.status(500).send({ message: "Internal server error" });
     });
 };
+
 
 /*
 exports.registerCourse = (req, res, next) => {
@@ -756,11 +777,7 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature);
       try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          signature,
-          endpointSecret
-        );
+        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -778,10 +795,7 @@ exports.stripeWebhook = async (req, res) => {
         const userId = paymentIntent.metadata.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(
-          `PaymentIntent was successful for customer ${customerId}:`,
-          paymentIntent.id
-        );
+        console.log(`PaymentIntent was successful for customer ${customerId}:`, paymentIntent.id);
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -830,24 +844,18 @@ exports.stripeWebhook = async (req, res) => {
         };
 
         let emailTransporter = await createTransporter();
-        await emailTransporter.sendMail(
-          mailOptions,
-          async function (error, info) {
-            if (error) {
-              console.error("Error sending email in payment:", error);
-            } else {
-              console.log("Email sent:", info.response);
-            }
+        await emailTransporter.sendMail(mailOptions, async function (error, info) {
+          if (error) {
+            console.error("Error sending email in payment:", error);
+          } else {
+            console.log("Email sent:", info.response);
           }
-        );
+        });
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(
-          `PaymentIntent failed for customer ${failedCustomerId}:`,
-          failedPaymentIntent.id
-        );
+        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
         break;
       // Add more cases for other events as needed
       default:
@@ -872,9 +880,7 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res
-        .status(500)
-        .send({ message: `error in adding subscriber ${error.toString()}` });
+      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
@@ -887,9 +893,7 @@ exports.contactUS = async (req, res, next) => {
     })
     .then((result) => {
       console.log("contact us message saved successfully");
-      res
-        .status(200)
-        .send({ message: "contact us message saved successfully" });
+      res.status(200).send({ message: "contact us message saved successfully" });
     })
     .catch((error) => {
       console.log(`error in saving contact us ${error.toString()}`);
@@ -914,4 +918,15 @@ exports.payments = async (req, res, next) => {
       console.log(`error in getting payments${error.toString()}`);
       res.status(500).send({ message: error.toString() });
     });
+};
+
+exports.getAllWhoAreWeData = async (req, res, next) => {
+  try {
+    const data = await db.whoAreWe.findAll();
+    console.log(`Retrieved all who are we data successfully`);
+    res.status(200).send({ data });
+  } catch (err) {
+    console.error(`Error in retrieving who are we data: ${err.toString()}`);
+    res.status(500).send({ message: messages_en.server_error });
+  }
 };
