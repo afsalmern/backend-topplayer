@@ -7,6 +7,7 @@ const courseController = require("../controller/dashboard/course_controller");
 const router = express.Router();
 
 router.get("/courses", websiteController.getAllCourses);
+router.get("/courseById/:id", websiteController.getCourseById);
 router.get("/news/:dataCount", websiteController.getAllNews);
 router.get("/news_count", websiteController.getAllNewsCount);
 router.get("/news_by_id/:id", websiteController.getNewsById);

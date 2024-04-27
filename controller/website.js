@@ -164,6 +164,51 @@ exports.getAllCourses = (req, res, next) => {
     });
 };
 
+// Retrieve a single course by ID
+exports.getCourseById = (req, res, next) => {
+  const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
+
+  db.course
+    .findByPk(courseId, {
+      include: {
+        model: db.category,
+        attributes: ["name"],
+      },
+      attributes: ["id", "name", "amount", "description", "categoryId"],
+    })
+    .then((course) => {
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      console.log(`Retrieved course with ID ${courseId} successfully`);
+      console.log(course);
+
+      // Manipulating the response to have category_name instead of category object
+      const modifiedCourse = {
+        ...course.toJSON(),
+        category_name: course.category ? course.category.name : null,
+        descriptionHTML: course.description
+          ? course.description.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+          : null,
+        descriptionHTMLAr: course.description_ar
+          ? course.description_ar.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+          : null,
+        description: course.description || null,
+        description_ar: course.description_ar || null,
+      };
+
+      // Remove the nested category object
+      delete modifiedCourse.category;
+
+      res.status(200).json({ course: modifiedCourse });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving course with ID ${courseId}: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
+    });
+};
+
 // Retrieve all news
 exports.getAllNews = async (req, res, next) => {
   const dataCount = req.params.dataCount;
@@ -668,8 +713,8 @@ exports.getSubscribedCourse = (req, res, next) => {
       if (!user) {
         return res.status(404).send({ message: "User not found" });
       }
-      
-      const subscribedCourses = user.courses.map(course => ({
+
+      const subscribedCourses = user.courses.map((course) => ({
         courseId: course.id,
         courseName: course.courseName, // Assuming this is the column name for the course name
         // Include other course details as needed
@@ -682,7 +727,6 @@ exports.getSubscribedCourse = (req, res, next) => {
       res.status(500).send({ message: "Internal server error" });
     });
 };
-
 
 /*
 exports.registerCourse = (req, res, next) => {
