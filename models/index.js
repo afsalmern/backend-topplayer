@@ -3,10 +3,15 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const sequelize = new Sequelize(process.env.DB_dbname, process.env.DB_user, process.env.DB_pss, {
-  dialect: "mysql",
-  host: process.env.DB_host,
-});
+const sequelize = new Sequelize(
+  process.env.DB_dbname,
+  process.env.DB_user,
+  process.env.DB_pss,
+  {
+    dialect: "mysql",
+    host: process.env.DB_host,
+  }
+);
 
 db = {};
 db.Sequelize = Sequelize;
@@ -56,6 +61,8 @@ db.registeredCourse = RegisteredCourse;
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
 db.course.belongsToMany(db.user, { through: RegisteredCourse });
+
+
 
 const WatchedVideo = sequelize.define("watched_videos", {
   id: {

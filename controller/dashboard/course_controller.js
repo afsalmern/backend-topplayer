@@ -13,7 +13,9 @@ exports.addCourse = (req, res, next) => {
     })
     .then((result) => {
       console.log(`A course added successfully`);
-      res.status(200).send({ message: "Course added successfully", course: result });
+      res
+        .status(200)
+        .send({ message: "Course added successfully", course: result });
     })
     .catch((err) => {
       console.error(`Error in adding course: ${err.toString()}`);
@@ -51,29 +53,40 @@ exports.addCourse = (req, res, next) => {
 //     });
 // };
 
-exports.getAllCourses = (req, res, next) => {
+exports.getAllCourses = async (req, res, next) => {
   db.course
     .findAll({
       include: {
         model: db.category, // Include the Category model
         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
       },
-      attributes: ["id", "name", "amount", "description", "categoryId"], // Include the necessary attributes from the Course model
+      attributes: [
+        "id",
+        "name",
+        "amount",
+        "description",
+        "categoryId",
+        "description_ar",
+        "name_arabic",
+      ], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
-      console.log(courses);
 
       // Manipulating the response to have category_name instead of category object
       const modifiedCourses = courses?.map((course) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML2 = checklistItems2
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         return {
           ...course.toJSON(),
