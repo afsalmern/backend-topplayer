@@ -139,9 +139,8 @@ exports.getAllCourses = (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
-        const offerPercentage = Math.round(
-          ((course.amount - course.offerAmount) / course.amount) * 100
-        );
+        const difference = course?.amount - course?.offerAmount;
+        const offerPercentage = Math.round((difference / course?.amount) * 100);
 
         const modifiedCourse = {
           ...course.toJSON(),
@@ -202,10 +201,16 @@ exports.getCourseById = (req, res, next) => {
         ...course.toJSON(),
         category_name: course.category ? course.category.name : null,
         descriptionHTML: course.description
-          ? course.description.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+          ? course.description
+              .split("\n")
+              .map((item) => `<li><p>${item}</p></li>`)
+              .join("")
           : null,
         descriptionHTMLAr: course.description_ar
-          ? course.description_ar.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+          ? course.description_ar
+              .split("\n")
+              .map((item) => `<li><p>${item}</p></li>`)
+              .join("")
           : null,
         description: course.description || null,
         description_ar: course.description_ar || null,
@@ -217,7 +222,9 @@ exports.getCourseById = (req, res, next) => {
       res.status(200).json({ course: modifiedCourse });
     })
     .catch((err) => {
-      console.error(`Error in retrieving course with ID ${courseId}: ${err.toString()}`);
+      console.error(
+        `Error in retrieving course with ID ${courseId}: ${err.toString()}`
+      );
       res.status(500).send({ message: err.toString() });
     });
 };
