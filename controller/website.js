@@ -1026,6 +1026,7 @@ exports.payments = async (req, res, next) => {
 exports.getAllWhoAreWeData = async (req, res, next) => {
   try {
     const data = await db.whoAreWe.findAll();
+    console.log(data);
     console.log(`Retrieved all who are we data successfully`);
     res.status(200).send({ data });
   } catch (err) {

@@ -72,8 +72,21 @@ const uploadCourseImage = multer({
   storage: multerStorageCourseImage,
 });
 
+const multerStorageWhoVideo = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/who_we_videos");
+  },
+  filename: (req, file, cb) => {
+    const fileName = `${file.originalname}`;
+    cb(null, fileName);
+  },
+});
+const uploadWhoVideo = multer({
+  storage: multerStorageWhoVideo,
+});
+
 router.route("/users").get(getAllusers).patch(updateUserStatus);
-router.route('/orders').get(getAllorders)
+router.route("/orders").get(getAllorders);
 
 router.post(
   "/category",
@@ -166,6 +179,7 @@ router.get(
 router.post(
   "/who_are_we_data",
   [authMiddleware.checkUserAuth],
+  uploadWhoVideo.single("file"),
   whoAreWeDataController.addWhoAreWeData
 );
 router.get(
@@ -176,6 +190,7 @@ router.get(
 router.put(
   "/who_are_we_data/:id",
   [authMiddleware.checkUserAuth],
+  uploadWhoVideo.single("file"),
   whoAreWeDataController.updateWhoAreWeData
 );
 router.delete(
