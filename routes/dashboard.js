@@ -58,6 +58,19 @@ const uploadNewsImage = multer({
   storage: multerStorageNewsImage,
 });
 
+const multerStorageCourseImage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/courseImages");
+  },
+  filename: (req, file, cb) => {
+    // const ext = file.mimetype.split("/")[1];
+    cb(null, `${file.originalname}`);
+  },
+});
+const uploadCourseImage = multer({
+  storage: multerStorageCourseImage,
+});
+
 router.route("/users").get(getAllusers).patch(updateUserStatus);
 
 router.post(
@@ -84,6 +97,7 @@ router.delete(
 router.post(
   "/course",
   [authMiddleware.checkUserAuth],
+  uploadCourseImage.single("file"),
   courseController.addCourse
 );
 router.get(
@@ -94,6 +108,7 @@ router.get(
 router.put(
   "/course/:id",
   [authMiddleware.checkUserAuth],
+  uploadCourseImage.single("file"),
   courseController.updateCourse
 );
 router.delete(

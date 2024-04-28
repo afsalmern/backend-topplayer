@@ -17,6 +17,9 @@ module.exports = (sequelize, Sequelize) => {
     amount: {
       type: Sequelize.FLOAT,
     },
+    offerAmount: {
+      type: Sequelize.FLOAT,
+    },
     description: {
       type: Sequelize.TEXT, // Assuming description can be longer than a string
       allowNull: true, // Depending on your requirements
@@ -24,6 +27,10 @@ module.exports = (sequelize, Sequelize) => {
     description_ar: {
       type: Sequelize.TEXT, // Assuming description can be longer than a string
       allowNull: true, // Depending on your requirements
+    },
+    imageUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
     },
   });
 

@@ -42,6 +42,7 @@ db.course.belongsTo(db.category);
 db.news.hasMany(db.newsImage, { as: "images" });
 db.newsImage.belongsTo(db.news);
 
+
 db.course.hasMany(db.subcourse);
 db.subcourse.belongsTo(db.course);
 
@@ -61,8 +62,6 @@ db.registeredCourse = RegisteredCourse;
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
 db.course.belongsToMany(db.user, { through: RegisteredCourse });
-
-
 
 const WatchedVideo = sequelize.define("watched_videos", {
   id: {

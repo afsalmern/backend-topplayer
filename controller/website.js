@@ -139,6 +139,10 @@ exports.getAllCourses = (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
+        const offerPercentage = Math.round(
+          ((course.amount - course.offerAmount) / course.amount) * 100
+        );
+
         const modifiedCourse = {
           ...course.toJSON(),
           category_name: course.category ? course.category.name : null,
@@ -146,6 +150,7 @@ exports.getAllCourses = (req, res, next) => {
           descriptionHTMLAr: checklistHTMLAr ? `${checklistHTMLAr}` : null, // Wrap checklist items in <ul> element
           description: course.description || null,
           description_ar: course.description_ar || null,
+          offerPercentage: offerPercentage || null,
         };
 
         // If the category doesn't exist in groupedCourses, create a new array for it

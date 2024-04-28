@@ -1,26 +1,32 @@
 const db = require("../../models");
 
 // Create a new course
-exports.addCourse = (req, res, next) => {
-  db.course
-    .create({
+exports.addCourse = async (req, res, next) => {
+  try {
+    let imageUrl; // Initialize imageUrl variable
+
+    // Check if file is uploaded
+    if (req.file) {
+      imageUrl = `${req.file.filename}`; // Construct image URL
+    }
+
+    // Create course
+    const course = await db.course.create({
       name: req.body.name,
       name_arabic: req.body.name_arabic,
       categoryId: req.body.categoryId,
       amount: req.body.amount,
+      offerAmount: req.body.offerAmount,
       description: req.body.description,
       description_ar: req.body.description_ar,
-    })
-    .then((result) => {
-      console.log(`A course added successfully`);
-      res
-        .status(200)
-        .send({ message: "Course added successfully", course: result });
-    })
-    .catch((err) => {
-      console.error(`Error in adding course: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
+      imageUrl: imageUrl,
     });
+    console.log(`A course added successfully`);
+    res.status(200).send({ message: "Course added successfully" });
+  } catch (error) {
+    console.error(`Error in adding course: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
 };
 
 // exports.getAllCourses = (req, res, next) => {
@@ -68,6 +74,8 @@ exports.getAllCourses = async (req, res, next) => {
         "categoryId",
         "description_ar",
         "name_arabic",
+        "imageUrl",
+        "offerAmount",
       ], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
@@ -82,6 +90,10 @@ exports.getAllCourses = async (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
+        const offerPercentage = Math.round(
+          ((course.amount - course.offerAmount) / course.amount) * 100
+        );
+
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
         const checklistHTML2 = checklistItems2
@@ -95,6 +107,7 @@ exports.getAllCourses = async (req, res, next) => {
           descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
           description: course?.description || null,
           description_ar: course?.description_ar || null,
+          offerPercentage,
         };
       });
 
@@ -132,6 +145,9 @@ exports.getCourseById = (req, res, next) => {
 // Update a course
 exports.updateCourse = (req, res, next) => {
   const courseId = req.params.id;
+
+  console.log(req.body);
+
   db.course
     .findByPk(courseId)
     .then((course) => {
@@ -143,8 +159,10 @@ exports.updateCourse = (req, res, next) => {
         name_arabic: req.body.name_arabic || course.name_arabic,
         categoryId: req.body.categoryId || course.categoryId,
         amount: req.body.amount || course.amount,
+        offerAmount: req.body.offerAmount || course.offerAmount,
         description: req.body.description || course.description,
         description_ar: req.body.description_ar || course.description_ar,
+        imageUrl: req.file ? `${req.file.filename}` : course.imageUrl,
       });
     })
     .then((updatedCourse) => {
