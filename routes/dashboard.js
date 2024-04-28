@@ -16,6 +16,7 @@ const {
   getAllusers,
   updateUserStatus,
 } = require("../controller/dashboard/user_controller");
+const { getAllorders } = require("../controller/dashboard/order_controller");
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ const uploadCourseImage = multer({
 });
 
 router.route("/users").get(getAllusers).patch(updateUserStatus);
+router.route('/orders').get(getAllorders)
 
 router.post(
   "/category",

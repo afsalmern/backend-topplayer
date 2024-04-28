@@ -42,7 +42,6 @@ db.course.belongsTo(db.category);
 db.news.hasMany(db.newsImage, { as: "images" });
 db.newsImage.belongsTo(db.news);
 
-
 db.course.hasMany(db.subcourse);
 db.subcourse.belongsTo(db.course);
 
@@ -63,6 +62,16 @@ db.registeredCourse = RegisteredCourse;
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
 db.course.belongsToMany(db.user, { through: RegisteredCourse });
 
+db.registeredCourse.belongsTo(db.course, {
+  foreignKey: "courseId",
+  as: "course", // Alias for the association
+});
+
+db.registeredCourse.belongsTo(db.user, {
+  foreignKey: "userId",
+  as: "user", // Alias for the association
+});
+
 const WatchedVideo = sequelize.define("watched_videos", {
   id: {
     type: Sequelize.INTEGER,
@@ -78,5 +87,8 @@ db.video.belongsToMany(db.user, { through: WatchedVideo });
 
 db.user.hasMany(db.payment);
 db.user.hasMany(db.device);
+
+db.course.hasMany(db.payment, { foreignKey: 'courseId', as: 'payments' });
+
 
 module.exports = db;

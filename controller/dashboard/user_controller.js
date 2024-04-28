@@ -11,7 +11,6 @@ exports.getAllusers = async (req, res) => {
       include: [
         {
           model: db.course,
-          through: db.registeredCourse,
         },
         {
           model: db.payment,
