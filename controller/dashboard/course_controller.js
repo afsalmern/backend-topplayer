@@ -139,24 +139,24 @@ exports.updateCourse = async (req, res, next) => {
       return res.status(400).send({ message: "Error handling uploaded files" });
     }
 
+    // Find course by ID
+    const course = await db.course.findByPk(courseId);
+
     // Update course object with uploaded file URLs (or null if not uploaded)
     const updatedCourse = {
-      name: req.body.hasOwnProperty('name') ? req.body.name : course.name,
-      name_arabic: req.body.hasOwnProperty('name_arabic') ? req.body.name_arabic : course.name_arabic,
-      categoryId: req.body.hasOwnProperty('categoryId') ? req.body.categoryId : course.categoryId,
-      amount: req.body.hasOwnProperty('amount') ? req.body.amount : course.amount,
-      offerAmount: req.body.hasOwnProperty('offerAmount') ? req.body.offerAmount : course.offerAmount,
-      description: req.body.hasOwnProperty('description') ? req.body.description : course.description,
-      description_ar: req.body.hasOwnProperty('description_ar') ? req.body.description_ar : course.description_ar,
-      enroll_text: req.body.hasOwnProperty('enroll_text') ? req.body.enroll_text : course.enroll_text,
-      enroll_text_ar: req.body.hasOwnProperty('enroll_text_ar') ? req.body.enroll_text_ar : course.enroll_text_ar,
+      name: req.body.name || course.name,
+      name_arabic: req.body.name_arabic || course.name_arabic,
+      categoryId: req.body.categoryId || course.categoryId,
+      amount: req.body.amount || course.amount,
+      offerAmount: req.body.offerAmount || course.offerAmount,
+      description: req.body.description || course.description,
+      description_ar: req.body.description_ar || course.description_ar,
+      enroll_text: req.body.enroll_text || course.enroll_text,
+      enroll_text_ar: req.body.enroll_text_ar | course.enroll_text_ar,
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,
       videoUrl: videoUrl || course.videoUrl,
     };
-
-    // Find course by ID
-    const course = await db.course.findByPk(courseId);
 
     if (!course) {
       // Handle case where course not found
@@ -173,8 +173,6 @@ exports.updateCourse = async (req, res, next) => {
     res.status(500).send({ message: "Internal server error" }); // Avoid exposing specific error details
   }
 };
-
-
 
 // Delete a course
 exports.deleteCourse = (req, res, next) => {
