@@ -1,16 +1,21 @@
 const db = require("../../models");
 
 // Create a new course
+
 exports.addCourse = async (req, res, next) => {
   try {
-    let imageUrl; // Initialize imageUrl variable
+    let imageUrl;
+    let bannerUrl;
+    let videoUrl;
 
-    // Check if file is uploaded
-    if (req.file) {
-      imageUrl = `${req.file.filename}`; // Construct image URL
+    // Check and handle uploaded files (image, banner, video)
+    if (req.files) {
+      imageUrl = req.files.image ? req.files.image[0].path : null; // Get image URL if uploaded
+      bannerUrl = req.files.banner ? req.files.banner[0].path : null; // Get banner URL if uploaded
+      videoUrl = req.files.video ? req.files.video[0].path : null; // Get video URL if uploaded
     }
 
-    // Create course
+    // Create course with uploaded file URLs (or null if not uploaded)
     const course = await db.course.create({
       name: req.body.name,
       name_arabic: req.body.name_arabic,
@@ -19,45 +24,19 @@ exports.addCourse = async (req, res, next) => {
       offerAmount: req.body.offerAmount,
       description: req.body.description,
       description_ar: req.body.description_ar,
-      imageUrl: imageUrl,
+      enroll_text: req.body.enroll_text,
+      enroll_text_ar: req.body.enroll_text_ar,
+      imageUrl,
+      bannerUrl,
+      videoUrl,
     });
     console.log(`A course added successfully`);
-    res.status(200).send({ message: "Course added successfully" });
+    res.status(200).send({ message: "Course added successfully", course });
   } catch (error) {
     console.error(`Error in adding course: ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
   }
 };
-
-// exports.getAllCourses = (req, res, next) => {
-//   db.course
-//     .findAll({
-//       include: {
-//         model: db.category, // Assuming your Category model is named 'category' in your Sequelize instance
-//         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
-//       },
-//     })
-//     .then((courses) => {
-//       console.log(`Retrieved all courses successfully`);
-
-//       // Manipulating the response to have category_name instead of category object
-//       const modifiedCourses = courses.map((course) => ({
-//         ...course.toJSON(),
-//         category_name: course.category ? course.category.name : null,
-//       }));
-
-//       // Remove the nested category object
-//       modifiedCourses.forEach((course) => {
-//         delete course.category;
-//       });
-
-//       res.status(200).json({ courses: modifiedCourses });
-//     })
-//     .catch((err) => {
-//       console.error(`Error in retrieving courses: ${err.toString()}`);
-//       res.status(500).send({ message: err.toString() });
-//     });
-// };
 
 exports.getAllCourses = async (req, res, next) => {
   db.course
@@ -86,19 +65,13 @@ exports.getAllCourses = async (req, res, next) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
 
-        const offerPercentage = Math.round(
-          ((course.amount - course.offerAmount) / course.amount) * 100
-        );
+        const offerPercentage = Math.round(((course.amount - course.offerAmount) / course.amount) * 100);
 
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML2 = checklistItems2?.map((item) => `<li><p>${item}</p></li>`).join("");
 
         return {
           ...course.toJSON(),
@@ -142,41 +115,66 @@ exports.getCourseById = (req, res, next) => {
     });
 };
 
-// Update a course
-exports.updateCourse = (req, res, next) => {
-  const courseId = req.params.id;
+exports.updateCourse = async (req, res, next) => {
+  try {
+    const courseId = req.params.id; // Get course ID from request params
+    console.log("courseId=====>", courseId);
+    console.log("body", req.body);
+    console.log("files", req.files);
 
-  console.log(req.body);
+    let imageUrl;
+    let bannerUrl;
+    let videoUrl;
 
-  db.course
-    .findByPk(courseId)
-    .then((course) => {
-      if (!course) {
-        return res.status(404).send({ message: "Course not found" });
+    // Check and handle uploaded files (image, banner, video)
+    try {
+      if (req.files) {
+        imageUrl = req.files.image ? req.files.image[0].path : null; // Get image URL if uploaded
+        bannerUrl = req.files.banner ? req.files.banner[0].path : null; // Get banner URL if uploaded
+        videoUrl = req.files.video ? req.files.video[0].path : null; // Get video URL if uploaded
       }
-      return course.update({
-        name: req.body.name || course.name,
-        name_arabic: req.body.name_arabic || course.name_arabic,
-        categoryId: req.body.categoryId || course.categoryId,
-        amount: req.body.amount || course.amount,
-        offerAmount: req.body.offerAmount || course.offerAmount,
-        description: req.body.description || course.description,
-        description_ar: req.body.description_ar || course.description_ar,
-        imageUrl: req.file ? `${req.file.filename}` : course.imageUrl,
-      });
-    })
-    .then((updatedCourse) => {
-      console.log(`Course with ID ${courseId} updated successfully`);
-      res.status(200).send({
-        message: "Course updated successfully",
-        course: updatedCourse,
-      });
-    })
-    .catch((err) => {
-      console.error(`Error in updating course: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
-    });
+    } catch (error) {
+      console.error(`Error handling uploaded files: ${error.toString()}`);
+      // Handle specific file upload errors here (e.g., wrong format, size limit exceeded)
+      return res.status(400).send({ message: "Error handling uploaded files" });
+    }
+
+    // Update course object with uploaded file URLs (or null if not uploaded)
+    const updatedCourse = {
+      name: req.body.hasOwnProperty('name') ? req.body.name : course.name,
+      name_arabic: req.body.hasOwnProperty('name_arabic') ? req.body.name_arabic : course.name_arabic,
+      categoryId: req.body.hasOwnProperty('categoryId') ? req.body.categoryId : course.categoryId,
+      amount: req.body.hasOwnProperty('amount') ? req.body.amount : course.amount,
+      offerAmount: req.body.hasOwnProperty('offerAmount') ? req.body.offerAmount : course.offerAmount,
+      description: req.body.hasOwnProperty('description') ? req.body.description : course.description,
+      description_ar: req.body.hasOwnProperty('description_ar') ? req.body.description_ar : course.description_ar,
+      enroll_text: req.body.hasOwnProperty('enroll_text') ? req.body.enroll_text : course.enroll_text,
+      enroll_text_ar: req.body.hasOwnProperty('enroll_text_ar') ? req.body.enroll_text_ar : course.enroll_text_ar,
+      imageUrl: imageUrl || course.imageUrl,
+      bannerUrl: bannerUrl || course.bannerUrl,
+      videoUrl: videoUrl || course.videoUrl,
+    };
+
+    // Find course by ID
+    const course = await db.course.findByPk(courseId);
+
+    if (!course) {
+      // Handle case where course not found
+      return res.status(404).send({ message: "Course not found" });
+    }
+
+    // Update course data
+    await course.update(updatedCourse);
+
+    console.log(`Course with ID ${courseId} updated successfully`);
+    res.status(200).send({ message: "Course updated successfully", course });
+  } catch (error) {
+    console.error(`Error in updating course: ${error.toString()}`);
+    res.status(500).send({ message: "Internal server error" }); // Avoid exposing specific error details
+  }
 };
+
+
 
 // Delete a course
 exports.deleteCourse = (req, res, next) => {

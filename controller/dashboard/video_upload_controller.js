@@ -3,8 +3,10 @@ const fs = require("fs");
 
 // Create a new video
 exports.addVideo = (req, res, next) => {
-  const videoUrl = req.file.path; // Assuming multer has already been set up to handle file uploads
+  const videoUrl = req.file?.path; // Assuming multer has already been set up to handle file uploads
 
+  console.log("body===========>", req.body)
+  console.log("file===========>", req.file)
   db.video
     .create({
       name: req.body.name,
