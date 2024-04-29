@@ -178,48 +178,113 @@ exports.getAllCourses = (req, res, next) => {
 };
 
 // Retrieve a single course by ID
-exports.getCourseById = (req, res, next) => {
+// exports.getCourseById = (req, res, next) => {
+//   const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
+
+//   db.course
+//     .findByPk(courseId, {
+//       include: {
+//         model: db.category,
+//         attributes: ["name"],
+//       },
+//       attributes: ["id", "name", "amount", "description", "categoryId"],
+//     })
+//     .then((course) => {
+//       if (!course) {
+//         return res.status(404).json({ message: "Course not found" });
+//       }
+
+//       console.log(`Retrieved course with ID ${courseId} successfully`);
+//       console.log(course);
+
+//       // Manipulating the response to have category_name instead of category object
+//       const modifiedCourse = {
+//         ...course.toJSON(),
+//         category_name: course.category ? course.category.name : null,
+//         descriptionHTML: course.description
+//           ? course.description.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+//           : null,
+//         descriptionHTMLAr: course.description_ar
+//           ? course.description_ar.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
+//           : null,
+//         description: course.description || null,
+//         description_ar: course.description_ar || null,
+//       };
+
+//       // Remove the nested category object
+//       delete modifiedCourse.category;
+
+//       res.status(200).json({ course: modifiedCourse });
+//     })
+//     .catch((err) => {
+//       console.error(`Error in retrieving course with ID ${courseId}: ${err.toString()}`);
+//       res.status(500).send({ message: err.toString() });
+//     });
+// };
+
+exports.getCourseById = async (req, res, next) => {
   const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
-
-  db.course
-    .findByPk(courseId, {
+  
+  try {
+    const course = await db.course.findOne({
+      where: { id: courseId },
       include: {
-        model: db.category,
-        attributes: ["name"],
+        model: db.category, // Include the Category model
+        attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
       },
-      attributes: ["id", "name", "amount", "description", "categoryId"],
-    })
-    .then((course) => {
-      if (!course) {
-        return res.status(404).json({ message: "Course not found" });
-      }
-
-      console.log(`Retrieved course with ID ${courseId} successfully`);
-      console.log(course);
-
-      // Manipulating the response to have category_name instead of category object
-      const modifiedCourse = {
-        ...course.toJSON(),
-        category_name: course.category ? course.category.name : null,
-        descriptionHTML: course.description
-          ? course.description.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
-          : null,
-        descriptionHTMLAr: course.description_ar
-          ? course.description_ar.split("\n").map((item) => `<li><p>${item}</p></li>`).join("")
-          : null,
-        description: course.description || null,
-        description_ar: course.description_ar || null,
-      };
-
-      // Remove the nested category object
-      delete modifiedCourse.category;
-
-      res.status(200).json({ course: modifiedCourse });
-    })
-    .catch((err) => {
-      console.error(`Error in retrieving course with ID ${courseId}: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
+      attributes: [
+        "id",
+        "name",
+        "amount",
+        "description",
+        "categoryId",
+        "description_ar",
+        "name_arabic",
+        "imageUrl",
+        "offerAmount",
+      ], // Include the necessary attributes from the Course model
     });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Splitting the description into checklist items
+    const checklistItems = course.description.split("\n");
+    // Generating HTML markup for the checklist
+    const checklistHTML = checklistItems
+      .map((item) => `<li><p>${item}</p></li>`)
+      .join("");
+
+    const offerPercentage = Math.round(
+      ((course.amount - course.offerAmount) / course.amount) * 100
+    );
+
+    const checklistItems2 = course.description_ar.split("\n");
+    // Generating HTML markup for the checklist
+    const checklistHTML2 = checklistItems2
+      .map((item) => `<li><p>${item}</p></li>`)
+      .join("");
+
+    // Manipulating the response to have category_name instead of category object
+    const modifiedCourse = {
+      ...course.toJSON(),
+      category_name: course.category ? course.category.name : null,
+      descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+      descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
+      description: course.description || null,
+      description_ar: course.description_ar || null,
+      offerPercentage,
+    };
+
+    // Remove the nested category object
+    delete modifiedCourse.category;
+
+    res.status(200).json({ course: modifiedCourse });
+  } catch (err) {
+    console.error(`Error in retrieving course: ${err.toString()}`);
+    res.status(500).json({ message: err.toString() });
+  }
 };
 
 // Retrieve all news
