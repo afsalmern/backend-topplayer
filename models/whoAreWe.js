@@ -25,6 +25,10 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      videoUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       // Specify the table name explicitly without the last 's'

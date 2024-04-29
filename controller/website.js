@@ -139,9 +139,8 @@ exports.getAllCourses = (req, res, next) => {
           ?.map((item) => `<li><p>${item}</p></li>`)
           .join("");
 
-        const offerPercentage = Math.round(
-          ((course.amount - course.offerAmount) / course.amount) * 100
-        );
+        const difference = course?.amount - course?.offerAmount;
+        const offerPercentage = Math.round((difference / course?.amount) * 100);
 
         const modifiedCourse = {
           ...course.toJSON(),
@@ -1091,6 +1090,7 @@ exports.payments = async (req, res, next) => {
 exports.getAllWhoAreWeData = async (req, res, next) => {
   try {
     const data = await db.whoAreWe.findAll();
+    console.log(data);
     console.log(`Retrieved all who are we data successfully`);
     res.status(200).send({ data });
   } catch (err) {
