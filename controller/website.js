@@ -114,64 +114,55 @@ exports.getAllCourses = (req, res, next) => {
     });
 };
 
-exports.getCourseById = async (req, res, next) => {
+exports.getCourseById = (req, res, next) => {
   const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
 
-  try {
-    const course = await db.course.findOne({
-      where: { id: courseId },
-      include: {
-        model: db.category, // Include the Category model
-        attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
-      },
-      attributes: [
-        "id",
-        "name",
-        "amount",
-        "description",
-        "categoryId",
-        "description_ar",
-        "name_arabic",
-        "imageUrl",
-        "offerAmount",
-      ], // Include the necessary attributes from the Course model
+  db.course
+    .findByPk(courseId, {
+      include: [
+        {
+          model: db.category,
+          attributes: ["name"],
+        },
+      ],
+    })
+    .then((course) => {
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      const categoryName = course.category ? course.category.name : null;
+
+      // Splitting the description into checklist items
+      const checklistItems = course.description ? course.description.split("\n") : [];
+      const checklistItemsAr = course.description_ar ? course.description_ar.split("\n") : [];
+      
+      // Generating HTML markup for the checklist
+      const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+      const checklistHTMLAr = checklistItemsAr.map((item) => `<li><p>${item}</p></li>`).join("");
+
+      const difference = course.amount - course.offerAmount;
+      const offerPercentage = Math.round((difference / course.amount) * 100);
+
+      const modifiedCourse = {
+        ...course.toJSON(),
+        category_name: categoryName,
+        descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+        descriptionHTMLAr: checklistHTMLAr ? `${checklistHTMLAr}` : null, // Wrap checklist items in <ul> element
+        description: course.description || null,
+        description_ar: course.description_ar || null,
+        offerPercentage: offerPercentage || null,
+      };
+
+      console.log(`Retrieved course ${courseId} successfully`);
+      res.status(200).json({ course: modifiedCourse });
+    })
+    .catch((err) => {
+      console.error(`Error in retrieving course ${courseId}: ${err.toString()}`);
+      res.status(500).send({ message: err.toString() });
     });
-
-    if (!course) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-
-    // Splitting the description into checklist items
-    const checklistItems = course.description.split("\n");
-    // Generating HTML markup for the checklist
-    const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
-
-    const offerPercentage = Math.round(((course.amount - course.offerAmount) / course.amount) * 100);
-
-    const checklistItems2 = course.description_ar.split("\n");
-    // Generating HTML markup for the checklist
-    const checklistHTML2 = checklistItems2.map((item) => `<li><p>${item}</p></li>`).join("");
-
-    // Manipulating the response to have category_name instead of category object
-    const modifiedCourse = {
-      ...course.toJSON(),
-      category_name: course.category ? course.category.name : null,
-      descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
-      descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
-      description: course.description || null,
-      description_ar: course.description_ar || null,
-      offerPercentage,
-    };
-
-    // Remove the nested category object
-    delete modifiedCourse.category;
-
-    res.status(200).json({ course: modifiedCourse });
-  } catch (err) {
-    console.error(`Error in retrieving course: ${err.toString()}`);
-    res.status(500).json({ message: err.toString() });
-  }
 };
+
 
 // Retrieve all news
 exports.getAllNews = async (req, res, next) => {
