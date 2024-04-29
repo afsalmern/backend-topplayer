@@ -111,6 +111,8 @@ exports.getAllBanners = (req, res, next) => {
 //     });
 // };
 
+
+
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({

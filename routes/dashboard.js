@@ -15,8 +15,16 @@ const bannerController = require("../controller/dashboard/banner_controller");
 const {
   getAllusers,
   updateUserStatus,
+  manageUser,
 } = require("../controller/dashboard/user_controller");
 const { getAllorders } = require("../controller/dashboard/order_controller");
+const {
+  addMainBanner,
+  getAllMainBanner,
+  deleteMainBanner,
+  getMainBannerById,
+  updateMainBanner,
+} = require("../controller/dashboard/main_banner_controller");
 
 const router = express.Router();
 
@@ -85,7 +93,49 @@ const uploadWhoVideo = multer({
   storage: multerStorageWhoVideo,
 });
 
-router.route("/users").get(getAllusers).patch(updateUserStatus);
+const multerStorageBannerVideo = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/banner_videos");
+  },
+  filename: (req, file, cb) => {
+    const fileName = `${file.originalname}`;
+    cb(null, fileName);
+  },
+});
+const uploadBannerVideo = multer({
+  storage: multerStorageBannerVideo,
+});
+
+router
+  .route("/users")
+  .get(authMiddleware.checkUserAuth, getAllusers)
+  .patch(authMiddleware.checkUserAuth, updateUserStatus)
+  .post(authMiddleware.checkUserAuth, manageUser);
+
+router.post(
+  "/main_banner",
+  [authMiddleware.checkUserAuth],
+  uploadBannerVideo.single("file"),
+  addMainBanner
+);
+router.get("/main_banner", [authMiddleware.checkUserAuth], getAllMainBanner);
+router.put(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  uploadBannerVideo.single("file"),
+  updateMainBanner
+);
+router.delete(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  deleteMainBanner
+);
+router.get(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  getMainBannerById
+);
+
 router.route("/orders").get(getAllorders);
 
 router.post(

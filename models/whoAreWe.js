@@ -29,6 +29,22 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+      head: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      subhead: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      head_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      subhead_ar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       // Specify the table name explicitly without the last 's'

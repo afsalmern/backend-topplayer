@@ -3,6 +3,7 @@ const express = require("express");
 const authMiddleware = require("../middleware/auth");
 const websiteController = require("../controller/website");
 const courseController = require("../controller/dashboard/course_controller");
+const { getAllMainBanner } = require("../controller/dashboard/main_banner_controller");
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.get("/faq", websiteController.getAllFAQs);
 router.get("/testimonial", websiteController.getAllTestimonials);
 router.get("/who_are_we_data", websiteController.getAllWhoAreWeData);
 router.get("/banner", websiteController.getAllBanners);
+router.get("/main_banner", getAllMainBanner);
 
 router.get("/subscribedCourse", [authMiddleware.checkUserAuth], websiteController.getSubscribedCourse);
 router.get("/course/:courseId", [authMiddleware.checkUserAuth], websiteController.getCourseMaterial);

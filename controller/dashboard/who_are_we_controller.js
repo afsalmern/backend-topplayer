@@ -21,6 +21,10 @@ exports.addWhoAreWeData = async (req, res, next) => {
       users: req.body.users,
       courses: req.body.courses,
       videoUrl: videoPath,
+      head: req.body.head,
+      subhead: req.body.subhead,
+      head_ar: req.body.head_ar,
+      subhead_ar: req.body.subhead_ar,
     });
     console.log(`Who are we data added successfully`);
     res.status(200).send({
@@ -78,6 +82,10 @@ exports.updateWhoAreWeData = async (req, res, next) => {
       users: req.body.users || data.users,
       courses: req.body.courses || data.courses,
       videoUrl: req.file ? req.file.filename : data.videoUrl,
+      head: req.body.head || data.head,
+      subhead: req.body.subhead || data.subhead,
+      head_ar: req.body.head_ar || data.head_ar,
+      subhead_ar: req.body.subhead_ar || data.subhead_ar,
     });
     console.log(`Who are we data with ID ${id} updated successfully`);
     res.status(200).send({

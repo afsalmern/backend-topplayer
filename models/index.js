@@ -34,6 +34,7 @@ db.faq = require("./faq")(sequelize, Sequelize);
 db.testimonial = require("./testimonials")(sequelize, Sequelize);
 db.banner = require("./banner")(sequelize, Sequelize);
 db.newsImage = require("./newsImage")(sequelize, Sequelize);
+db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
@@ -88,7 +89,6 @@ db.video.belongsToMany(db.user, { through: WatchedVideo });
 db.user.hasMany(db.payment);
 db.user.hasMany(db.device);
 
-db.course.hasMany(db.payment, { foreignKey: 'courseId', as: 'payments' });
-
+db.course.hasMany(db.payment, { foreignKey: "courseId", as: "payments" });
 
 module.exports = db;
