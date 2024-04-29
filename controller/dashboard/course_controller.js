@@ -10,9 +10,9 @@ exports.addCourse = async (req, res, next) => {
 
     // Check and handle uploaded files (image, banner, video)
     if (req.files) {
-      imageUrl = req.files.image ? req.files.image[0].path : null; // Get image URL if uploaded
-      bannerUrl = req.files.banner ? req.files.banner[0].path : null; // Get banner URL if uploaded
-      videoUrl = req.files.video ? req.files.video[0].path : null; // Get video URL if uploaded
+      imageUrl = req.files.image ? req.files.image[0].filename : null; // Get image URL if uploaded
+      bannerUrl = req.files.banner ? req.files.banner[0].filename : null; // Get banner URL if uploaded
+      videoUrl = req.files.video ? req.files.video[0].filename : null; // Get video URL if uploaded
     }
 
     // Create course with uploaded file URLs (or null if not uploaded)
@@ -129,9 +129,9 @@ exports.updateCourse = async (req, res, next) => {
     // Check and handle uploaded files (image, banner, video)
     try {
       if (req.files) {
-        imageUrl = req.files.image ? req.files.image[0].path : null; // Get image URL if uploaded
-        bannerUrl = req.files.banner ? req.files.banner[0].path : null; // Get banner URL if uploaded
-        videoUrl = req.files.video ? req.files.video[0].path : null; // Get video URL if uploaded
+        imageUrl = req.files.image ? req.files.image[0].filename : null; // Get image URL if uploaded
+        bannerUrl = req.files.banner ? req.files.banner[0].filename : null; // Get banner URL if uploaded
+        videoUrl = req.files.video ? req.files.video[0].filename : null; // Get video URL if uploaded
       }
     } catch (error) {
       console.error(`Error handling uploaded files: ${error.toString()}`);
