@@ -88,6 +88,7 @@ exports.getAllCourses = (req, res, next) => {
           description: course.description || null,
           description_ar: course.description_ar || null,
           offerPercentage: offerPercentage || null,
+          enroll_text_ar: course.description_ar || null
         };
 
         // If the category doesn't exist in groupedCourses, create a new array for it
@@ -152,6 +153,7 @@ exports.getCourseById = (req, res, next) => {
         description: course.description || null,
         description_ar: course.description_ar || null,
         offerPercentage: offerPercentage || null,
+        enroll_text_ar: course.description_ar || null
       };
 
       console.log(`Retrieved course ${courseId} successfully`);
