@@ -158,6 +158,8 @@ exports.updateCourse = async (req, res, next) => {
       videoUrl: videoUrl || course.videoUrl,
     };
 
+    console.log("updatedCourse====>", updatedCourse);
+
     if (!course) {
       // Handle case where course not found
       return res.status(404).send({ message: "Course not found" });
