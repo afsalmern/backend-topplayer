@@ -53,66 +53,6 @@ exports.getAllBanners = (req, res, next) => {
     });
 };
 
-// Retrieve all courses
-// exports.getAllCourses = (req, res, next) => {
-//   db.course
-//     .findAll({
-//       include: [
-//         {
-//           model: db.category,
-//           attributes: ["name"],
-//         },
-//       ],
-//     })
-//     .then((courses) => {
-//       const groupedCourses = {};
-
-//       // Iterate through courses and group them by categoryName
-//       courses.forEach((course) => {
-//         const categoryName = course.category.name;
-
-//         const modifiedCourses = courses?.map((course) => {
-//           // Splitting the description into checklist items
-//           const checklistItems = course?.description?.split('\n');
-//           // Generating HTML markup for the checklist
-//           const checklistHTML = checklistItems?.map(item => `<li><p>${item}</p></li>`).join('');
-
-//           return {
-//             ...course.toJSON(),
-//             category_name: course.category ? course.category?.name : null,
-//             descriptionHTML: `${checklistHTML}`, // Wrap checklist items in <ul> element
-//             description: course?.description || null
-//           };
-//         });
-
-//         // If the category doesn't exist in groupedCourses, create a new array for it
-//         if (!groupedCourses[categoryName]) {
-//           groupedCourses[categoryName] = [];
-//         }
-
-//         // Push the course to the array corresponding to its categoryName
-//         groupedCourses[categoryName].push(course);
-//       });
-
-//       // Convert the groupedCourses object to an array of objects
-//       const groupedCoursesArray = Object.entries(groupedCourses).map(
-//         ([categoryName, courses]) => ({
-//           categoryName,
-//           courses,
-//         })
-//       );
-
-//       console.log(`Retrieved all courses successfully`);
-//       res.status(200).json({ courses: groupedCoursesArray });
-//     })
-//     .catch((err) => {
-//       console.error(`Error in retrieving courses: ${err.toString()}`);
-//       res.status(500).send({ message: err.toString() });
-//     });
-// };
-
-
-
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
@@ -134,12 +74,8 @@ exports.getAllCourses = (req, res, next) => {
         const checklistItems = course?.description?.split("\n");
         const checklistItemsAr = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
-        const checklistHTMLAr = checklistItemsAr
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTMLAr = checklistItemsAr?.map((item) => `<li><p>${item}</p></li>`).join("");
 
         const difference = course?.amount - course?.offerAmount;
         const offerPercentage = Math.round((difference / course?.amount) * 100);
@@ -178,57 +114,63 @@ exports.getAllCourses = (req, res, next) => {
     });
 };
 
-// Retrieve a single course by ID
-exports.getCourseById = (req, res, next) => {
+exports.getCourseById = async (req, res, next) => {
   const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
 
-  db.course
-    .findByPk(courseId, {
+  try {
+    const course = await db.course.findOne({
+      where: { id: courseId },
       include: {
-        model: db.category,
-        attributes: ["name"],
+        model: db.category, // Include the Category model
+        attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
       },
-      attributes: ["id", "name", "amount", "description", "categoryId"],
-    })
-    .then((course) => {
-      if (!course) {
-        return res.status(404).json({ message: "Course not found" });
-      }
-
-      console.log(`Retrieved course with ID ${courseId} successfully`);
-      console.log(course);
-
-      // Manipulating the response to have category_name instead of category object
-      const modifiedCourse = {
-        ...course.toJSON(),
-        category_name: course.category ? course.category.name : null,
-        descriptionHTML: course.description
-          ? course.description
-              .split("\n")
-              .map((item) => `<li><p>${item}</p></li>`)
-              .join("")
-          : null,
-        descriptionHTMLAr: course.description_ar
-          ? course.description_ar
-              .split("\n")
-              .map((item) => `<li><p>${item}</p></li>`)
-              .join("")
-          : null,
-        description: course.description || null,
-        description_ar: course.description_ar || null,
-      };
-
-      // Remove the nested category object
-      delete modifiedCourse.category;
-
-      res.status(200).json({ course: modifiedCourse });
-    })
-    .catch((err) => {
-      console.error(
-        `Error in retrieving course with ID ${courseId}: ${err.toString()}`
-      );
-      res.status(500).send({ message: err.toString() });
+      attributes: [
+        "id",
+        "name",
+        "amount",
+        "description",
+        "categoryId",
+        "description_ar",
+        "name_arabic",
+        "imageUrl",
+        "offerAmount",
+      ], // Include the necessary attributes from the Course model
     });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Splitting the description into checklist items
+    const checklistItems = course.description.split("\n");
+    // Generating HTML markup for the checklist
+    const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+
+    const offerPercentage = Math.round(((course.amount - course.offerAmount) / course.amount) * 100);
+
+    const checklistItems2 = course.description_ar.split("\n");
+    // Generating HTML markup for the checklist
+    const checklistHTML2 = checklistItems2.map((item) => `<li><p>${item}</p></li>`).join("");
+
+    // Manipulating the response to have category_name instead of category object
+    const modifiedCourse = {
+      ...course.toJSON(),
+      category_name: course.category ? course.category.name : null,
+      descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+      descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
+      description: course.description || null,
+      description_ar: course.description_ar || null,
+      offerPercentage,
+    };
+
+    // Remove the nested category object
+    delete modifiedCourse.category;
+
+    res.status(200).json({ course: modifiedCourse });
+  } catch (err) {
+    console.error(`Error in retrieving course: ${err.toString()}`);
+    res.status(500).json({ message: err.toString() });
+  }
 };
 
 // Retrieve all news
@@ -383,27 +325,18 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day < 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos
-            .filter((video) => video.day === day)
-            .map((item) => item.id);
+          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-          if (
-            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-            videos_day_id.length > 0
-          )
+          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
             finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item)))
-          finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item)))
-          finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item)))
-          finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item)))
-          finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -478,27 +411,18 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day < 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos
-          .filter((video) => video.day === day)
-          .map((item) => item.id);
+        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-        if (
-          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-          videos_day_id.length > 0
-        )
+        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
           finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item)))
-        finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item)))
-        finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item)))
-        finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item)))
-        finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
       (final_sub_course.name = subCourseDB.name),
@@ -646,15 +570,7 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(
-          __dirname,
-          "..",
-          "assets",
-          "trojanTTt",
-          "videos",
-          "new",
-          video.url
-        );
+        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video.url);
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -872,11 +788,7 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature);
       try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          signature,
-          endpointSecret
-        );
+        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -894,10 +806,7 @@ exports.stripeWebhook = async (req, res) => {
         const userId = paymentIntent.metadata.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(
-          `PaymentIntent was successful for customer ${customerId}:`,
-          paymentIntent.id
-        );
+        console.log(`PaymentIntent was successful for customer ${customerId}:`, paymentIntent.id);
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -946,24 +855,18 @@ exports.stripeWebhook = async (req, res) => {
         };
 
         let emailTransporter = await createTransporter();
-        await emailTransporter.sendMail(
-          mailOptions,
-          async function (error, info) {
-            if (error) {
-              console.error("Error sending email in payment:", error);
-            } else {
-              console.log("Email sent:", info.response);
-            }
+        await emailTransporter.sendMail(mailOptions, async function (error, info) {
+          if (error) {
+            console.error("Error sending email in payment:", error);
+          } else {
+            console.log("Email sent:", info.response);
           }
-        );
+        });
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(
-          `PaymentIntent failed for customer ${failedCustomerId}:`,
-          failedPaymentIntent.id
-        );
+        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
         break;
       // Add more cases for other events as needed
       default:
@@ -988,9 +891,7 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res
-        .status(500)
-        .send({ message: `error in adding subscriber ${error.toString()}` });
+      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
@@ -1003,9 +904,7 @@ exports.contactUS = async (req, res, next) => {
     })
     .then((result) => {
       console.log("contact us message saved successfully");
-      res
-        .status(200)
-        .send({ message: "contact us message saved successfully" });
+      res.status(200).send({ message: "contact us message saved successfully" });
     })
     .catch((error) => {
       console.log(`error in saving contact us ${error.toString()}`);

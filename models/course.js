@@ -32,6 +32,22 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    bannerUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    videoUrl: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    enroll_text: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    enroll_text_ar: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
   });
 
   return Course;
