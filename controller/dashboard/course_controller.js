@@ -55,6 +55,10 @@ exports.getAllCourses = async (req, res, next) => {
         "name_arabic",
         "imageUrl",
         "offerAmount",
+        "enroll_text",
+        "enroll_text_ar",
+        "bannerUrl",
+        "videoUrl",
       ], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
