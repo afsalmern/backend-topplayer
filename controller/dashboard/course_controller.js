@@ -26,6 +26,7 @@ exports.addCourse = async (req, res, next) => {
       description_ar: req.body.description_ar,
       enroll_text: req.body.enroll_text,
       enroll_text_ar: req.body.enroll_text_ar,
+      duration: req.body.duration,
       imageUrl,
       bannerUrl,
       videoUrl,
@@ -59,6 +60,7 @@ exports.getAllCourses = async (req, res, next) => {
         "enroll_text_ar",
         "bannerUrl",
         "videoUrl",
+        "duration"
       ], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
@@ -157,6 +159,7 @@ exports.updateCourse = async (req, res, next) => {
       description_ar: req.body.description_ar || course.description_ar,
       enroll_text: req.body.enroll_text || course.enroll_text,
       enroll_text_ar: req.body.enroll_text_ar | course.enroll_text_ar,
+      duration: req.body.duration || course.duration,
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,
       videoUrl: videoUrl || course.videoUrl,
