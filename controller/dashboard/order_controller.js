@@ -80,7 +80,6 @@ const { Op } = require("sequelize");
 //   }
 // };
 
-
 exports.getAllorders = async (req, res) => {
   try {
     let orders = await db.registeredCourse.findAll({
@@ -89,7 +88,7 @@ exports.getAllorders = async (req, res) => {
         {
           model: db.course,
           as: "course",
-          attributes: ["id", "name", "amount", "offerAmount", "imageUrl"],
+          attributes: ["id", "name", "amount", "offerAmount"],
           include: [
             {
               model: db.payment,
@@ -106,7 +105,7 @@ exports.getAllorders = async (req, res) => {
     });
 
     // Calculate remaining days and subscription end date for each order
-    orders = orders.map(order => {
+    orders = orders.map((order) => {
       const startDate = new Date(order.createdAt);
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + 3); // Add 3 months
@@ -119,12 +118,13 @@ exports.getAllorders = async (req, res) => {
     });
 
     // Extracting only necessary data for response
-    const formattedOrders = orders.map(order => ({
+    const formattedOrders = orders.map((order) => ({
+      course_registration_id: order.id,
       user: order.user,
       course: order.course,
       subscriptionStartDate: order.createdAt,
       subscriptionEndDate: order.subscriptionEndDate,
-      remainingDays: order.remainingDays
+      remainingDays: order.remainingDays,
     }));
 
     res.status(200).json({ orders: formattedOrders });
@@ -134,3 +134,18 @@ exports.getAllorders = async (req, res) => {
   }
 };
 
+exports.updateOrderSubscription = async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    // Update the record in the registered_course table with the given courseId
+    await db.registeredCourse.update(
+      { createdAt: new Date() }, // Set the createdAt field to the current time
+      { where: { id: courseId } } // Specify the condition to match the record with the courseId
+    );
+
+    res.status(200).json({ message: "Updated successfully" });
+  } catch (error) {
+    console.error("Error updating createdAt field:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
