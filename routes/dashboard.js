@@ -13,11 +13,7 @@ const whoAreWeDataController = require("../controller/dashboard/who_are_we_contr
 const faqController = require("../controller/dashboard/faq_controller");
 const testimonialController = require("../controller/dashboard/testimonial_controller");
 const bannerController = require("../controller/dashboard/banner_controller");
-const {
-  getAllusers,
-  updateUserStatus,
-  manageUser,
-} = require("../controller/dashboard/user_controller");
+const { getAllusers, updateUserStatus, manageUser } = require("../controller/dashboard/user_controller");
 const { getAllorders } = require("../controller/dashboard/order_controller");
 const {
   addMainBanner,
@@ -141,29 +137,11 @@ router
   .patch(authMiddleware.checkUserAuth, updateUserStatus)
   .post(authMiddleware.checkUserAuth, manageUser);
 
-router.post(
-  "/main_banner",
-  [authMiddleware.checkUserAuth],
-  uploadBannerVideo.single("file"),
-  addMainBanner
-);
+router.post("/main_banner", [authMiddleware.checkUserAuth], uploadBannerVideo.single("file"), addMainBanner);
 router.get("/main_banner", [authMiddleware.checkUserAuth], getAllMainBanner);
-router.put(
-  "/main_banner/:id",
-  [authMiddleware.checkUserAuth],
-  uploadBannerVideo.single("file"),
-  updateMainBanner
-);
-router.delete(
-  "/main_banner/:id",
-  [authMiddleware.checkUserAuth],
-  deleteMainBanner
-);
-router.get(
-  "/main_banner/:id",
-  [authMiddleware.checkUserAuth],
-  getMainBannerById
-);
+router.put("/main_banner/:id", [authMiddleware.checkUserAuth], uploadBannerVideo.single("file"), updateMainBanner);
+router.delete("/main_banner/:id", [authMiddleware.checkUserAuth], deleteMainBanner);
+router.get("/main_banner/:id", [authMiddleware.checkUserAuth], getMainBannerById);
 
 router.route("/orders").get(getAllorders);
 
