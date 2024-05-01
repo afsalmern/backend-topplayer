@@ -60,6 +60,7 @@ exports.getAllCourses = (req, res, next) => {
         {
           model: db.category,
           attributes: ["name"],
+          where: { active: true }
         },
       ],
     })
