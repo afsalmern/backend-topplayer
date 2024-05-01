@@ -48,6 +48,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: true,
     },
+    duration: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    },
   });
 
   return Course;

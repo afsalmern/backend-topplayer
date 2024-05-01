@@ -22,6 +22,7 @@ const {
   getMainBannerById,
   updateMainBanner,
 } = require("../controller/dashboard/main_banner_controller");
+const { getDashboardDetails } = require("../controller/dashboard/details_controller");
 
 const router = express.Router();
 
@@ -205,6 +206,8 @@ router.delete(
   uploadStt.single("video"),
   videoUploadController.deleteVideo
 );
+
+router.get('/dashboard_details', [authMiddleware.checkUserAuth],getDashboardDetails)
 
 router.post("/uploadVideo", [authMiddleware.checkUserAuth], uploadStt.single("video"), (req, res) => {
   res.status(200).send({ message: "saved successfully" });
