@@ -254,6 +254,28 @@ exports.getAllTestimonials = (req, res, next) => {
     });
 };
 
+exports.getAllTestimonialsById = async (req, res, next) => {
+  const { courseId } = req.params;
+
+  try {
+    const testimonials = await Testimonial.findAll({
+      where: { courseId },
+      include: [{ model: Course }] // Include the Course model to fetch course details along with testimonials
+    });
+
+    if (!testimonials || testimonials.length === 0) {
+      return res.status(404).json({ message: `No testimonials found for course ${courseId}` });
+    }
+
+    console.log(`Retrieved all testimonials for course ${courseId} successfully`);
+    res.status(200).json({ testimonials });
+  } catch (err) {
+    console.error(`Error in retrieving testimonials for course ${courseId}: ${err}`);
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ error: `Error in retrieving testimonials for course ${courseId}` });
+  }
+};
+
 exports.getCourseMaterial = async (req, res, next) => {
   try {
     const courseId = req.params.courseId;

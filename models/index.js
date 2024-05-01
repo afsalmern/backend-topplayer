@@ -40,6 +40,8 @@ db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
 db.course.belongsTo(db.category);
 
+db.testimonial.belongsTo(db.course, { foreignKey: 'courseId' });
+
 db.news.hasMany(db.newsImage, { as: "images" });
 db.newsImage.belongsTo(db.news);
 
