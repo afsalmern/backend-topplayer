@@ -8,7 +8,6 @@ exports.addTestimonial = (req, res, next) => {
     comment_en: req.body.comment_en,
     comment_ar: req.body.comment_ar,
     user_name: req.body.user_name,
-    user_role: req.body.user_role,
     courseId: req.body.courseId,
   })
     .then((result) => {
@@ -26,7 +25,13 @@ exports.addTestimonial = (req, res, next) => {
 
 // Retrieve all Testimonials
 exports.getAllTestimonials = (req, res, next) => {
-  Testimonial.findAll()
+  Testimonial.findAll({
+    include: {
+      model: db.course,
+      attributes: ["name"],
+      as: "course",
+    },
+  })
     .then((testimonials) => {
       console.log(`Retrieved all testimonials successfully`);
       res.status(200).send({ testimonials });
@@ -71,10 +76,12 @@ exports.getTestimonialById = (req, res, next) => {
       // Append "student" to the modified course name
       role = `${courseName} student`;
 
-      console.log(`Retrieved testimonial with ID ${testimonialId} successfully`);
+      console.log(
+        `Retrieved testimonial with ID ${testimonialId} successfully`
+      );
       // Append the role to the testimonial object
       testimonial.role = role;
-      
+
       res.status(200).send({ testimonial });
     })
     .catch((err) => {
@@ -82,7 +89,6 @@ exports.getTestimonialById = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
-
 
 // Update a Testimonial
 exports.updateTestimonial = (req, res, next) => {
@@ -97,7 +103,6 @@ exports.updateTestimonial = (req, res, next) => {
         comment_en: req.body.comment_en || testimonial.comment_en,
         comment_ar: req.body.comment_ar || testimonial.comment_ar,
         user_name: req.body.user_name || testimonial.user_name,
-        user_role: req.body.user_role || testimonial.user_role,
         courseId: req.body.user_role || testimonial.courseId,
       });
     })

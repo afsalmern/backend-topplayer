@@ -66,6 +66,8 @@ exports.getAllCourses = async (req, res, next) => {
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
 
+      const courseOnlyData = courses
+
       // Manipulating the response to have category_name instead of category object
       const modifiedCourses = courses?.map((course) => {
         // Splitting the description into checklist items
@@ -95,7 +97,7 @@ exports.getAllCourses = async (req, res, next) => {
         delete course.category;
       });
 
-      res.status(200).json({ courses: modifiedCourses });
+      res.status(200).json({ courses: modifiedCourses,courseOnlyData });
     })
     .catch((err) => {
       console.error(`Error in retrieving courses: ${err.toString()}`);
