@@ -278,6 +278,8 @@ exports.getCourseMaterial = async (req, res, next) => {
       },
     });
 
+    console.log("registeredCourse=======>", registeredCourse);
+
     if (registeredCourse) {
       console.log("Course found:", registeredCourse.courseId);
       const courseDB = await db.course.findByPk(registeredCourse.courseId, {
@@ -422,6 +424,8 @@ exports.getSubCourseMaterial = async (req, res, next) => {
         (final_sub_course.finished_days = finished_days),
         (final_sub_course.finished_weeks = finished_weeks);
 
+        console.log("final_sub_course====>", final_sub_course);
+
       res.status(200).send(final_sub_course);
     } else {
       console.log("The subscription is not valid");
@@ -438,6 +442,8 @@ exports.getVideos = async (req, res, next) => {
     const userId = req.userDecodeId;
     const subcourseId = req.params.subCourseId;
     const day = req.params.day;
+
+    console.log("params===========>", req.params);
 
     let monthCount = 3;
     if (courseId == 2) {
@@ -499,6 +505,7 @@ exports.getVideos = async (req, res, next) => {
         });
       });
 
+      console.log("final_videos====>", final_videos);
       res.status(200).send(final_videos);
     } else {
       console.log("The subscription is not valid");

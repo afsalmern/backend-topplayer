@@ -1,29 +1,43 @@
 const db = require("../../models");
-const fs = require("fs");
+const extractFrames = require("ffmpeg-extract-frames");
+const path = require("path");
+const fs = require("fs").promises; // Import the filesystem module
 
-// Create a new video
-exports.addVideo = (req, res, next) => {
-  const videoUrl = req.file?.path; // Assuming multer has already been set up to handle file uploads
+exports.addVideo = async (req, res, next) => {
+  const videoUrl = req.file?.filename; // Assuming multer has already been set up to handle file uploads
+  const thumbnailFilename = `${videoUrl.replace(/\.[^.]+$/, "")}.jpg`; // Generate thumbnail filename
+  
+  const videoPath = path.join(__dirname, "..", "..", "assets", "trojanTTt", "videos", "new", videoUrl);
+  const thumbnailPath = path.join(__dirname, "..", "..", "public", "images", thumbnailFilename);
 
-  console.log("body===========>", req.body)
-  console.log("file===========>", req.file)
-  db.video
-    .create({
+  try {
+    // Create the directory if it doesn't exist
+    await fs.mkdir(path.dirname(thumbnailPath), { recursive: true });
+
+    // Extract a frame from the video at 1 second
+    await extractFrames({
+      input: videoPath,
+      output: thumbnailPath,
+      offsets: [1000],
+    });
+
+    console.log("thumbnail added");
+
+    // Save video details including the thumbnail path to the database
+    const result = await db.video.create({
       name: req.body.name,
       day: req.body.day,
-      url: videoUrl, // Using the path obtained from multer
-      subCourseId: req.body.subcourseId,
-    })
-    .then((result) => {
-      console.log(`A video added successfully`);
-      res
-        .status(200)
-        .send({ message: "Video added successfully", video: result });
-    })
-    .catch((err) => {
-      console.error(`Error in adding video: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
+      url: videoUrl,
+      frameURL: thumbnailFilename,
+      subCourseId: req.body.subCourseId,
     });
+
+    console.log("A video added successfully");
+    res.status(200).send({ message: "Video added successfully", video: result });
+  } catch (error) {
+    console.error("Error:", error.toString());
+    res.status(500).send({ message: error.toString() });
+  }
 };
 
 // Retrieve all videos
@@ -73,7 +87,7 @@ exports.updateVideo = (req, res, next) => {
           console.error(`Error deleting old file: ${err.toString()}`);
         }
         // Upload new file (assuming multer middleware is used)
-        const newVideoUrl = req.file.path;
+        const newVideoUrl = req.file.filename;
         // Update record with new file URL
         video
           .update({

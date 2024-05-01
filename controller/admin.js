@@ -235,6 +235,8 @@ exports.login = async (req, res, next) => {
     const secret = process.env.SECRET;
     const deviceID = req.body.deviceId;
 
+    console.log("body=========>", req.body);
+
     const userDB = await db.user.findOne({
       where: {
         email: email,
