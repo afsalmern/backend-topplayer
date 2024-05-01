@@ -5,22 +5,38 @@ const UserDb = db.user;
 
 exports.getAllusers = async (req, res) => {
   try {
-    const users = await UserDb.findAll({
+    let users;
+
+    const { filter } = req.params;
+    const Allusers = await UserDb.findAll({
       attributes: {
         exclude: ["updatedAt", "password", "bio", "verification_code"],
       },
       include: [
         {
           model: db.course,
-        },
-        {
-          model: db.payment,
+          attributes: ["id", "name", "categoryId"],
         },
         {
           model: db.device,
+          attributes: ["deviceID", "userId"],
+        },
+        {
+          model: db.payment,
+          attributes: ["id"],
+          required: false,
         },
       ],
     });
+
+    if (filter == "paid") {
+      users = Allusers.filter((user) => user.payments.length > 0);
+    } else if (filter == "notpaid") {
+      users = Allusers.filter((user) => user.payments.length === 0);
+    } else {
+      users = Allusers;
+    }
+
     res.status(200).json({ users });
   } catch (error) {
     console.error(`Error in retrieving users: ${error.toString()}`);

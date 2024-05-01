@@ -141,6 +141,10 @@ const uploadBannerVideo = multer({
   storage: multerStorageBannerVideo,
 });
 
+router.get("/users/:filter?", authMiddleware.checkUserAuth, getAllusers);
+router.post("/users", authMiddleware.checkUserAuth, manageUser);
+router.patch("/users", authMiddleware.checkUserAuth, updateUserStatus);
+
 router
   .route("/users")
   .get(authMiddleware.checkUserAuth, getAllusers)
