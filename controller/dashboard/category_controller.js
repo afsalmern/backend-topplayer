@@ -55,16 +55,15 @@ exports.updateCategory = (req, res, next) => {
       }
       return category.update({
         name: req.body.name || category.name,
+        active: req.body.active || category.active,
       });
     })
     .then((updatedCategory) => {
       console.log(`Category with ID ${categoryId} updated successfully`);
-      res
-        .status(200)
-        .send({
-          message: "Category updated successfully",
-          category: updatedCategory,
-        });
+      res.status(200).send({
+        message: "Category updated successfully",
+        category: updatedCategory,
+      });
     })
     .catch((err) => {
       console.error(`Error in updating category: ${err.toString()}`);
