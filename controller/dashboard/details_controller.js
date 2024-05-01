@@ -12,11 +12,11 @@ exports.getDashboardDetails = async (req, res) => {
       col: "userId", // Count unique user IDs
     });
 
-    const enrolledUsersPerCourse = await db.payment.findAll({
+    const enrolledUsersPerCourse = await db.registeredCourse.findAll({
       attributes: [
         "courseId",
         [
-          Sequelize.fn("COUNT", Sequelize.literal('DISTINCT "userId"')),
+          Sequelize.fn("COUNT", Sequelize.literal(' "userId"')),
           "enrolled_users",
         ],
       ],
@@ -24,6 +24,7 @@ exports.getDashboardDetails = async (req, res) => {
         {
           model: db.course,
           attributes: ["name"],
+          as:"course"
         },
       ],
       group: ["courseId"],

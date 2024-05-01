@@ -13,8 +13,15 @@ const whoAreWeDataController = require("../controller/dashboard/who_are_we_contr
 const faqController = require("../controller/dashboard/faq_controller");
 const testimonialController = require("../controller/dashboard/testimonial_controller");
 const bannerController = require("../controller/dashboard/banner_controller");
-const { getAllusers, updateUserStatus, manageUser } = require("../controller/dashboard/user_controller");
-const { getAllorders } = require("../controller/dashboard/order_controller");
+const {
+  getAllusers,
+  updateUserStatus,
+  manageUser,
+} = require("../controller/dashboard/user_controller");
+const {
+  getAllorders,
+  updateOrderSubscription,
+} = require("../controller/dashboard/order_controller");
 const {
   addMainBanner,
   getAllMainBanner,
@@ -22,7 +29,9 @@ const {
   getMainBannerById,
   updateMainBanner,
 } = require("../controller/dashboard/main_banner_controller");
-const { getDashboardDetails } = require("../controller/dashboard/details_controller");
+const {
+  getDashboardDetails,
+} = require("../controller/dashboard/details_controller");
 
 const router = express.Router();
 
@@ -138,34 +147,124 @@ router
   .patch(authMiddleware.checkUserAuth, updateUserStatus)
   .post(authMiddleware.checkUserAuth, manageUser);
 
-router.post("/main_banner", [authMiddleware.checkUserAuth], uploadBannerVideo.single("file"), addMainBanner);
+router.post(
+  "/main_banner",
+  [authMiddleware.checkUserAuth],
+  uploadBannerVideo.single("file"),
+  addMainBanner
+);
 router.get("/main_banner", [authMiddleware.checkUserAuth], getAllMainBanner);
-router.put("/main_banner/:id", [authMiddleware.checkUserAuth], uploadBannerVideo.single("file"), updateMainBanner);
-router.delete("/main_banner/:id", [authMiddleware.checkUserAuth], deleteMainBanner);
-router.get("/main_banner/:id", [authMiddleware.checkUserAuth], getMainBannerById);
+router.put(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  uploadBannerVideo.single("file"),
+  updateMainBanner
+);
+router.delete(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  deleteMainBanner
+);
+router.get(
+  "/main_banner/:id",
+  [authMiddleware.checkUserAuth],
+  getMainBannerById
+);
 
-router.route("/orders").get(getAllorders);
+router.get("/orders", [authMiddleware.checkUserAuth], getAllorders);
+router.patch(
+  "/orders/:courseId",
+  [authMiddleware.checkUserAuth],
+  updateOrderSubscription
+);
 
-router.post("/category", [authMiddleware.checkUserAuth], categoryController.addCategory);
-router.get("/category", [authMiddleware.checkUserAuth], categoryController.getAllCategories);
-router.put("/category/:id", [authMiddleware.checkUserAuth], categoryController.updateCategory);
-router.delete("/category/:id", [authMiddleware.checkUserAuth], categoryController.deleteCategory);
+router.post(
+  "/category",
+  [authMiddleware.checkUserAuth],
+  categoryController.addCategory
+);
+router.get(
+  "/category",
+  [authMiddleware.checkUserAuth],
+  categoryController.getAllCategories
+);
+router.put(
+  "/category/:id",
+  [authMiddleware.checkUserAuth],
+  categoryController.updateCategory
+);
+router.delete(
+  "/category/:id",
+  [authMiddleware.checkUserAuth],
+  categoryController.deleteCategory
+);
 
-router.post("/course", authMiddleware.checkUserAuth, courseFileUpload, courseController.addCourse);
-router.get("/course", authMiddleware.checkUserAuth, courseController.getAllCourses);
-router.put("/course/:id", [authMiddleware.checkUserAuth], courseFileUpload, courseController.updateCourse);
-router.delete("/course/:id", [authMiddleware.checkUserAuth], courseController.deleteCourse);
+router.post(
+  "/course",
+  authMiddleware.checkUserAuth,
+  courseFileUpload,
+  courseController.addCourse
+);
+router.get(
+  "/course",
+  authMiddleware.checkUserAuth,
+  courseController.getAllCourses
+);
+router.put(
+  "/course/:id",
+  [authMiddleware.checkUserAuth],
+  courseFileUpload,
+  courseController.updateCourse
+);
+router.delete(
+  "/course/:id",
+  [authMiddleware.checkUserAuth],
+  courseController.deleteCourse
+);
 
-router.post("/subcourse", [authMiddleware.checkUserAuth], subCourseController.addSubCourse);
-router.get("/subcourse", [authMiddleware.checkUserAuth], subCourseController.getAllSubCourses);
-router.put("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.updateSubCourse);
-router.delete("/subcourse/:id", [authMiddleware.checkUserAuth], subCourseController.deleteSubCourse);
+router.post(
+  "/subcourse",
+  [authMiddleware.checkUserAuth],
+  subCourseController.addSubCourse
+);
+router.get(
+  "/subcourse",
+  [authMiddleware.checkUserAuth],
+  subCourseController.getAllSubCourses
+);
+router.put(
+  "/subcourse/:id",
+  [authMiddleware.checkUserAuth],
+  subCourseController.updateSubCourse
+);
+router.delete(
+  "/subcourse/:id",
+  [authMiddleware.checkUserAuth],
+  subCourseController.deleteSubCourse
+);
 
-router.post("/news", [authMiddleware.checkUserAuth], uploadNewsImage.any(), newsController.addNews);
+router.post(
+  "/news",
+  [authMiddleware.checkUserAuth],
+  uploadNewsImage.any(),
+  newsController.addNews
+);
 router.get("/news", [authMiddleware.checkUserAuth], newsController.getAllNews);
-router.put("/news/:id", [authMiddleware.checkUserAuth], newsController.updateNews);
-router.delete("/news/:id", [authMiddleware.checkUserAuth], newsController.deleteNews);
-router.get("/news/:id", [authMiddleware.checkUserAuth], newsController.getNewsById);
+router.put(
+  "/news/:id",
+  [authMiddleware.checkUserAuth],
+  newsController.updateNews
+);
+router.delete(
+  "/news/:id",
+  [authMiddleware.checkUserAuth],
+  newsController.deleteNews
+);
+router.get(
+  "/news/:id",
+  [authMiddleware.checkUserAuth],
+  newsController.getNewsById
+);
 
 router.post(
   "/who_are_we_data",
@@ -173,33 +272,93 @@ router.post(
   uploadWhoVideo.single("file"),
   whoAreWeDataController.addWhoAreWeData
 );
-router.get("/who_are_we_data", [authMiddleware.checkUserAuth], whoAreWeDataController.getAllWhoAreWeData);
+router.get(
+  "/who_are_we_data",
+  [authMiddleware.checkUserAuth],
+  whoAreWeDataController.getAllWhoAreWeData
+);
 router.put(
   "/who_are_we_data/:id",
   [authMiddleware.checkUserAuth],
   uploadWhoVideo.single("file"),
   whoAreWeDataController.updateWhoAreWeData
 );
-router.delete("/who_are_we_data/:id", [authMiddleware.checkUserAuth], whoAreWeDataController.deleteWhoAreWeData);
-router.get("/who_are_we_data/:id", [authMiddleware.checkUserAuth], whoAreWeDataController.getAllWhoAreWeData);
+router.delete(
+  "/who_are_we_data/:id",
+  [authMiddleware.checkUserAuth],
+  whoAreWeDataController.deleteWhoAreWeData
+);
+router.get(
+  "/who_are_we_data/:id",
+  [authMiddleware.checkUserAuth],
+  whoAreWeDataController.getAllWhoAreWeData
+);
 
 router.post("/faq", [authMiddleware.checkUserAuth], faqController.addFAQ);
 router.get("/faq", [authMiddleware.checkUserAuth], faqController.getAllFAQs);
 router.put("/faq/:id", [authMiddleware.checkUserAuth], faqController.updateFAQ);
-router.delete("/faq/:id", [authMiddleware.checkUserAuth], faqController.deleteFAQ);
+router.delete(
+  "/faq/:id",
+  [authMiddleware.checkUserAuth],
+  faqController.deleteFAQ
+);
 
-router.post("/testimonial", [authMiddleware.checkUserAuth], testimonialController.addTestimonial);
-router.get("/testimonial", [authMiddleware.checkUserAuth], testimonialController.getAllTestimonials);
-router.put("/testimonial/:id", [authMiddleware.checkUserAuth], testimonialController.updateTestimonial);
-router.delete("/testimonial/:id", [authMiddleware.checkUserAuth], testimonialController.deleteTestimonial);
+router.post(
+  "/testimonial",
+  [authMiddleware.checkUserAuth],
+  testimonialController.addTestimonial
+);
+router.get(
+  "/testimonial",
+  [authMiddleware.checkUserAuth],
+  testimonialController.getAllTestimonials
+);
+router.put(
+  "/testimonial/:id",
+  [authMiddleware.checkUserAuth],
+  testimonialController.updateTestimonial
+);
+router.delete(
+  "/testimonial/:id",
+  [authMiddleware.checkUserAuth],
+  testimonialController.deleteTestimonial
+);
 
-router.post("/banner", [authMiddleware.checkUserAuth], uploadImage.single("image"), bannerController.uploadBanner);
-router.get("/banner", [authMiddleware.checkUserAuth], bannerController.getAllBanners);
-router.delete("/banner/:id", [authMiddleware.checkUserAuth], bannerController.deleteBanner);
+router.post(
+  "/banner",
+  [authMiddleware.checkUserAuth],
+  uploadImage.single("image"),
+  bannerController.uploadBanner
+);
+router.get(
+  "/banner",
+  [authMiddleware.checkUserAuth],
+  bannerController.getAllBanners
+);
+router.delete(
+  "/banner/:id",
+  [authMiddleware.checkUserAuth],
+  bannerController.deleteBanner
+);
 
-router.post("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.addVideo);
-router.get("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.getAllVideos);
-router.put("/video/:id", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.updateVideo);
+router.post(
+  "/video",
+  [authMiddleware.checkUserAuth],
+  uploadStt.single("video"),
+  videoUploadController.addVideo
+);
+router.get(
+  "/video",
+  [authMiddleware.checkUserAuth],
+  uploadStt.single("video"),
+  videoUploadController.getAllVideos
+);
+router.put(
+  "/video/:id",
+  [authMiddleware.checkUserAuth],
+  uploadStt.single("video"),
+  videoUploadController.updateVideo
+);
 router.delete(
   "/video/:id",
   [authMiddleware.checkUserAuth],
@@ -207,13 +366,26 @@ router.delete(
   videoUploadController.deleteVideo
 );
 
-router.get('/dashboard_details', [authMiddleware.checkUserAuth],getDashboardDetails)
+router.get(
+  "/dashboard_details",
+  [authMiddleware.checkUserAuth],
+  getDashboardDetails
+);
 
-router.post("/uploadVideo", [authMiddleware.checkUserAuth], uploadStt.single("video"), (req, res) => {
-  res.status(200).send({ message: "saved successfully" });
-});
+router.post(
+  "/uploadVideo",
+  [authMiddleware.checkUserAuth],
+  uploadStt.single("video"),
+  (req, res) => {
+    res.status(200).send({ message: "saved successfully" });
+  }
+);
 
 router.post("/login", dashController.login);
-router.post("/signup", [authMiddleware.checkAuthDasboard], dashController.signup);
+router.post(
+  "/signup",
+  [authMiddleware.checkAuthDasboard],
+  dashController.signup
+);
 
 module.exports = router;
