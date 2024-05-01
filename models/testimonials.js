@@ -22,8 +22,8 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    user_role: {
-      type: Sequelize.STRING,
+    courseId: {
+      type: Sequelize.INTEGER,
       allowNull: false,
     },
   });

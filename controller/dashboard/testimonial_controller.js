@@ -9,6 +9,7 @@ exports.addTestimonial = (req, res, next) => {
     comment_ar: req.body.comment_ar,
     user_name: req.body.user_name,
     user_role: req.body.user_role,
+    courseId: req.body.courseId,
   })
     .then((result) => {
       console.log(`A testimonial added successfully`);
@@ -37,6 +38,24 @@ exports.getAllTestimonials = (req, res, next) => {
 };
 
 // Retrieve a single Testimonial by ID
+// exports.getTestimonialById = (req, res, next) => {
+//   const testimonialId = req.params.id;
+//   Testimonial.findByPk(testimonialId)
+//     .then((testimonial) => {
+//       if (!testimonial) {
+//         return res.status(404).send({ message: "Testimonial not found" });
+//       }
+//       console.log(
+//         `Retrieved testimonial with ID ${testimonialId} successfully`
+//       );
+//       res.status(200).send({ testimonial });
+//     })
+//     .catch((err) => {
+//       console.error(`Error in retrieving testimonial: ${err.toString()}`);
+//       res.status(500).send({ message: err.toString() });
+//     });
+// };
+
 exports.getTestimonialById = (req, res, next) => {
   const testimonialId = req.params.id;
   Testimonial.findByPk(testimonialId)
@@ -44,9 +63,18 @@ exports.getTestimonialById = (req, res, next) => {
       if (!testimonial) {
         return res.status(404).send({ message: "Testimonial not found" });
       }
-      console.log(
-        `Retrieved testimonial with ID ${testimonialId} successfully`
-      );
+
+      let role;
+      // Manipulate the course name string to set the role
+      const courseName = testimonial.courseName.replace(" program", "");
+
+      // Append "student" to the modified course name
+      role = `${courseName} student`;
+
+      console.log(`Retrieved testimonial with ID ${testimonialId} successfully`);
+      // Append the role to the testimonial object
+      testimonial.role = role;
+      
       res.status(200).send({ testimonial });
     })
     .catch((err) => {
@@ -54,6 +82,7 @@ exports.getTestimonialById = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
+
 
 // Update a Testimonial
 exports.updateTestimonial = (req, res, next) => {
@@ -69,6 +98,7 @@ exports.updateTestimonial = (req, res, next) => {
         comment_ar: req.body.comment_ar || testimonial.comment_ar,
         user_name: req.body.user_name || testimonial.user_name,
         user_role: req.body.user_role || testimonial.user_role,
+        courseId: req.body.user_role || testimonial.courseId,
       });
     })
     .then((updatedTestimonial) => {
