@@ -260,7 +260,7 @@ exports.getAllTestimonialsById = async (req, res, next) => {
   try {
     const testimonials = await Testimonial.findAll({
       where: { courseId },
-      include: [{ model: Course }] // Include the Course model to fetch course details along with testimonials
+      include: [{ model: db.course }] // Include the Course model to fetch course details along with testimonials
     });
 
     if (!testimonials || testimonials.length === 0) {
