@@ -9,6 +9,7 @@ exports.addTestimonial = (req, res, next) => {
     comment_ar: req.body.comment_ar,
     user_name: req.body.user_name,
     user_role: req.body.user_role,
+    courseId: req.body.courseId,
   })
     .then((result) => {
       console.log(`A testimonial added successfully`);
@@ -69,6 +70,7 @@ exports.updateTestimonial = (req, res, next) => {
         comment_ar: req.body.comment_ar || testimonial.comment_ar,
         user_name: req.body.user_name || testimonial.user_name,
         user_role: req.body.user_role || testimonial.user_role,
+        courseId: req.body.user_role || testimonial.courseId,
       });
     })
     .then((updatedTestimonial) => {
