@@ -24,7 +24,7 @@ exports.getAllorders = async (req, res) => {
     });
     res.status(200).json({ orders });
   } catch (error) {
-    console.error(`Error in adding course: ${error.toString()}`);
+    console.error(`Error in getting course: ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
   }
 };
