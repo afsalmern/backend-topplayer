@@ -107,7 +107,7 @@ function passwordResetMail(username, code) {
 <html>
 
 <head>
-    <title>Top Player</title>
+    <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <style>
         a[href] {
@@ -179,7 +179,7 @@ function paymentSuccessMail(username, amount, paymentIntentId) {
 <html>
 
 <head>
-    <title>Top Player</title>
+    <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <style>
         a[href] {
