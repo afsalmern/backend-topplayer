@@ -24,7 +24,7 @@ exports.getDashboardDetails = async (req, res) => {
         {
           model: db.course,
           attributes: ["name"],
-          as:"course"
+          as: "course",
         },
       ],
       group: ["courseId"],
@@ -39,6 +39,29 @@ exports.getDashboardDetails = async (req, res) => {
       group: [
         Sequelize.fn("YEAR", Sequelize.col("createdAt")),
         Sequelize.fn("MONTH", Sequelize.col("createdAt")),
+      ],
+    });
+
+    const recentUsers = await db.user.findAll({
+      order: [["createdAt", "DESC"]],
+      limit: 10,
+      attributes: ["username", "email", "mobile","createdAt"],
+      include: [
+        {
+          model: db.payment,
+          attributes: ["id"],
+        },
+        {
+          model: db.registeredCourse,
+          attributes: ["id"],
+          include: [
+            {
+              model: db.course,
+              as: "course",
+              attributes: ["name"],
+            },
+          ],
+        },
       ],
     });
 
@@ -57,6 +80,7 @@ exports.getDashboardDetails = async (req, res) => {
       registeredUsersCount,
       monthlyPaymentCounts,
       enrolledUsersPerCourse,
+      recentUsers,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);

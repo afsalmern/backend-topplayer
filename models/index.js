@@ -40,7 +40,7 @@ db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
 db.course.belongsTo(db.category);
 
-db.testimonial.belongsTo(db.course, { foreignKey: 'courseId' });
+db.testimonial.belongsTo(db.course, { foreignKey: "courseId" });
 
 db.news.hasMany(db.newsImage, { as: "images" });
 db.newsImage.belongsTo(db.news);
@@ -74,6 +74,7 @@ db.registeredCourse.belongsTo(db.user, {
   foreignKey: "userId",
   as: "user", // Alias for the association
 });
+db.user.hasMany(db.registeredCourse, { foreignKey: "userId" });
 
 const WatchedVideo = sequelize.define("watched_videos", {
   id: {
