@@ -35,6 +35,7 @@ db.testimonial = require("./testimonials")(sequelize, Sequelize);
 db.banner = require("./banner")(sequelize, Sequelize);
 db.newsImage = require("./newsImage")(sequelize, Sequelize);
 db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
+db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
