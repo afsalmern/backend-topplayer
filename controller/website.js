@@ -8,6 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
+const { passwordResetMail } = require("../utils/mail_content");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -60,7 +61,7 @@ exports.getAllCourses = (req, res, next) => {
         {
           model: db.category,
           attributes: ["name"],
-          where: { active: true }
+          where: { active: true },
         },
       ],
     })
@@ -89,7 +90,7 @@ exports.getAllCourses = (req, res, next) => {
           description: course.description || null,
           description_ar: course.description_ar || null,
           offerPercentage: offerPercentage || null,
-          enroll_text_ar: course.description_ar || null
+          enroll_text_ar: course.description_ar || null,
         };
 
         // If the category doesn't exist in groupedCourses, create a new array for it
@@ -138,7 +139,7 @@ exports.getCourseById = (req, res, next) => {
       // Splitting the description into checklist items
       const checklistItems = course.description ? course.description.split("\n") : [];
       const checklistItemsAr = course.description_ar ? course.description_ar.split("\n") : [];
-      
+
       // Generating HTML markup for the checklist
       const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
       const checklistHTMLAr = checklistItemsAr.map((item) => `<li><p>${item}</p></li>`).join("");
@@ -154,7 +155,7 @@ exports.getCourseById = (req, res, next) => {
         description: course.description || null,
         description_ar: course.description_ar || null,
         offerPercentage: offerPercentage || null,
-        enroll_text_ar: course.description_ar || null
+        enroll_text_ar: course.description_ar || null,
       };
 
       console.log(`Retrieved course ${courseId} successfully`);
@@ -165,7 +166,6 @@ exports.getCourseById = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
-
 
 // Retrieve all news
 exports.getAllNews = async (req, res, next) => {
@@ -261,7 +261,7 @@ exports.getAllTestimonialsById = async (req, res, next) => {
   try {
     const testimonials = await Testimonial.findAll({
       where: { courseId },
-      include: [{ model: db.course }] // Include the Course model to fetch course details along with testimonials
+      include: [{ model: db.course }], // Include the Course model to fetch course details along with testimonials
     });
 
     if (!testimonials || testimonials.length === 0) {
@@ -269,13 +269,13 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     }
 
     // Manipulate the course name for each testimonial and set the role in the JSON response
-    const testimonialsWithRole = testimonials.map(testimonial => {
-      const courseName = testimonial.course.name.toLowerCase(); 
+    const testimonialsWithRole = testimonials.map((testimonial) => {
+      const courseName = testimonial.course.name.toLowerCase();
       const roleName = capitalizeFirstLetter(courseName.replace("program", "") + "Student");
       // Include all other fields from the testimonial table along with the role
       return {
         ...testimonial.toJSON(), // Include all fields from the testimonial table
-        role: roleName
+        role: roleName,
       };
     });
 
@@ -287,8 +287,6 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     res.status(statusCode).json({ error: `Error in retrieving testimonials for course ${courseId}` });
   }
 };
-
-
 
 exports.getCourseMaterial = async (req, res, next) => {
   try {
@@ -460,7 +458,7 @@ exports.getSubCourseMaterial = async (req, res, next) => {
         (final_sub_course.finished_days = finished_days),
         (final_sub_course.finished_weeks = finished_weeks);
 
-        console.log("final_sub_course====>", final_sub_course);
+      console.log("final_sub_course====>", final_sub_course);
 
       res.status(200).send(final_sub_course);
     } else {
@@ -865,29 +863,36 @@ exports.stripeWebhook = async (req, res) => {
         });
 
         const userDB = await db.user.findByPk(userId);
+        //       const mailOptions = {
+        //         from: process.env.EMAILID,
+        //         to: userDB.email,
+        //         subject: "TheTopPlayer Payment",
+        //         text: "payment successful",
+        //         html: `
+        //                   <h2 style="color: green;">Payment Success - Reference ${paymentIntent.id}</h2>
+        //                   <p>Dear ${userDB.username},</p>
+
+        //                   <p>We are thrilled to inform you that your recent payment was successful! Thank you for choosing our services.</p>
+
+        //                   <p><strong>Payment Details:</strong></p>
+        // <ul>
+        //   <li>Amount: ${amount}$</li>
+        //   <li>Reference Number: ${paymentIntent.id}</li>
+        // </ul>
+
+        // <p>Your support is invaluable to us, and we appreciate your trust in our platform. If you have any questions or concerns, feel free to reach out to our customer support team .</p>
+
+        //                   <p>Thank you for choosing TheTopPlayer.</p>
+
+        //                   <p>Best Regards,<br>`,
+        //       };
+
         const mailOptions = {
           from: process.env.EMAILID,
           to: userDB.email,
           subject: "TheTopPlayer Payment",
           text: "payment successful",
-          html: `
-                    <h2 style="color: green;">Payment Success - Reference ${paymentIntent.id}</h2>
-                    <p>Dear ${userDB.username},</p>
-                
-                    <p>We are thrilled to inform you that your recent payment was successful! Thank you for choosing our services.</p>
-                
-                    <p><strong>Payment Details:</strong></p>
-  <ul>
-    <li>Amount: ${amount}$</li>
-    <li>Reference Number: ${paymentIntent.id}</li>
-  </ul>
-                
-  <p>Your support is invaluable to us, and we appreciate your trust in our platform. If you have any questions or concerns, feel free to reach out to our customer support team .</p>
-                
-                 
-                    <p>Thank you for choosing TheTopPlayer.</p>
-                
-                    <p>Best Regards,<br>`,
+          html: passwordResetMail(userDB.username, amount, paymentIntent.id),
         };
 
         let emailTransporter = await createTransporter();
@@ -978,7 +983,6 @@ exports.getAllWhoAreWeData = async (req, res, next) => {
     res.status(500).send({ message: messages_en.server_error });
   }
 };
-
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

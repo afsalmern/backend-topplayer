@@ -7,6 +7,7 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 const { error } = require("console");
+const { WelcomeMail, resendMail, passwordResetMail } = require("../utils/mail_content");
 
 const stripe = require("stripe")(process.env.STRIPE_SK);
 const OAuth2 = google.auth.OAuth2;
@@ -82,19 +83,26 @@ exports.signup = async (req, res, next) => {
         userId: user.id,
       });
 
+      // const mailOptions = {
+      //   from: process.env.EMAILID,
+      //   to: userEmail,
+      //   subject: "TheTopPlayer verification",
+      //   text: "Please confirm your TheTopPlayer account", // plain text body
+      //   html:
+      //     "Hello " +
+      //     username +
+      //     " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
+      //     code +
+      //     "</strong><br>Thank you!</p>", // html body
+      // };
+
       const mailOptions = {
         from: process.env.EMAILID,
         to: userEmail,
-        subject: "TheTopPlayer verification",
+        subject: "Welcome to Top Player - Verify Your Account",
         text: "Please confirm your TheTopPlayer account", // plain text body
-        html:
-          "Hello " +
-          username +
-          " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
-          code +
-          "</strong><br>Thank you!</p>", // html body
+        html: WelcomeMail(username, code),
       };
-
       let emailTransporter = await createTransporter();
 
       //  const gmail = google.gmail({ version: 'v1', emailAuth });
@@ -158,17 +166,25 @@ exports.resendVerification = async (req, res, next) => {
     user.verification_code = code;
     await user.save();
 
+    // const mailOptions = {
+    //   from: process.env.EMAILID,
+    //   to: userEmail,
+    //   subject: "TheTopPlayer verification",
+    //   text: "Please confirm your TheTopPlayer account", // plain text body
+    //   html:
+    //     "Hello " +
+    //     user.username +
+    //     " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
+    //     code +
+    //     "</strong><br>Thank you!</p>", // html body
+    // };
+
     const mailOptions = {
       from: process.env.EMAILID,
       to: userEmail,
       subject: "TheTopPlayer verification",
       text: "Please confirm your TheTopPlayer account", // plain text body
-      html:
-        "Hello " +
-        user.username +
-        " ,<br> <p>Please use the following 6-digit verification code to verify your account:<br> <strong>" +
-        code +
-        "</strong><br>Thank you!</p>", // html body
+      html: resendMail(user.username, code),
     };
 
     let emailTransporter = await createTransporter();
@@ -250,10 +266,7 @@ exports.login = async (req, res, next) => {
     }
 
     console.log(secret);
-    const passwordIsValid = await bcrypt.compareSync(
-      password + secret,
-      userDB.password
-    );
+    const passwordIsValid = await bcrypt.compareSync(password + secret, userDB.password);
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -266,9 +279,7 @@ exports.login = async (req, res, next) => {
     }
 
     if (!userDB.verified) {
-      console.error(
-        `user ${userDB.username} loged in faild at ${date} because not verified`
-      );
+      console.error(`user ${userDB.username} loged in faild at ${date} because not verified`);
       let err = new Error("Email not verified, please verify your email");
       err.code = 402;
       throw err;
@@ -280,9 +291,7 @@ exports.login = async (req, res, next) => {
       },
     });
 
-    const isDevicePresent = devices.some(
-      (device) => device.deviceID === deviceID
-    );
+    const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
       if (devices.length >= 3) {
@@ -307,9 +316,7 @@ exports.login = async (req, res, next) => {
   } catch (error) {
     if (error.code == undefined) error.code = 500;
     if (error.code == 402) {
-      res
-        .status(error.code)
-        .send({ message: error.toString(), verified: false });
+      res.status(error.code).send({ message: error.toString(), verified: false });
     } else {
       console.error(`error in login ${error.toString()}`);
       res.status(error.code).send({ message: error.toString() });
@@ -451,10 +458,7 @@ exports.resetPassWebsite = async (req, res, next) => {
       throw err;
     }
 
-    const passwordIsValid = await bcrypt.compareSync(
-      oldPassword + secret,
-      userDB.password
-    );
+    const passwordIsValid = await bcrypt.compareSync(oldPassword + secret, userDB.password);
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -517,26 +521,34 @@ exports.forgotPass = async (req, res, next) => {
       forgotPAss.save();
     }
 
+    // const mailOptions = {
+    //   from: process.env.EMAILID,
+    //   to: userDB.email,
+    //   subject: "TheTopPlayer Password Reset",
+    //   text: "Password Reset",
+    //   html: ` <h2>Password Reset</h2>
+    //         <p>Dear ${userDB.username},</p>
+
+    //         <p>We received a request to reset the password associated with your account at TheTopPlayer. To initiate the password reset process, please follow the instructions below:</p>
+
+    //         <ul>
+    //             <li>Please use the following 6-digit verification code to change your password:<br><strong>${code}</strong></li>
+
+    //         </ul>
+
+    //         <p>Please ensure that you complete the password reset process as soon as possible. If you didn't initiate this request or if you have any concerns about the security of your account, please contact our support team immediately on WhatsApp +971501225632.</p>
+
+    //         <p>Thank you for choosing TheTopPlayer.</p>
+
+    //         <p>Best Regards,<br>`,
+    // };
+
     const mailOptions = {
       from: process.env.EMAILID,
       to: userDB.email,
       subject: "TheTopPlayer Password Reset",
       text: "Password Reset",
-      html: ` <h2>Password Reset</h2>
-            <p>Dear ${userDB.username},</p>
-        
-            <p>We received a request to reset the password associated with your account at TheTopPlayer. To initiate the password reset process, please follow the instructions below:</p>
-        
-            <ul>
-                <li>Please use the following 6-digit verification code to change your password:<br><strong>${code}</strong></li>
-                
-            </ul>
-        
-            <p>Please ensure that you complete the password reset process as soon as possible. If you didn't initiate this request or if you have any concerns about the security of your account, please contact our support team immediately on WhatsApp +971501225632.</p>
-        
-            <p>Thank you for choosing TheTopPlayer.</p>
-        
-            <p>Best Regards,<br>`,
+      html: passwordResetMail(userDB.username, code),
     };
 
     let emailTransporter = await createTransporter();
@@ -568,8 +580,7 @@ exports.verifyresetPass = async (req, res) => {
     const symbol = req.query.symbol;
 
     console.log(`user trying to verify his email ${req.query.id}`);
-    if (req.query.id == undefined || req.query.id == null)
-      res.send("unverified code");
+    if (req.query.id == undefined || req.query.id == null) res.send("unverified code");
     else {
       const token = req.query.id;
       jwt.verify(token, secret, (err, decoded) => {
@@ -592,13 +603,9 @@ exports.verifyresetPass = async (req, res) => {
               console.log("user can reset his password");
               //  res.send(token)
 
-              res.redirect(
-                `${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`
-              );
+              res.redirect(`${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`);
             } else {
-              res
-                .status(401)
-                .send({ message: "Sorry but the user does not found" });
+              res.status(401).send({ message: "Sorry but the user does not found" });
             }
           })
           .catch((error) => {
@@ -607,11 +614,9 @@ exports.verifyresetPass = async (req, res) => {
       });
     }
   } catch (error) {
-    res
-      .status(500)
-      .send({
-        message: `error in verifying reset password ${error.toString()}`,
-      });
+    res.status(500).send({
+      message: `error in verifying reset password ${error.toString()}`,
+    });
   }
 };
 
