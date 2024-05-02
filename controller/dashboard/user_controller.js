@@ -19,7 +19,7 @@ exports.getAllusers = async (req, res) => {
         },
         {
           model: db.device,
-          attributes: ["deviceID", "userId"],
+          attributes: ["id", "deviceID", "userId"],
         },
         {
           model: db.payment,
