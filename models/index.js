@@ -33,6 +33,7 @@ db.whoAreWe = require("./whoAreWe")(sequelize, Sequelize);
 db.faq = require("./faq")(sequelize, Sequelize);
 db.testimonial = require("./testimonials")(sequelize, Sequelize);
 db.banner = require("./banner")(sequelize, Sequelize);
+db.bannerImages = require("./bannerImages")(sequelize, Sequelize);
 db.newsImage = require("./newsImage")(sequelize, Sequelize);
 db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
@@ -95,5 +96,11 @@ db.user.hasMany(db.device);
 
 db.course.hasMany(db.payment, { foreignKey: "courseId", as: "payments" });
 db.payment.belongsTo(db.course, { foreignKey: "courseId" });
+
+db.banner.hasMany(db.bannerImages, {
+  foreignKey: "bannerId",
+  onDelete: "CASCADE",
+});
+db.bannerImages.belongsTo(db.banner, { foreignKey: "bannerId" });
 
 module.exports = db;
