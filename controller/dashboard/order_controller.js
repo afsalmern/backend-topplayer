@@ -39,7 +39,7 @@ const { Op } = require("sequelize");
 //         {
 //           model: db.course,
 //           as: "course",
-//           attributes: ["id", "name", "amount", "offerAmount", "imageUrl"],
+//           attributes: ["id", "name", "amount", "offerAmount"],
 //           include: [
 //             {
 //               model: db.payment,
@@ -55,22 +55,27 @@ const { Op } = require("sequelize");
 //       ],
 //     });
 
-//     // Calculate subscription start date and end date for each order
-//     orders = orders.map(order => {
-//       const startDate = order.createdAt;
+//     // Calculate remaining days and subscription end date for each order
+//     orders = orders.map((order) => {
+//       const startDate = new Date(order.createdAt);
 //       const endDate = new Date(startDate);
 //       endDate.setMonth(endDate.getMonth() + 3); // Add 3 months
-//       order.subscriptionStartDate = startDate;
+//       const currentDate = new Date();
+//       const remainingTime = endDate - currentDate;
+//       const remainingDays = Math.ceil(remainingTime / (1000 * 60 * 60 * 24));
 //       order.subscriptionEndDate = endDate;
+//       order.remainingDays = remainingDays;
 //       return order;
 //     });
 
 //     // Extracting only necessary data for response
-//     const formattedOrders = orders.map(order => ({
+//     const formattedOrders = orders.map((order) => ({
+//       course_registration_id: order.id,
 //       user: order.user,
 //       course: order.course,
-//       subscriptionStartDate: order.subscriptionStartDate,
-//       subscriptionEndDate: order.subscriptionEndDate
+//       subscriptionStartDate: order.createdAt,
+//       subscriptionEndDate: order.subscriptionEndDate,
+//       remainingDays: order.remainingDays,
 //     }));
 
 //     res.status(200).json({ orders: formattedOrders });
@@ -88,7 +93,7 @@ exports.getAllorders = async (req, res) => {
         {
           model: db.course,
           as: "course",
-          attributes: ["id", "name", "amount", "offerAmount"],
+          attributes: ["id", "name", "amount", "offerAmount", "duration"], // Include 'duration' attribute
           include: [
             {
               model: db.payment,
@@ -104,11 +109,11 @@ exports.getAllorders = async (req, res) => {
       ],
     });
 
-    // Calculate remaining days and subscription end date for each order
+    // Calculate subscription end date for each order based on course duration
     orders = orders.map((order) => {
       const startDate = new Date(order.createdAt);
       const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + 3); // Add 3 months
+      endDate.setMonth(endDate.getMonth() + order.course.duration); // Add course duration in months
       const currentDate = new Date();
       const remainingTime = endDate - currentDate;
       const remainingDays = Math.ceil(remainingTime / (1000 * 60 * 60 * 24));
@@ -133,6 +138,7 @@ exports.getAllorders = async (req, res) => {
     res.status(500).send({ message: error.toString() });
   }
 };
+
 
 exports.updateOrderSubscription = async (req, res) => {
   try {
