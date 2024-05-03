@@ -646,47 +646,7 @@ exports.getVideo = async (req, res, next) => {
   }
 };
 
-// exports.getSubscribedCourse = (req, res, next) => {
-//   const monthsAgo = new Date();
-//   monthsAgo.setMonth(monthsAgo.getMonth() - 3);
-
-//   const monthsAgo2 = new Date();
-//   monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
-
-//   db.registeredCourse
-//     .findAll({
-//       where: {
-//         [db.Sequelize.Op.and]: [
-//           {
-//             userId: req.userDecodeId,
-//           },
-//           {
-//             [db.Sequelize.Op.or]: [
-//               { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
-//               { courseId: 2, createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 } },
-//             ],
-//           },
-//         ],
-//       },
-//       attributes: ["courseId"],
-//     })
-//     .then((result) => {
-//       console.log("result ===============>", result);
-//       res.status(200).send(result);
-//     })
-//     .catch((error) => {
-//       console.log(`error in getting subscribed course ${error.toString()}`);
-//       res.status(500).send({ message: error.toString() });
-//     });
-// };
-
 exports.getSubscribedCourse = (req, res, next) => {
-  const monthsAgo = new Date();
-  monthsAgo.setMonth(monthsAgo.getMonth() - 3);
-
-  const monthsAgo2 = new Date();
-  monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
-
   db.user
     .findOne({
       where: {
@@ -699,10 +659,12 @@ exports.getSubscribedCourse = (req, res, next) => {
             model: db.registeredCourse,
             where: {
               [db.Sequelize.Op.or]: [
-                { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
+                
                 {
-                  courseId: 2,
-                  createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 },
+                  // courseId: 2,
+                  createdAt: {
+                    [db.Sequelize.Op.gt]: db.Sequelize.literal('DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)')
+                  }
                 },
               ],
             },
@@ -729,28 +691,56 @@ exports.getSubscribedCourse = (req, res, next) => {
     });
 };
 
-/*
-exports.registerCourse = (req, res, next) => {
-    const courseId = req.body.courseId
-    const userId = req.userDecodeId
-    console.log(`userid ${userId} is registering a  course id ${courseId} `)
 
 
-    db.registeredCourse.create({
-        courseId: courseId,
-        userId: userId
+// exports.getSubscribedCourse = (req, res, next) => {
+//   const monthsAgo = new Date();
+//   monthsAgo.setMonth(monthsAgo.getMonth() - 3);
 
-    }).then((result) => {
-        console.log('user registered course successfully')
-        res.status(200).send({ message: 'user registered course successfully' });
-    }).catch(error => {
-        console.log(`error in registering the course ${error.toString()}`)
-        res.status(500).send({ message: error.toString() });
-    });
+//   const monthsAgo2 = new Date();
+//   monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
 
+//   db.user
+//     .findOne({
+//       where: {
+//         id: req.userDecodeId,
+//       },
+//       include: [
+//         {
+//           model: db.course,
+//           through: {
+//             model: db.registeredCourse,
+//             where: {
+//               [db.Sequelize.Op.or]: [
+//                 { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
+//                 {
+//                   courseId: 2,
+//                   createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 },
+//                 },
+//               ],
+//             },
+//           },
+//         },
+//       ],
+//     })
+//     .then((user) => {
+//       if (!user) {
+//         return res.status(404).send({ message: "User not found" });
+//       }
 
+//       const subscribedCourses = user.courses.map((course) => ({
+//         courseId: course.id,
+//         courseName: course.courseName, // Assuming this is the column name for the course name
+//         // Include other course details as needed
+//       }));
 
-}*/
+//       res.status(200).send(subscribedCourses);
+//     })
+//     .catch((error) => {
+//       console.log(`Error in getting subscribed courses: ${error.toString()}`);
+//       res.status(500).send({ message: "Internal server error" });
+//     });
+// };
 
 exports.watchVideo = (req, res, next) => {
   const videoId = req.body.videoId;
