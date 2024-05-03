@@ -302,13 +302,11 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     // Manipulate the course name for each testimonial and set the role in the JSON response
     const testimonialsWithRole = testimonials.map((testimonial) => {
       const courseName = testimonial.course.name.toLowerCase();
-      const roleName = capitalizeFirstLetter(
-        courseName.replace("program", "") + "Student"
-      );
+      // const roleName = capitalizeFirstLetter(courseName.replace("program", "") + "Player");
       // Include all other fields from the testimonial table along with the role
       return {
         ...testimonial.toJSON(), // Include all fields from the testimonial table
-        role: roleName,
+        role: courseName,
       };
     });
 

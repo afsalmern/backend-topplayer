@@ -251,8 +251,6 @@ exports.login = async (req, res, next) => {
     const secret = process.env.SECRET;
     const deviceID = req.body.deviceId;
 
-    console.log("body=========>", req.body);
-
     const userDB = await db.user.findOne({
       where: {
         email: email,
@@ -311,6 +309,8 @@ exports.login = async (req, res, next) => {
     console.log(`user ${userDB.username} loged in successfully at ${date}`);
     res.status(200).send({
       accessToken: token,
+      status: userDB.status,
+      verified: userDB.verified,
       message: "login successfully",
     });
   } catch (error) {
