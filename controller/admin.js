@@ -283,6 +283,13 @@ exports.login = async (req, res, next) => {
       throw err;
     }
 
+    if (!userDB.status) {
+      console.error(`User ${userDB.username} logged in failed at ${date} because the account is suspended.`);
+      let err = new Error("Your account is suspended. Please contact the administrator.");
+      err.code = 401; // Updated error code to 402
+      throw err;
+    }
+
     const devices = await db.device.findAll({
       where: {
         userId: userDB.id,
@@ -292,7 +299,7 @@ exports.login = async (req, res, next) => {
     const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
-      if (devices.length >= 3) {
+      if (devices.length >= 2) {
         let err = new Error("Maximum device limit exceeded.");
         err.code = 401;
         throw err;
