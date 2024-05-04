@@ -41,17 +41,32 @@ const createTransporter = async () => {
 };
 
 // Retrieve all banners
-exports.getAllBanners = (req, res, next) => {
-  db.banner
-    .findAll()
-    .then((banners) => {
-      console.log(`Retrieved all banners successfully`);
-      res.status(200).json({ banners });
-    })
-    .catch((err) => {
-      console.error(`Error in retrieving banners: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
+exports.getAllBanners = async (req, res, next) => {
+  try {
+    const banners = await db.banner.findAll({
+      include: [
+        {
+          model: db.bannerImages,
+        },
+      ],
     });
+    console.log(`Retrieved all banners successfully`);
+    const transformedBanners = banners.map((banner) => ({
+      heading: banner.heading,
+      heading_ar: banner.heading_ar,
+      non_animate_text: banner.non_animate_text,
+      non_animate_text_ar: banner.non_animate_text_ar,
+      animate_text: banner.animate_text.split(","), // Convert to array
+      animate_text_ar: banner.animate_text_ar.split(","), // Convert to array
+      para: banner.para.split(","), // Convert to array
+      para_ar: banner.para_ar.split(","),
+      images:banner.bannerImages, // Convert to array
+    }));
+    res.status(200).json({ banners: transformedBanners });
+  } catch (err) {
+    console.error(`Error in retrieving banners: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
 };
 
 exports.getAllCourses = (req, res, next) => {
@@ -304,11 +319,9 @@ exports.getAllTestimonialsById = async (req, res, next) => {
       `Error in retrieving testimonials for course ${courseId}: ${err}`
     );
     const statusCode = err.status || 500;
-    res
-      .status(statusCode)
-      .json({
-        error: `Error in retrieving testimonials for course ${courseId}`,
-      });
+    res.status(statusCode).json({
+      error: `Error in retrieving testimonials for course ${courseId}`,
+    });
   }
 };
 
@@ -709,12 +722,13 @@ exports.getSubscribedCourse = (req, res, next) => {
             model: db.registeredCourse,
             where: {
               [db.Sequelize.Op.or]: [
-                
                 {
                   // courseId: 2,
                   createdAt: {
-                    [db.Sequelize.Op.gt]: db.Sequelize.literal('DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)')
-                  }
+                    [db.Sequelize.Op.gt]: db.Sequelize.literal(
+                      "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
+                    ),
+                  },
                 },
               ],
             },
@@ -740,8 +754,6 @@ exports.getSubscribedCourse = (req, res, next) => {
       res.status(500).send({ message: "Internal server error" });
     });
 };
-
-
 
 // exports.getSubscribedCourse = (req, res, next) => {
 //   const monthsAgo = new Date();

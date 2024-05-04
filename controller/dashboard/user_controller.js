@@ -75,6 +75,11 @@ exports.manageUser = async (req, res) => {
         await db.user.update({ verified: active }, { where: { id: id } });
         return { message: "User status changed successfully" };
       },
+      active: async () => {
+        const { status } = req.body;
+        await db.user.update({ status }, { where: { id: id } });
+        return { message: "User status changed successfully" };
+      },
       devices: async () => {
         const { filteredDeviceIds } = req.body;
         const deviceIds = filteredDeviceIds.map((item) => item.id);

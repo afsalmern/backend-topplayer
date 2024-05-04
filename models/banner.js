@@ -1,16 +1,44 @@
 module.exports = (sequelize, Sequelize) => {
-    const Banner = sequelize.define('banner', {
-        id: {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true
-        },
-        image: {
-            type: Sequelize.STRING, // Assuming you store image paths
-            allowNull: true // Set to false if image is required
-        }
-    });
+  const Banner = sequelize.define("banner", {
+    id: {
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true,
+    },
+    heading: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    heading_ar: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    non_animate_text: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    non_animate_text_ar: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    animate_text: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    animate_text_ar: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    para: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    para_ar: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+  });
 
-    return Banner;
-}
+  return Banner;
+};
