@@ -27,6 +27,7 @@ exports.getAllusers = async (req, res) => {
           required: false,
         },
       ],
+      order: [["createdAt", "DESC"]],
     });
 
     if (filter == "paid") {

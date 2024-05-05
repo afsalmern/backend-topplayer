@@ -134,7 +134,7 @@ exports.updateBanner = async (req, res, next) => {
     }
 
     const banner = await db.banner.findByPk(bannerId, {
-      include: [{ model: db.bannerImages}], // Include associated images
+      include: [{ model: db.bannerImages }], // Include associated images
     });
 
     if (!banner) {
@@ -154,7 +154,9 @@ exports.updateBanner = async (req, res, next) => {
     });
 
     // Fetch existing image URLs
-    const existingImageUrls = banner.bannerImages.map((image) => image.imageUrl);
+    const existingImageUrls = banner.bannerImages.map(
+      (image) => image.imageUrl
+    );
 
     // Filter out existing image URLs from new image URLs
     const newImageUrls = imageUrls.filter(
@@ -175,5 +177,16 @@ exports.updateBanner = async (req, res, next) => {
   } catch (err) {
     console.error(`Error in updating news: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
+  }
+};
+
+exports.deleteBannerImage = async (req, res) => {
+  try {
+    const bannerImageId = req.params.id;
+    await db.bannerImages.destroy({ where: { id: bannerImageId } }); // Pass an object with options
+    res.status(200).send({ message: "News image deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting news image: ${err.toString()}`);
+    res.status(500).send({ message: "Error deleting news image" });
   }
 };

@@ -60,26 +60,32 @@ exports.getAllCourses = async (req, res, next) => {
         "enroll_text_ar",
         "bannerUrl",
         "videoUrl",
-        "duration"
+        "duration",
       ], // Include the necessary attributes from the Course model
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
 
-      const courseOnlyData = courses
+      const courseOnlyData = courses;
 
       // Manipulating the response to have category_name instead of category object
       const modifiedCourses = courses?.map((course) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
-        const offerPercentage = Math.round(((course.amount - course.offerAmount) / course.amount) * 100);
+        const offerPercentage = Math.round(
+          ((course.amount - course.offerAmount) / course.amount) * 100
+        );
 
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML2 = checklistItems2
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         return {
           ...course.toJSON(),
@@ -97,7 +103,7 @@ exports.getAllCourses = async (req, res, next) => {
         delete course.category;
       });
 
-      res.status(200).json({ courses: modifiedCourses,courseOnlyData });
+      res.status(200).json({ courses: modifiedCourses, courseOnlyData });
     })
     .catch((err) => {
       console.error(`Error in retrieving courses: ${err.toString()}`);
@@ -150,6 +156,8 @@ exports.updateCourse = async (req, res, next) => {
     // Find course by ID
     const course = await db.course.findByPk(courseId);
 
+    console.log(req.body);
+
     // Update course object with uploaded file URLs (or null if not uploaded)
     const updatedCourse = {
       name: req.body.name || course.name,
@@ -186,22 +194,31 @@ exports.updateCourse = async (req, res, next) => {
 };
 
 // Delete a course
-exports.deleteCourse = (req, res, next) => {
+exports.deleteCourse = async (req, res, next) => {
   const courseId = req.params.id;
-  db.course
-    .findByPk(courseId)
-    .then((course) => {
-      if (!course) {
-        return res.status(404).send({ message: "Course not found" });
-      }
-      return course.destroy();
-    })
-    .then(() => {
-      console.log(`Course with ID ${courseId} deleted successfully`);
-      res.status(200).send({ message: "Course deleted successfully" });
-    })
-    .catch((err) => {
-      console.error(`Error in deleting course: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
-    });
+
+  try {
+    // Disable foreign key checks
+
+    // Find the course by ID
+    const course = await db.course.findByPk(courseId);
+
+    // If course not found, return 404
+    if (!course) {
+      return res.status(404).send({ message: "Course not found" });
+    }
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+
+    // Delete the course
+    await course.destroy();
+
+    // Enable foreign key checks
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+
+    console.log(`Course with ID ${courseId} deleted successfully`);
+    res.status(200).send({ message: "Course deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting course: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
 };

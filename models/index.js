@@ -94,8 +94,17 @@ db.video.belongsToMany(db.user, { through: WatchedVideo });
 db.user.hasMany(db.payment);
 db.user.hasMany(db.device);
 
-db.course.hasMany(db.payment, { foreignKey: "courseId", as: "payments" });
-db.payment.belongsTo(db.course, { foreignKey: "courseId" });
+db.course.hasMany(db.payment, {
+  foreignKey: "courseId",
+  as: "payments",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+db.payment.belongsTo(db.course, {
+  foreignKey: "courseId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 db.banner.hasMany(db.bannerImages, {
   foreignKey: "bannerId",

@@ -360,6 +360,12 @@ router.delete(
   bannerController.deleteBanner
 );
 
+router.delete(
+  "/bannerImage/:id",
+  [authMiddleware.checkUserAuth],
+  bannerController.deleteBannerImage
+);
+
 router.get(
   "/terms",
   [authMiddleware.checkUserAuth],
