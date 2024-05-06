@@ -258,7 +258,7 @@ router.put(
 );
 
 router.delete(
-  "/newsImage/:id",
+  "/newsImage",
   [authMiddleware.checkUserAuth],
   newsController.deleteNewsImage
 );
@@ -356,7 +356,7 @@ router.delete(
 );
 
 router.delete(
-  "/bannerImage/:id",
+  "/bannerImage",
   [authMiddleware.checkUserAuth],
   bannerController.deleteBannerImage
 );

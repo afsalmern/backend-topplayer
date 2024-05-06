@@ -191,8 +191,14 @@ exports.deleteNews = (req, res, next) => {
 
 exports.deleteNewsImage = async (req, res) => {
   try {
-    const newsImageId = req.params.id;
-    await db.newsImage.destroy({ where: { id: newsImageId } }); // Pass an object with options
+    const { ids } = req.body;
+    await db.newsImage.destroy({
+      where: {
+        id: {
+          [db.Op.in]: ids,
+        },
+      },
+    }); // Pass an object with options
     res.status(200).send({ message: "News image deleted successfully" });
   } catch (err) {
     console.error(`Error in deleting news image: ${err.toString()}`);
