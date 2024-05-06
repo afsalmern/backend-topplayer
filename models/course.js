@@ -30,15 +30,15 @@ module.exports = (sequelize, Sequelize) => {
     },
     imageUrl: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     bannerUrl: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     videoUrl: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     enroll_text: {
       type: Sequelize.STRING,

@@ -75,18 +75,7 @@ const uploadNewsImage = multer({
   storage: multerStorageNewsImage,
 });
 
-const multerStorageCourseImage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/courseImages");
-  },
-  filename: (req, file, cb) => {
-    // const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.originalname}`);
-  },
-});
-const uploadCourseImage = multer({
-  storage: multerStorageCourseImage,
-});
+
 
 const multerStorageWhoVideo = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -120,7 +109,7 @@ const multerStorageCourse = multer.diskStorage({
 
 const uploadCourseFiles = multer({
   storage: multerStorageCourse,
-  limits: { fileSize: 1024 * 1024 * 5 }, // Limit file size to 5MB (optional)
+  limits: { fileSize: 1024 * 1024 * 60 }, // Limit file size to 5MB (optional)
 });
 
 const courseFileUpload = uploadCourseFiles.fields([
@@ -225,6 +214,12 @@ router.delete(
   "/course/:id",
   [authMiddleware.checkUserAuth],
   courseController.deleteCourse
+);
+
+router.delete(
+  "/courseMedia/:filename/:type/:id",
+  [authMiddleware.checkUserAuth],
+  courseController.deleteMedia
 );
 
 router.post(

@@ -222,3 +222,58 @@ exports.deleteCourse = async (req, res, next) => {
     res.status(500).send({ message: err.toString() });
   }
 };
+
+// Delete a course
+const fs = require("fs");
+const path = require("path");
+
+exports.deleteMedia = async (req, res, next) => {
+  const { id, filename, type } = req.params;
+
+  try {
+    const course = await db.course.findByPk(id);
+
+    if (!course) {
+      return res.status(404).send({ message: "Course not found" });
+    }
+
+    // Delete media according to type
+    switch (type) {
+      case "image":
+        // Remove imageUrl from course
+        course.imageUrl = null;
+        // Unlink image file from public/courseImages
+        fs.unlinkSync(
+          path.join(__dirname, "..", "public", "courseImages", filename)
+        );
+        break;
+      case "video":
+        // Remove videoUrl from course
+        course.videoUrl = null;
+        // Unlink video file from public/courseVideos
+        fs.unlinkSync(
+          path.join(__dirname, "..", "public", "courseImages", filename)
+        );
+        break;
+      case "banner":
+        // Remove bannerUrl from course
+        course.bannerUrl = null;
+        // Unlink banner file from public/courseBanners
+        fs.unlinkSync(
+          path.join(__dirname, "..", "public", "courseImages", filename)
+        );
+        break;
+      default:
+        return res.status(400).send({ message: "Invalid media type" });
+    }
+
+    // Save the updated course
+    await course.save();
+
+    console.log(`Media of ${type} deleted successfully`);
+    res.status(200).send({ message: "Media deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting course media: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
+};
