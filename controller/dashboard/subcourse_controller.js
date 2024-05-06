@@ -9,7 +9,9 @@ exports.addSubCourse = (req, res, next) => {
     })
     .then((result) => {
       console.log(`A subcourse added successfully`);
-      res.status(200).send({ message: "Subcourse added successfully", subcourse: result });
+      res
+        .status(200)
+        .send({ message: "Subcourse added successfully", subcourse: result });
     })
     .catch((err) => {
       console.error(`Error in adding subcourse: ${err.toString()}`);
@@ -36,20 +38,21 @@ exports.getAllSubCourses = (req, res, next) => {
     .findAll({
       include: {
         model: db.course, // Assuming your Course model is named 'course' in your Sequelize instance
-        attributes: ['name'], // Only retrieve the 'name' attribute from the Course model
+        attributes: ["name"], // Only retrieve the 'name' attribute from the Course model
       },
+      order: [["createdAt", "DESC"]],
     })
     .then((subcourses) => {
       console.log(`Retrieved all subcourses successfully`);
 
       // Manipulating the response to have course_name instead of course object
-      const modifiedSubcourses = subcourses.map(subcourse => ({
+      const modifiedSubcourses = subcourses.map((subcourse) => ({
         ...subcourse.toJSON(),
         course_name: subcourse.course ? subcourse.course.name : null,
       }));
 
       // Remove the nested course object
-      modifiedSubcourses.forEach(subcourse => {
+      modifiedSubcourses.forEach((subcourse) => {
         delete subcourse.course;
       });
 
@@ -60,7 +63,6 @@ exports.getAllSubCourses = (req, res, next) => {
       res.status(500).send({ message: err.toString() });
     });
 };
-
 
 // Retrieve a single subcourse by ID
 exports.getSubCourseById = (req, res, next) => {
@@ -96,7 +98,12 @@ exports.updateSubCourse = (req, res, next) => {
     })
     .then((updatedSubCourse) => {
       console.log(`Subcourse with ID ${subCourseId} updated successfully`);
-      res.status(200).send({ message: "Subcourse updated successfully", subcourse: updatedSubCourse });
+      res
+        .status(200)
+        .send({
+          message: "Subcourse updated successfully",
+          subcourse: updatedSubCourse,
+        });
     })
     .catch((err) => {
       console.error(`Error in updating subcourse: ${err.toString()}`);

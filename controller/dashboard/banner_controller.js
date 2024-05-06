@@ -54,6 +54,9 @@ exports.uploadBanner = async (req, res, next) => {
 
 // Retrieve all banners
 exports.getAllBanners = (req, res, next) => {
+
+  console.log(req.ip);
+
   db.banner
     .findAll({
       include: [

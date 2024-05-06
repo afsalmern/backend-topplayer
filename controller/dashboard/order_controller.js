@@ -23,6 +23,7 @@ exports.getAllorders = async (req, res) => {
           ],
         },
       ],
+      order: [["createdAt", "DESC"]],
     });
 
     // Calculate subscription end date for each order based on course duration

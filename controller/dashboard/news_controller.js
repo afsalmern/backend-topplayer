@@ -83,6 +83,7 @@ exports.getAllNews = (req, res, next) => {
           as: "images", // Alias defined in the association
         },
       ],
+      order: [["createdAt", "DESC"]],
     })
     .then((news) => {
       console.log(`Retrieved all news successfully`);
