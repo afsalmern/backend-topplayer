@@ -157,6 +157,8 @@ exports.updateCourse = async (req, res, next) => {
     // Find course by ID
     const course = await db.course.findByPk(courseId);
 
+    console.log("Course====>", course);
+
     console.log(req.body);
 
     // Update course object with uploaded file URLs (or null if not uploaded)
@@ -169,7 +171,7 @@ exports.updateCourse = async (req, res, next) => {
       description: req.body.description || course.description,
       description_ar: req.body.description_ar || course.description_ar,
       enroll_text: req.body.enroll_text || course.enroll_text,
-      enroll_text_ar: req.body.enroll_text_ar | course.enroll_text_ar,
+      enroll_text_ar: req.body.enroll_text_ar || course.enroll_text_ar,
       duration: req.body.duration || course.duration,
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,
