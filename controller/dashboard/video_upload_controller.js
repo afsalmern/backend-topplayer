@@ -6,9 +6,25 @@ const fs = require("fs").promises; // Import the filesystem module
 exports.addVideo = async (req, res, next) => {
   const videoUrl = req.file?.filename; // Assuming multer has already been set up to handle file uploads
   const thumbnailFilename = `${videoUrl.replace(/\.[^.]+$/, "")}.jpg`; // Generate thumbnail filename
-  
-  const videoPath = path.join(__dirname, "..", "..", "assets", "trojanTTt", "videos", "new", videoUrl);
-  const thumbnailPath = path.join(__dirname, "..", "..", "public", "images", thumbnailFilename);
+
+  const videoPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "assets",
+    "trojanTTt",
+    "videos",
+    "new",
+    videoUrl
+  );
+  const thumbnailPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "public",
+    "images",
+    thumbnailFilename
+  );
 
   try {
     // Create the directory if it doesn't exist
@@ -33,7 +49,9 @@ exports.addVideo = async (req, res, next) => {
     });
 
     console.log("A video added successfully");
-    res.status(200).send({ message: "Video added successfully", video: result });
+    res
+      .status(200)
+      .send({ message: "Video added successfully", video: result });
   } catch (error) {
     console.error("Error:", error.toString());
     res.status(500).send({ message: error.toString() });
@@ -43,7 +61,7 @@ exports.addVideo = async (req, res, next) => {
 // Retrieve all videos
 exports.getAllVideos = (req, res, next) => {
   db.video
-    .findAll()
+    .findAll({ order: [["createdAt", "DESC"]] })
     .then((videos) => {
       console.log(`Retrieved all videos successfully`);
       res.status(200).send({ videos });

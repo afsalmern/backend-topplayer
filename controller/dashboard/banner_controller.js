@@ -54,6 +54,9 @@ exports.uploadBanner = async (req, res, next) => {
 
 // Retrieve all banners
 exports.getAllBanners = (req, res, next) => {
+
+  console.log(req.ip);
+
   db.banner
     .findAll({
       include: [
@@ -182,11 +185,17 @@ exports.updateBanner = async (req, res, next) => {
 
 exports.deleteBannerImage = async (req, res) => {
   try {
-    const bannerImageId = req.params.id;
-    await db.bannerImages.destroy({ where: { id: bannerImageId } }); // Pass an object with options
-    res.status(200).send({ message: "News image deleted successfully" });
+    const { ids } = req.body;
+    await db.bannerImages.destroy({
+      where: {
+        id: {
+          [db.Op.in]: ids,
+        },
+      },
+    });
+    res.status(200).send({ message: "Banner image deleted successfully" });
   } catch (err) {
-    console.error(`Error in deleting news image: ${err.toString()}`);
-    res.status(500).send({ message: "Error deleting news image" });
+    console.error(`Error in deleting banner image: ${err.toString()}`);
+    res.status(500).send({ message: "Error deleting banner image" });
   }
 };

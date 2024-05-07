@@ -31,6 +31,7 @@ exports.getAllTestimonials = (req, res, next) => {
       attributes: ["name"],
       as: "course",
     },
+    order: [["createdAt", "DESC"]],
   })
     .then((testimonials) => {
       console.log(`Retrieved all testimonials successfully`);

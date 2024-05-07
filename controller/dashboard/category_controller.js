@@ -17,7 +17,7 @@ exports.addCategory = (req, res, next) => {
 
 exports.getAllCategories = (req, res, next) => {
   db.category
-    .findAll()
+    .findAll({ order: [["createdAt", "DESC"]] })
     .then((categories) => {
       console.log(`Retrieved all categories successfully`);
       res.status(200).send({ categories });

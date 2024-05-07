@@ -21,7 +21,7 @@ exports.addFAQ = (req, res, next) => {
 
 // Retrieve all FAQs
 exports.getAllFAQs = (req, res, next) => {
-  FAQ.findAll()
+  FAQ.findAll({ order: [["createdAt", "DESC"]] })
     .then((faqs) => {
       console.log(`Retrieved all FAQs successfully`);
       res.status(200).send({ faqs });

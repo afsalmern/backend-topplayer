@@ -135,11 +135,11 @@ router.get("/users/:filter?", authMiddleware.checkUserAuth, getAllusers);
 router.post("/users", authMiddleware.checkUserAuth, manageUser);
 router.patch("/users", authMiddleware.checkUserAuth, updateUserStatus);
 
-router
-  .route("/users")
-  .get(authMiddleware.checkUserAuth, getAllusers)
-  .patch(authMiddleware.checkUserAuth, updateUserStatus)
-  .post(authMiddleware.checkUserAuth, manageUser);
+// router
+//   .route("/users")
+//   .get(authMiddleware.checkUserAuth, getAllusers)
+//   .patch(authMiddleware.checkUserAuth, updateUserStatus)
+//   .post(authMiddleware.checkUserAuth, manageUser);
 
 router.post(
   "/main_banner",
@@ -258,7 +258,7 @@ router.put(
 );
 
 router.delete(
-  "/newsImage/:id",
+  "/newsImage",
   [authMiddleware.checkUserAuth],
   newsController.deleteNewsImage
 );
@@ -356,7 +356,7 @@ router.delete(
 );
 
 router.delete(
-  "/bannerImage/:id",
+  "/bannerImage",
   [authMiddleware.checkUserAuth],
   bannerController.deleteBannerImage
 );

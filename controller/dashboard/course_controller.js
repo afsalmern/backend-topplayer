@@ -61,7 +61,8 @@ exports.getAllCourses = async (req, res, next) => {
         "bannerUrl",
         "videoUrl",
         "duration",
-      ], // Include the necessary attributes from the Course model
+      ],
+      order: [["createdAt", "DESC"]],
     })
     .then((courses) => {
       console.log(`Retrieved all courses successfully`);
@@ -73,13 +74,19 @@ exports.getAllCourses = async (req, res, next) => {
         // Splitting the description into checklist items
         const checklistItems = course?.description?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
-        const offerPercentage = Math.round(((course.amount - course.offerAmount) / course.amount) * 100);
+        const offerPercentage = Math.round(
+          ((course.amount - course.offerAmount) / course.amount) * 100
+        );
 
         const checklistItems2 = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML2 = checklistItems2
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         return {
           ...course.toJSON(),
@@ -150,6 +157,8 @@ exports.updateCourse = async (req, res, next) => {
     // Find course by ID
     const course = await db.course.findByPk(courseId);
 
+    console.log("Course====>", course);
+
     console.log(req.body);
 
     // Update course object with uploaded file URLs (or null if not uploaded)
@@ -162,7 +171,7 @@ exports.updateCourse = async (req, res, next) => {
       description: req.body.description || course.description,
       description_ar: req.body.description_ar || course.description_ar,
       enroll_text: req.body.enroll_text || course.enroll_text,
-      enroll_text_ar: req.body.enroll_text_ar | course.enroll_text_ar,
+      enroll_text_ar: req.body.enroll_text_ar || course.enroll_text_ar,
       duration: req.body.duration || course.duration,
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,
@@ -237,19 +246,25 @@ exports.deleteMedia = async (req, res, next) => {
         // Remove imageUrl from course
         course.imageUrl = null;
         // Unlink image file from public/courseImages
-        fs.unlinkSync(path.join(__dirname, "..", "..", "public", "courseImages", filename));
+        fs.unlinkSync(
+          path.join(__dirname, "..", "..", "public", "courseImages", filename)
+        );
         break;
       case "video":
         // Remove videoUrl from course
         course.videoUrl = null;
         // Unlink video file from public/courseVideos
-        fs.unlinkSync(path.join(__dirname, "..", "..", "public", "courseImages", filename));
+        fs.unlinkSync(
+          path.join(__dirname, "..", "..", "public", "courseImages", filename)
+        );
         break;
       case "banner":
         // Remove bannerUrl from course
         course.bannerUrl = null;
         // Unlink banner file from public/courseBanners
-        fs.unlinkSync(path.join(__dirname, "..", "..", "public", "courseImages", filename));
+        fs.unlinkSync(
+          path.join(__dirname, "..", "..", "public", "courseImages", filename)
+        );
         break;
       default:
         return res.status(400).send({ message: "Invalid media type" });
