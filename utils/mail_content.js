@@ -34,7 +34,7 @@ function WelcomeMail(username, code) {
                 Welcome to Top Player! We're thrilled to have you on board. To ensure the security of your account and complete the signup process, please verify your email address by using the One-Time Password (OTP) provided below:
               </p>
               <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                OTP: ${code}
+                <b>OTP: ${code}</b>
               </p>
               <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
                 Please enter this OTP on the verification page to activate your Top Player account. If you haven't signed up for Top Player or have any concerns, please reach out to our support team immediately at ${process.env.SUPPORT_EMAILID}.
@@ -87,7 +87,7 @@ function resendMail(username, code) {
         <h1 style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">Password Reset OTP</h1>
         <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">Dear ${username},</p>
         <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">We recently received a request to reset the password for your Top Player account. To complete this process, please use the following One-Time Password (OTP):</p>
-        <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">OTP: ${code}</p>
+        <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;"><b>OTP: ${code}</b>}</p>
         <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">Please enter this OTP on the password reset page to create a new password for your account. If you didn't initiate this request or have any concerns about the security of your account, please contact our support team immediately at ${process.env.SUPPORT_EMAILID}.</p>
         <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">Thank you for helping us maintain the security of your Top Player account.</p>
         <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">Best regards, <br> Top Player Team</p>
@@ -147,7 +147,7 @@ function passwordResetMail(username, code) {
                         </p>
                         <p
                             style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                            OTP: ${code}
+                            <b>OTP: ${code}</b>
                         </p>
                         <p
                             style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
