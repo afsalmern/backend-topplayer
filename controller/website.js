@@ -836,14 +836,14 @@ exports.postStripePayment = async (req, res) => {
   try {
     const { courseId } = req.body;
     const courseDB = await db.course.findByPk(courseId);
-    const amount = courseDB.amount * 100;
+    const amount = courseDB.offerAmount;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "inr",
+      currency: "USD",
       customer: customerId,
       metadata: {
         courseId: courseId,
