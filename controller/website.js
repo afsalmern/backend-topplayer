@@ -836,7 +836,7 @@ exports.postStripePayment = async (req, res) => {
   try {
     const { courseId } = req.body;
     const courseDB = await db.course.findByPk(courseId);
-    const amount = courseDB.offerAmount;
+    const amount = courseDB.offerAmount * 100;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
