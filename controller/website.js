@@ -58,9 +58,9 @@ exports.getAllBanners = async (req, res, next) => {
       non_animate_text_ar: banner.non_animate_text_ar,
       animate_text: banner.animate_text.split(","), // Convert to array
       animate_text_ar: banner.animate_text_ar.split(","), // Convert to array
-      para: banner.para.split(","), // Convert to array
-      para_ar: banner.para_ar.split(","),
-      images:banner.bannerImages, // Convert to array
+      para: banner.para,
+      para_ar: banner.para_ar,
+      images: banner.bannerImages, // Convert to array
     }));
     res.status(200).json({ banners: transformedBanners });
   } catch (err) {
@@ -68,6 +68,8 @@ exports.getAllBanners = async (req, res, next) => {
     res.status(500).send({ message: err.toString() });
   }
 };
+
+
 
 exports.getAllCourses = (req, res, next) => {
   db.course
@@ -1014,7 +1016,7 @@ exports.contactUS = async (req, res, next) => {
       console.log("contact us message saved successfully");
       res
         .status(200)
-        .send({ message: "contact us message saved successfully" });
+        .send({ message: "Message submitted successfully" });
     })
     .catch((error) => {
       console.log(`error in saving contact us ${error.toString()}`);

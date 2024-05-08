@@ -33,6 +33,14 @@ const {
 const {
   getDashboardDetails,
 } = require("../controller/dashboard/details_controller");
+const {
+  getAllEnquiries,
+  deleteEnquiry,
+} = require("../controller/dashboard/enquiry_contoller");
+const {
+  getAllSubscriptions,
+  deleteSubscription,
+} = require("../controller/dashboard/subscription_controller");
 
 const router = express.Router();
 
@@ -74,8 +82,6 @@ const multerStorageNewsImage = multer.diskStorage({
 const uploadNewsImage = multer({
   storage: multerStorageNewsImage,
 });
-
-
 
 const multerStorageWhoVideo = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -420,6 +426,20 @@ router.post(
   (req, res) => {
     res.status(200).send({ message: "saved successfully" });
   }
+);
+
+router.get("/enquiries", [authMiddleware.checkUserAuth], getAllEnquiries);
+router.delete("/enquiries/:id", [authMiddleware.checkUserAuth], deleteEnquiry);
+
+router.get(
+  "/subscriptions",
+  [authMiddleware.checkUserAuth],
+  getAllSubscriptions
+);
+router.delete(
+  "/subscriptions/:id",
+  [authMiddleware.checkUserAuth],
+  deleteSubscription
 );
 
 router.post("/login", dashController.login);
