@@ -104,7 +104,7 @@ exports.updateTestimonial = (req, res, next) => {
         comment_en: req.body.comment_en || testimonial.comment_en,
         comment_ar: req.body.comment_ar || testimonial.comment_ar,
         user_name: req.body.user_name || testimonial.user_name,
-        courseId: req.body.user_role || testimonial.courseId,
+        courseId: req.body.courseId || testimonial.courseId,
       });
     })
     .then((updatedTestimonial) => {

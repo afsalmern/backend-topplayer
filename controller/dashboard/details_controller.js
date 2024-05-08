@@ -65,6 +65,7 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
+
     const paymentCounts = await db.payment.findAll({
       attributes: [
         [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
@@ -72,6 +73,7 @@ exports.getDashboardDetails = async (req, res) => {
       ],
       group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
     });
+
 
     // Send the counts in the response
     res.status(200).json({
