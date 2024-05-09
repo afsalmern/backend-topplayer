@@ -72,4 +72,6 @@ router.get(
   websiteController.payments
 );
 
+router.get("/visited", websiteController.getVisitors);
+
 module.exports = router;

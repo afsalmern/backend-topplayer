@@ -69,8 +69,6 @@ exports.getAllBanners = async (req, res, next) => {
   }
 };
 
-
-
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
@@ -1014,9 +1012,7 @@ exports.contactUS = async (req, res, next) => {
     })
     .then((result) => {
       console.log("contact us message saved successfully");
-      res
-        .status(200)
-        .send({ message: "Message submitted successfully" });
+      res.status(200).send({ message: "Message submitted successfully" });
     })
     .catch((error) => {
       console.log(`error in saving contact us ${error.toString()}`);
@@ -1065,6 +1061,25 @@ exports.getTermsAndConditions = async (req, res, next) => {
     res.status(200).json(termsAndConditions);
   } catch (error) {
     console.error("Error listing terms and conditions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getVisitors = async (req, res, next) => {
+  console.log("IP  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>", req.ip);
+  try {
+    if (req.ip) {
+      // const existing = await db.visitors.findOne({ ip: req.ip });
+      // if (existing) {
+      //   return res.status(200).json({ message: "IP found" });
+      // }
+      await db.visitors.create({
+        ip: req.ip,
+      });
+      res.status(200).json({ message: "Ip saved" });
+    }
+  } catch (error) {
+    console.error("Error saving ip:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

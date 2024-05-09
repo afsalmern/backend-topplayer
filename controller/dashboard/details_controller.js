@@ -45,7 +45,7 @@ exports.getDashboardDetails = async (req, res) => {
     const recentUsers = await db.user.findAll({
       order: [["createdAt", "DESC"]],
       limit: 10,
-      attributes: ["username", "email", "mobile","createdAt"],
+      attributes: ["username", "email", "mobile", "createdAt"],
       include: [
         {
           model: db.payment,
@@ -65,7 +65,6 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
-
     const paymentCounts = await db.payment.findAll({
       attributes: [
         [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
@@ -74,6 +73,19 @@ exports.getDashboardDetails = async (req, res) => {
       group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
     });
 
+    const visitors = await db.visitors.findAll({
+      attributes: [
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"],
+        [Sequelize.fn("COUNT", "*"), "visitors"],
+      ],
+      group: [
+        Sequelize.fn("YEAR", Sequelize.col("createdAt")),
+        Sequelize.fn("MONTH", Sequelize.col("createdAt")),
+      ],
+    });
+
+    const totatlVisitors = await db.visitors.count();
 
     // Send the counts in the response
     res.status(200).json({
@@ -83,6 +95,8 @@ exports.getDashboardDetails = async (req, res) => {
       monthlyPaymentCounts,
       enrolledUsersPerCourse,
       recentUsers,
+      visitors,
+      totatlVisitors,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
