@@ -801,10 +801,9 @@ exports.postStripePayment = async (req, res) => {
         amount: amount,
         userId: userDB.id,
       },
-      paymentMethods: ["applepay", "card"],
     });
 
-    res.json({ clientSecret: paymentIntent.client_secret, paymentRequest: paymentIntent });
+    res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.log(`error in pay ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
