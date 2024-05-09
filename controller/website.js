@@ -783,91 +783,91 @@ exports.watchVideo = (req, res, next) => {
     });
 };
 
-// exports.postStripePayment = async (req, res) => {
-//   try {
-//     const { courseId } = req.body;
-//     const courseDB = await db.course.findByPk(courseId);
-//     const amount = courseDB.offerAmount * 100;
-
-//     const userDB = await db.user.findByPk(req.userDecodeId);
-//     const customerId = userDB.stripe_customer_id;
-
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount,
-//       currency: "USD",
-//       customer: customerId,
-//       metadata: {
-//         courseId: courseId,
-//         amount: amount,
-//         userId: userDB.id,
-//       },
-//     });
-
-//     res.json({ clientSecret: paymentIntent.client_secret });
-//   } catch (error) {
-//     console.log(`error in pay ${error.toString()}`);
-//     res.status(500).send({ message: error.toString() });
-//   }
-// };
-
 exports.postStripePayment = async (req, res) => {
   try {
     const { courseId } = req.body;
     const courseDB = await db.course.findByPk(courseId);
     const amount = courseDB.offerAmount * 100;
 
-    // Check for Apple Pay payment method
-    const paymentData = req.body.paymentData; // Assuming payment data is sent in request body
+    const userDB = await db.user.findByPk(req.userDecodeId);
+    const customerId = userDB.stripe_customer_id;
 
-    if (paymentData) {
-      // Process Apple Pay payment
-      return await handleApplePayPayment(paymentData, amount);
-    } else {
-      // Process card payment using existing code
-      const userDB = await db.user.findByPk(req.userDecodeId);
-      const customerId = userDB.stripe_customer_id;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: "USD",
+      customer: customerId,
+      metadata: {
+        courseId: courseId,
+        amount: amount,
+        userId: userDB.id,
+      },
+    });
 
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount,
-        currency: "USD",
-        customer: customerId,
-        metadata: {
-          courseId: courseId,
-          amount: amount,
-          userId: userDB.id,
-        },
-      });
-
-      res.json({ clientSecret: paymentIntent.client_secret });
-    }
+    res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.log(`error in pay ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
   }
 };
 
-async function handleApplePayPayment(paymentData, amount) {
-  try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: "USD",
-      payment_method_types: ["apple_pay"],
-      confirmation_method: "automatic", // Automatic confirmation for seamless experience
-    });
+// exports.postStripePayment = async (req, res) => {
+//   try {
+//     const { courseId } = req.body;
+//     const courseDB = await db.course.findByPk(courseId);
+//     const amount = courseDB.offerAmount * 100;
 
-    // Use Stripe.js library to display Apple Pay sheet and handle payment
-    const { paymentIntent: confirmedIntent } = await stripe.confirmCardPayment(paymentIntent.client_secret, {
-      payment_method: paymentData,
-    });
+//     // Check for Apple Pay payment method
+//     const paymentData = req.body.paymentData; // Assuming payment data is sent in request body
 
-    // Handle successful payment (e.g., update course access for user)
-    console.log("Payment successful:", confirmedIntent);
-    return { message: "Payment successful!" };
-  } catch (error) {
-    console.error("Error processing Apple Pay:", error);
-    return { message: "Payment failed.", error: error.message };
-  }
-}
+//     if (paymentData) {
+//       // Process Apple Pay payment
+//       return await handleApplePayPayment(paymentData, amount);
+//     } else {
+//       // Process card payment using existing code
+//       const userDB = await db.user.findByPk(req.userDecodeId);
+//       const customerId = userDB.stripe_customer_id;
+
+//       const paymentIntent = await stripe.paymentIntents.create({
+//         amount,
+//         currency: "USD",
+//         customer: customerId,
+//         metadata: {
+//           courseId: courseId,
+//           amount: amount,
+//           userId: userDB.id,
+//         },
+//       });
+
+//       res.json({ clientSecret: paymentIntent.client_secret });
+//     }
+//   } catch (error) {
+//     console.log(`error in pay ${error.toString()}`);
+//     res.status(500).send({ message: error.toString() });
+//   }
+// };
+
+// async function handleApplePayPayment(paymentData, amount) {
+//   try {
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount,
+//       currency: "USD",
+//       payment_method_types: ["apple_pay"],
+//       confirmation_method: "automatic", // Automatic confirmation for seamless experience
+//     });
+
+//     // Use Stripe.js library to display Apple Pay sheet and handle payment
+//     const { paymentIntent: confirmedIntent } = await stripe.confirmCardPayment(paymentIntent.client_secret, {
+//       payment_method: paymentData,
+//     });
+
+//     // Handle successful payment (e.g., update course access for user)
+//     console.log("Payment successful:", confirmedIntent);
+//     return { message: "Payment successful!" };
+//   } catch (error) {
+//     console.error("Error processing Apple Pay:", error);
+//     return { message: "Payment failed.", error: error.message };
+//   }
+// }
 
 exports.stripeWebhook = async (req, res) => {
   console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
