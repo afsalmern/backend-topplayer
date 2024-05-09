@@ -428,6 +428,8 @@ router.post(
   }
 );
 
+
+
 router.get("/enquiries", [authMiddleware.checkUserAuth], getAllEnquiries);
 router.delete("/enquiries/:id", [authMiddleware.checkUserAuth], deleteEnquiry);
 

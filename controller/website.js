@@ -8,7 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const { passwordResetMail } = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail } = require("../utils/mail_content");
 const { count } = require("console");
 
 const messages_en = {
@@ -92,8 +92,12 @@ exports.getAllCourses = (req, res, next) => {
         const checklistItems = course?.description?.split("\n");
         const checklistItemsAr = course?.description_ar?.split("\n");
         // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
-        const checklistHTMLAr = checklistItemsAr?.map((item) => `<li><p>${item}</p></li>`).join("");
+        const checklistHTML = checklistItems
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
+        const checklistHTMLAr = checklistItemsAr
+          ?.map((item) => `<li><p>${item}</p></li>`)
+          .join("");
 
         const difference = course?.amount - course?.offerAmount;
         const offerPercentage = Math.round((difference / course?.amount) * 100);
@@ -153,12 +157,20 @@ exports.getCourseById = (req, res, next) => {
       const categoryName = course.category ? course.category.name : null;
 
       // Splitting the description into checklist items
-      const checklistItems = course.description ? course.description.split("\n") : [];
-      const checklistItemsAr = course.description_ar ? course.description_ar.split("\n") : [];
+      const checklistItems = course.description
+        ? course.description.split("\n")
+        : [];
+      const checklistItemsAr = course.description_ar
+        ? course.description_ar.split("\n")
+        : [];
 
       // Generating HTML markup for the checklist
-      const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
-      const checklistHTMLAr = checklistItemsAr.map((item) => `<li><p>${item}</p></li>`).join("");
+      const checklistHTML = checklistItems
+        .map((item) => `<li><p>${item}</p></li>`)
+        .join("");
+      const checklistHTMLAr = checklistItemsAr
+        .map((item) => `<li><p>${item}</p></li>`)
+        .join("");
 
       const difference = course.amount - course.offerAmount;
       const offerPercentage = Math.round((difference / course.amount) * 100);
@@ -178,7 +190,9 @@ exports.getCourseById = (req, res, next) => {
       res.status(200).json({ course: modifiedCourse });
     })
     .catch((err) => {
-      console.error(`Error in retrieving course ${courseId}: ${err.toString()}`);
+      console.error(
+        `Error in retrieving course ${courseId}: ${err.toString()}`
+      );
       res.status(500).send({ message: err.toString() });
     });
 };
@@ -281,7 +295,9 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     });
 
     if (!testimonials || testimonials.length === 0) {
-      return res.status(404).json({ message: `No testimonials found for course ${courseId}` });
+      return res
+        .status(404)
+        .json({ message: `No testimonials found for course ${courseId}` });
     }
 
     // Manipulate the course name for each testimonial and set the role in the JSON response
@@ -295,10 +311,14 @@ exports.getAllTestimonialsById = async (req, res, next) => {
       };
     });
 
-    console.log(`Retrieved all testimonials for course ${courseId} successfully`);
+    console.log(
+      `Retrieved all testimonials for course ${courseId} successfully`
+    );
     res.status(200).json({ testimonials: testimonialsWithRole });
   } catch (err) {
-    console.error(`Error in retrieving testimonials for course ${courseId}: ${err}`);
+    console.error(
+      `Error in retrieving testimonials for course ${courseId}: ${err}`
+    );
     const statusCode = err.status || 500;
     res.status(statusCode).json({
       error: `Error in retrieving testimonials for course ${courseId}`,
@@ -372,18 +392,27 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day < 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+          let videos_day_id = course_videos
+            .filter((video) => video.day === day)
+            .map((item) => item.id);
 
-          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
+          if (
+            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
+            videos_day_id.length > 0
+          )
             finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item)))
+          finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item)))
+          finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item)))
+          finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item)))
+          finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -458,18 +487,27 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day < 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+        let videos_day_id = course_videos
+          .filter((video) => video.day === day)
+          .map((item) => item.id);
 
-        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
+        if (
+          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
+          videos_day_id.length > 0
+        )
           finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item)))
+        finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item)))
+        finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item)))
+        finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item)))
+        finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
       (final_sub_course.name = subCourseDB.name),
@@ -622,7 +660,15 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video.url);
+        const videoPath = path.join(
+          __dirname,
+          "..",
+          "assets",
+          "trojanTTt",
+          "videos",
+          "new",
+          video.url
+        );
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -680,7 +726,9 @@ exports.getSubscribedCourse = (req, res, next) => {
                 {
                   // courseId: 2,
                   createdAt: {
-                    [db.Sequelize.Op.gt]: db.Sequelize.literal("DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"),
+                    [db.Sequelize.Op.gt]: db.Sequelize.literal(
+                      "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
+                    ),
                   },
                 },
               ],
@@ -827,7 +875,11 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature);
       try {
-        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          signature,
+          endpointSecret
+        );
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -845,7 +897,10 @@ exports.stripeWebhook = async (req, res) => {
         const userId = paymentIntent.metadata.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(`PaymentIntent was successful for customer ${customerId}:`, paymentIntent.id);
+        console.log(
+          `PaymentIntent was successful for customer ${customerId}:`,
+          paymentIntent.id
+        );
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -901,18 +956,24 @@ exports.stripeWebhook = async (req, res) => {
         };
 
         let emailTransporter = await createTransporter();
-        await emailTransporter.sendMail(mailOptions, async function (error, info) {
-          if (error) {
-            console.error("Error sending email in payment:", error);
-          } else {
-            console.log("Email sent:", info.response);
+        await emailTransporter.sendMail(
+          mailOptions,
+          async function (error, info) {
+            if (error) {
+              console.error("Error sending email in payment:", error);
+            } else {
+              console.log("Email sent:", info.response);
+            }
           }
-        });
+        );
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
+        console.log(
+          `PaymentIntent failed for customer ${failedCustomerId}:`,
+          failedPaymentIntent.id
+        );
         break;
       // Add more cases for other events as needed
       default:
@@ -937,25 +998,55 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
+      res
+        .status(500)
+        .send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
 exports.contactUS = async (req, res, next) => {
-  db.contact
-    .create({
+  const { name, email, message } = req.body;
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAILID,
+      to: process.env.EMAILID,
+      subject: "Top Player - New enquiry",
+      text: "A new enquiry from top player", // plain text body
+      html: EnquiryMail(name, message, email),
+    };
+    let emailTransporter = await createTransporter();
+
+    //  const gmail = google.gmail({ version: 'v1', emailAuth });
+
+    await emailTransporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.error("Error sending email:", error);
+        res.status(500).send({
+          message:
+            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+          // accessToken: token
+        });
+      } else {
+        console.log("Email sent:", info.response);
+        res.status(200).send({
+          message: "Please check your email to verify your account",
+        });
+      }
+    });
+
+    const result = await db.contact.create({
       name: req.body.name,
       email: req.body.email,
       message: req.body.message,
-    })
-    .then((result) => {
-      console.log("contact us message saved successfully");
-      res.status(200).send({ message: "Message submitted successfully" });
-    })
-    .catch((error) => {
-      console.log(`error in saving contact us ${error.toString()}`);
-      res.status(500).send({ message: error.toString() });
     });
+
+    console.log("Contact us message saved successfully");
+    res.status(200).send({ message: "Message submitted successfully" });
+  } catch (error) {
+    console.error(`Error in saving contact us message: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
 };
 
 exports.payments = async (req, res, next) => {
@@ -1030,6 +1121,16 @@ exports.getVisitors = async (req, res, next) => {
       });
       res.status(200).json({ message: "Ip saved" });
     }
+  } catch (error) {
+    console.error("Error saving ip:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.sendMail = async (req, res) => {
+  try {
+    const { name, mail, message } = req.body;
+    console.log(req.body);
   } catch (error) {
     console.error("Error saving ip:", error);
     res.status(500).json({ error: "Internal Server Error" });

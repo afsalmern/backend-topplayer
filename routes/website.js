@@ -74,4 +74,6 @@ router.get(
 
 router.get("/visited", websiteController.getVisitors);
 
+router.post("/send_mail", websiteController.sendMail);
+
 module.exports = router;
