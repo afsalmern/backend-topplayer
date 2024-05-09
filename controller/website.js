@@ -801,6 +801,7 @@ exports.postStripePayment = async (req, res) => {
         amount: amount,
         userId: userDB.id,
       },
+      paymentMethods: ["applepay", "card"],
     });
 
     res.json({ clientSecret: paymentIntent.client_secret, paymentRequest: paymentIntent });
