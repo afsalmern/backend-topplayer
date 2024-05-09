@@ -38,6 +38,7 @@ db.newsImage = require("./newsImage")(sequelize, Sequelize);
 db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 db.contact = require("./contact_us")(sequelize, Sequelize);
+db.visitors = require("./visitors")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });

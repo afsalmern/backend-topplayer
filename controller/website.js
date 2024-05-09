@@ -9,6 +9,7 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 const { passwordResetMail } = require("../utils/mail_content");
+const { count } = require("console");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -979,9 +980,11 @@ exports.payments = async (req, res, next) => {
 exports.getAllWhoAreWeData = async (req, res, next) => {
   try {
     const data = await db.whoAreWe.findAll();
-    console.log(data);
+
+    let { counts, units } = splitCount(data[0]?.users);
+
     console.log(`Retrieved all who are we data successfully`);
-    res.status(200).send({ data });
+    res.status(200).send({ data, counts, units });
   } catch (err) {
     console.error(`Error in retrieving who are we data: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
@@ -992,12 +995,43 @@ function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function splitCount(str) {
+  let counts, units;
+  const match = str.match(/(\d+)([a-zA-Z]+)/);
+  if (match) {
+    return {
+      counts: match[1], // Number part
+      units: match[2], // Unit part
+    };
+  }
+  return null;
+}
+
 exports.getTermsAndConditions = async (req, res, next) => {
   try {
     const termsAndConditions = await db.termsAndConditions.findAll();
     res.status(200).json(termsAndConditions);
   } catch (error) {
     console.error("Error listing terms and conditions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getVisitors = async (req, res, next) => {
+  console.log("IP  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>", req.ip);
+  try {
+    if (req.ip) {
+      // const existing = await db.visitors.findOne({ ip: req.ip });
+      // if (existing) {
+      //   return res.status(200).json({ message: "IP found" });
+      // }
+      await db.visitors.create({
+        ip: req.ip,
+      });
+      res.status(200).json({ message: "Ip saved" });
+    }
+  } catch (error) {
+    console.error("Error saving ip:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
