@@ -1133,6 +1133,7 @@ exports.getAllWhoAreWeData = async (req, res, next) => {
 
     let { counts, units } = splitCount(data[0]?.users);
 
+
     console.log(`Retrieved all who are we data successfully`);
     res.status(200).send({ data, counts, units });
   } catch (err) {
@@ -1146,15 +1147,21 @@ function capitalizeFirstLetter(string) {
 }
 
 function splitCount(str) {
-  let counts, units;
-  const match = str.match(/(\d+)([a-zA-Z]+)/);
-  if (match) {
-    return {
-      counts: match[1], // Number part
-      units: match[2], // Unit part
-    };
+  const regex = /[a-zA-Z]/;
+
+  if (regex.test(str)) {
+    const match = str.match(/(\d+)([a-zA-Z]+)/);
+    if (match) {
+      return {
+        counts: match[1] || "", // Number part
+        units: match[2] || "", // Unit part
+      };
+    }
   }
-  return null;
+  return {
+    counts: str,
+    units: "",
+  };
 }
 
 exports.getTermsAndConditions = async (req, res, next) => {
