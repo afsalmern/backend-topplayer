@@ -9,6 +9,7 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 const { passwordResetMail } = require("../utils/mail_content");
+const { count } = require("console");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -1042,9 +1043,11 @@ exports.payments = async (req, res, next) => {
 exports.getAllWhoAreWeData = async (req, res, next) => {
   try {
     const data = await db.whoAreWe.findAll();
-    console.log(data);
+
+    let { counts, units } = splitCount(data[0]?.users);
+
     console.log(`Retrieved all who are we data successfully`);
-    res.status(200).send({ data });
+    res.status(200).send({ data, counts, units });
   } catch (err) {
     console.error(`Error in retrieving who are we data: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
@@ -1053,6 +1056,18 @@ exports.getAllWhoAreWeData = async (req, res, next) => {
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function splitCount(str) {
+  let counts, units;
+  const match = str.match(/(\d+)([a-zA-Z]+)/);
+  if (match) {
+    return {
+      counts: match[1], // Number part
+      units: match[2], // Unit part
+    };
+  }
+  return null;
 }
 
 exports.getTermsAndConditions = async (req, res, next) => {
