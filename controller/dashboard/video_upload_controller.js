@@ -29,7 +29,6 @@ exports.addVideo = async (req, res, next) => {
   try {
     // Create the directory if it doesn't exist
     await fs.mkdir(path.dirname(thumbnailPath), { recursive: true });
-
     // Extract a frame from the video at 1 second
     await extractFrames({
       input: videoPath,
@@ -53,7 +52,7 @@ exports.addVideo = async (req, res, next) => {
       .status(200)
       .send({ message: "Video added successfully", video: result });
   } catch (error) {
-    console.error("Error:", error.toString());
+    console.error("Error Here:", error.toString());
     res.status(500).send({ message: error.toString() });
   }
 };

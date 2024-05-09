@@ -171,7 +171,7 @@ exports.getCourseById = (req, res, next) => {
         description: course.description || null,
         description_ar: course.description_ar || null,
         offerPercentage: offerPercentage || null,
-        enroll_text_ar: course.description_ar || null,
+        enroll_text_ar: course.enroll_text_ar || null,
       };
 
       console.log(`Retrieved course ${courseId} successfully`);
