@@ -803,7 +803,7 @@ exports.postStripePayment = async (req, res) => {
       },
     });
 
-    res.json({ clientSecret: paymentIntent.client_secret, setPaymentRequest: paymentIntent });
+    res.json({ clientSecret: paymentIntent.client_secret, paymentRequest: paymentIntent });
   } catch (error) {
     console.log(`error in pay ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
