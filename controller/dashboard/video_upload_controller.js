@@ -2,6 +2,7 @@ const db = require("../../models");
 const extractFrames = require("ffmpeg-extract-frames");
 const path = require("path");
 const fs = require("fs").promises; // Import the filesystem module
+const fss = require("fs"); // Import the filesystem module
 
 exports.addVideo = async (req, res, next) => {
   const videoUrl = req.file?.filename; // Assuming multer has already been set up to handle file uploads
@@ -133,34 +134,37 @@ exports.updateVideo = (req, res, next) => {
 };
 
 // Delete a video
-exports.deleteVideo = (req, res, next) => {
+
+exports.deleteVideo = async (req, res, next) => {
   const videoId = req.params.id;
-  db.video
-    .findByPk(videoId)
-    .then((video) => {
-      if (!video) {
-        return res.status(404).send({ message: "Video not found" });
-      }
-      // Delete associated file
-      fs.unlink(video.url, (err) => {
-        if (err) {
-          console.error(`Error deleting file: ${err.toString()}`);
-        }
-        // Proceed to delete record from database
-        video
-          .destroy()
-          .then(() => {
-            console.log(`Video with ID ${videoId} deleted successfully`);
-            res.status(200).send({ message: "Video deleted successfully" });
-          })
-          .catch((err) => {
-            console.error(`Error in deleting video: ${err.toString()}`);
-            res.status(500).send({ message: err.toString() });
-          });
-      });
-    })
-    .catch((err) => {
-      console.error(`Error in retrieving video: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
-    });
+
+  try {
+    // Find the video by ID
+    const video = await db.video.findByPk(videoId);
+
+    // If video not found, return 404
+    if (!video) {
+      return res.status(404).send({ message: "Video not found" });
+    }
+    // Delete associated file
+    const videoPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "assets",
+      "trojanTTt",
+      "videos",
+      "new",
+      video.url
+    );
+    fss.unlinkSync(videoPath); // Synchronously delete the file
+    // Proceed to delete record from database
+    await video.destroy();
+
+    console.log(`Video with ID ${videoId} deleted successfully`);
+    res.status(200).send({ message: "Video deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting video: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
 };

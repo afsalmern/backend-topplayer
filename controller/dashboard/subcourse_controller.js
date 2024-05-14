@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const db = require("../../models");
 
 // Create a new subcourse
@@ -36,6 +37,7 @@ exports.addSubCourse = (req, res, next) => {
 exports.getAllSubCourses = (req, res, next) => {
   db.subcourse
     .findAll({
+      where: { isDeleted: false },
       include: {
         model: db.course, // Assuming your Course model is named 'course' in your Sequelize instance
         attributes: ["name"], // Only retrieve the 'name' attribute from the Course model
@@ -98,12 +100,10 @@ exports.updateSubCourse = (req, res, next) => {
     })
     .then((updatedSubCourse) => {
       console.log(`Subcourse with ID ${subCourseId} updated successfully`);
-      res
-        .status(200)
-        .send({
-          message: "Subcourse updated successfully",
-          subcourse: updatedSubCourse,
-        });
+      res.status(200).send({
+        message: "Subcourse updated successfully",
+        subcourse: updatedSubCourse,
+      });
     })
     .catch((err) => {
       console.error(`Error in updating subcourse: ${err.toString()}`);
@@ -112,22 +112,26 @@ exports.updateSubCourse = (req, res, next) => {
 };
 
 // Delete a subcourse
-exports.deleteSubCourse = (req, res, next) => {
+exports.deleteSubCourse = async (req, res, next) => {
   const subCourseId = req.params.id;
-  db.subcourse
-    .findByPk(subCourseId)
-    .then((subcourse) => {
-      if (!subcourse) {
-        return res.status(404).send({ message: "Subcourse not found" });
-      }
-      return subcourse.destroy();
-    })
-    .then(() => {
-      console.log(`Subcourse with ID ${subCourseId} deleted successfully`);
-      res.status(200).send({ message: "Subcourse deleted successfully" });
-    })
-    .catch((err) => {
-      console.error(`Error in deleting subcourse: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
-    });
+
+  try {
+    // Find the subcourse by ID
+    const subcourse = await db.subcourse.findByPk(subCourseId);
+
+    // If subcourse not found, return 404
+    if (!subcourse) {
+      return res.status(404).send({ message: "Subcourse not found" });
+    }
+
+    // Soft delete the subcourse by setting isDeleted to true and save the changes
+    subcourse.isDeleted = true;
+    await subcourse.save();
+
+    console.log(`Subcourse with ID ${subCourseId} soft deleted successfully`);
+    res.status(200).send({ message: "Subcourse deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting subcourse: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
 };

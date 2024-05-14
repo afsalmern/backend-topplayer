@@ -74,7 +74,7 @@ exports.getAllBanners = async (req, res, next) => {
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
-      where: { isDeleted: false },
+      where:{isDeleted:false},
       include: [
         {
           model: db.category,

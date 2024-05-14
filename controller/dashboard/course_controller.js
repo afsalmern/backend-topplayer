@@ -1,4 +1,6 @@
 const db = require("../../models");
+const fs = require("fs");
+const path = require("path");
 
 // Create a new course
 
@@ -208,6 +210,42 @@ exports.deleteCourse = async (req, res, next) => {
       return res.status(404).send({ message: "Course not found" });
     }
 
+    if (course.imageUrl) {
+      const img = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.imageUrl
+      );
+      fs.unlinkSync(img);
+    }
+
+    if (course.videoUrl) {
+      const video = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.videoUrl
+      );
+      fs.unlinkSync(video);
+    }
+
+    if (course.bannerUrl) {
+      const banner = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.bannerUrl
+      );
+      fs.unlinkSync(banner);
+    }
+
     course.isDeleted = true;
     await course.save();
 
@@ -220,9 +258,7 @@ exports.deleteCourse = async (req, res, next) => {
 };
 
 // Delete a course
-const fs = require("fs");
-const path = require("path");
-const { where } = require("sequelize");
+
 
 exports.deleteMedia = async (req, res, next) => {
   const { id, filename, type } = req.params;
