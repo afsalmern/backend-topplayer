@@ -1018,7 +1018,7 @@ exports.stripeWebhook = async (req, res) => {
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
-        const html = passwordResetMail(userDB.username, amount, paymentIntent.id);
+        const html = paymentSuccessMail(userDB.username, amount, paymentIntent.id);
 
         const isMailsend = await sendMail(
           userDB.email,
