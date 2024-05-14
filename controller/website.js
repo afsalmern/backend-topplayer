@@ -371,10 +371,15 @@ exports.getCourseMaterial = async (req, res, next) => {
         },
       });
 
+      const startDate = new Date(courseDB.createdAt);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + courseDB.duration); // Add course duration in months
+
       const watched_videos_id = watchedVideo.map((item) => item.videoId);
       const final_course = {};
       final_course.id = courseDB.id;
       final_course.name = courseDB.name;
+      final_course.endDate = endDate;
       final_course.subCourses = [];
 
       const week1 = [1, 2, 3, 4, 5];
@@ -744,7 +749,9 @@ exports.getSubscribedCourse = (req, res, next) => {
 
       const subscribedCourses = user.courses.map((course) => ({
         courseId: course.id,
-        courseName: course.courseName, // Assuming this is the column name for the course name
+        courseName: course.name,
+        startDate: course.createdAt,
+        duration: course.duration, // Assuming this is the column name for the course name
         // Include other course details as needed
       }));
 
@@ -1132,7 +1139,6 @@ exports.getAllWhoAreWeData = async (req, res, next) => {
     const data = await db.whoAreWe.findAll();
 
     let { counts, units } = splitCount(data[0]?.users);
-
 
     console.log(`Retrieved all who are we data successfully`);
     res.status(200).send({ data, counts, units });
