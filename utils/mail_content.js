@@ -296,4 +296,4 @@ function EnquiryMail(user, message, mail) {
   </html>`;
 }
 
-module.exports = { WelcomeMail, resendMail, passwordResetMail, EnquiryMail };
+module.exports = { WelcomeMail, resendMail, passwordResetMail, EnquiryMail, paymentSuccessMail };

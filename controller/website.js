@@ -8,7 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const { passwordResetMail, EnquiryMail } = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
