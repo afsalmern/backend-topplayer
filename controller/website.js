@@ -8,7 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const { passwordResetMail, EnquiryMail } = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
 const { count } = require("console");
 
 const messages_en = {
@@ -1018,7 +1018,7 @@ exports.stripeWebhook = async (req, res) => {
           to: userDB.email,
           subject: "TheTopPlayer Payment",
           text: "payment successful",
-          html: passwordResetMail(userDB.username, amount, paymentIntent.id),
+          html: paymentSuccessMail(userDB.username, amount, paymentIntent.id),
         };
 
         let emailTransporter = await createTransporter();
