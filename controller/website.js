@@ -10,6 +10,7 @@ const sgMail = require("@sendgrid/mail");
 const db = require("../models");
 const { passwordResetMail, EnquiryMail } = require("../utils/mail_content");
 const { count } = require("console");
+const { where } = require("sequelize");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -73,6 +74,7 @@ exports.getAllBanners = async (req, res, next) => {
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
+      where: { isDeleted: false },
       include: [
         {
           model: db.category,

@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const db = require("../../models");
 
 exports.addCategory = (req, res, next) => {
@@ -17,7 +18,10 @@ exports.addCategory = (req, res, next) => {
 
 exports.getAllCategories = (req, res, next) => {
   db.category
-    .findAll({ order: [["createdAt", "DESC"]] })
+    .findAll({
+      where: { isDeleted: false }, // Condition to retrieve only non-deleted categories
+      order: [["createdAt", "DESC"]],
+    })
     .then((categories) => {
       console.log(`Retrieved all categories successfully`);
       res.status(200).send({ categories });
@@ -71,22 +75,26 @@ exports.updateCategory = (req, res, next) => {
     });
 };
 
-exports.deleteCategory = (req, res, next) => {
+exports.deleteCategory = async (req, res, next) => {
   const categoryId = req.params.id;
-  db.category
-    .findByPk(categoryId)
-    .then((category) => {
-      if (!category) {
-        return res.status(404).send({ message: "Category not found" });
-      }
-      return category.destroy();
-    })
-    .then(() => {
-      console.log(`Category with ID ${categoryId} deleted successfully`);
-      res.status(200).send({ message: "Category deleted successfully" });
-    })
-    .catch((err) => {
-      console.error(`Error in deleting category: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
-    });
+
+  try {
+    // Find the category by ID
+    const category = await db.category.findByPk(categoryId);
+
+    // If category not found, return 404
+    if (!category) {
+      return res.status(404).send({ message: "Category not found" });
+    }
+
+    // Soft delete the category by setting isDeleted to true and save the changes
+    category.isDeleted = true;
+    await category.save();
+
+    console.log(`Category with ID ${categoryId} soft deleted successfully`);
+    res.status(200).send({ message: "Category deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting category: ${err.toString()}`);
+    res.status(500).send({ message: err.toString() });
+  }
 };
