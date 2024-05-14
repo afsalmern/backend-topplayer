@@ -1,4 +1,6 @@
 const db = require("../../models");
+const fs = require("fs");
+const path = require("path");
 
 // Create a new course
 
@@ -42,6 +44,7 @@ exports.addCourse = async (req, res, next) => {
 exports.getAllCourses = async (req, res, next) => {
   db.course
     .findAll({
+      where: { isDeleted: false },
       include: {
         model: db.category, // Include the Category model
         attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
@@ -201,22 +204,50 @@ exports.deleteCourse = async (req, res, next) => {
   const courseId = req.params.id;
 
   try {
-    // Disable foreign key checks
-
-    // Find the course by ID
     const course = await db.course.findByPk(courseId);
 
-    // If course not found, return 404
     if (!course) {
       return res.status(404).send({ message: "Course not found" });
     }
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
 
-    // Delete the course
-    await course.destroy();
+    if (course.imageUrl) {
+      const img = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.imageUrl
+      );
+      fs.unlinkSync(img);
+    }
 
-    // Enable foreign key checks
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+    if (course.videoUrl) {
+      const video = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.videoUrl
+      );
+      fs.unlinkSync(video);
+    }
+
+    if (course.bannerUrl) {
+      const banner = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "courseImages",
+        course.bannerUrl
+      );
+      fs.unlinkSync(banner);
+    }
+
+    course.isDeleted = true;
+    await course.save();
 
     console.log(`Course with ID ${courseId} deleted successfully`);
     res.status(200).send({ message: "Course deleted successfully" });
@@ -227,8 +258,7 @@ exports.deleteCourse = async (req, res, next) => {
 };
 
 // Delete a course
-const fs = require("fs");
-const path = require("path");
+
 
 exports.deleteMedia = async (req, res, next) => {
   const { id, filename, type } = req.params;

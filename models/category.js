@@ -15,6 +15,11 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: true, // Initial value is true
     },
+    isDeleted: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // Initial value is false
+    },
   });
 
   return Category;

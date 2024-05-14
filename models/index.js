@@ -64,6 +64,7 @@ const RegisteredCourse = sequelize.define("registered_course", {
   },
 });
 
+
 db.registeredCourse = RegisteredCourse;
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
@@ -99,18 +100,18 @@ db.user.hasMany(db.device);
 db.course.hasMany(db.payment, {
   foreignKey: "courseId",
   as: "payments",
-  onDelete: "CASCADE",
-  onUpdate: "CASCADE",
+  onDelete: "cascade",
+  onUpdate: "cascade",
 });
 db.payment.belongsTo(db.course, {
   foreignKey: "courseId",
-  onDelete: "CASCADE",
-  onUpdate: "CASCADE",
+  onDelete: "cascade",
+  onUpdate: "cascade",
 });
 
 db.banner.hasMany(db.bannerImages, {
   foreignKey: "bannerId",
-  onDelete: "CASCADE",
+  onDelete: "cascade",
 });
 db.bannerImages.belongsTo(db.banner, { foreignKey: "bannerId" });
 
