@@ -11,6 +11,7 @@ const db = require("../models");
 const { passwordResetMail, EnquiryMail } = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
+const sendMail = require("../utils/mailer");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -23,24 +24,24 @@ const messages_en = {
 const FAQ = db.faq;
 const Testimonial = db.testimonial;
 
-const createTransporter = async () => {
-  try {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// const createTransporter = async () => {
+//   try {
+//     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-    // Create Nodemailer transporter using SendGrid
-    const transporter = nodemailer.createTransport({
-      service: "SendGrid",
-      auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY,
-      },
-    });
-    return transporter;
-  } catch (err) {
-    console.log(`error in create transporter ${err}`);
-    return err;
-  }
-};
+//     // Create Nodemailer transporter using SendGrid
+//     const transporter = nodemailer.createTransport({
+//       service: "SendGrid",
+//       auth: {
+//         user: "apikey",
+//         pass: process.env.SENDGRID_API_KEY,
+//       },
+//     });
+//     return transporter;
+//   } catch (err) {
+//     console.log(`error in create transporter ${err}`);
+//     return err;
+//   }
+// };
 
 // Retrieve all banners
 exports.getAllBanners = async (req, res, next) => {
@@ -74,7 +75,7 @@ exports.getAllBanners = async (req, res, next) => {
 exports.getAllCourses = (req, res, next) => {
   db.course
     .findAll({
-      where:{isDeleted:false},
+      where: { isDeleted: false },
       include: [
         {
           model: db.category,
@@ -1015,25 +1016,42 @@ exports.stripeWebhook = async (req, res) => {
         //                   <p>Best Regards,<br>`,
         //       };
 
-        const mailOptions = {
-          from: process.env.EMAILID,
-          to: userDB.email,
-          subject: "TheTopPlayer Payment",
-          text: "payment successful",
-          html: passwordResetMail(userDB.username, amount, paymentIntent.id),
-        };
+        const subject = "TheTopPlayer Payment";
+        const text = "payment successful"; // plain text body
+        const html = passwordResetMail(userDB.username, amount, paymentIntent.id);
 
-        let emailTransporter = await createTransporter();
-        await emailTransporter.sendMail(
-          mailOptions,
-          async function (error, info) {
-            if (error) {
-              console.error("Error sending email in payment:", error);
-            } else {
-              console.log("Email sent:", info.response);
-            }
-          }
+        const isMailsend = await sendMail(
+          userDB.email,
+          subject,
+          text,
+          html
         );
+
+        if (isMailsend) {
+          console.log("Email sent:");
+        } else {
+          console.error("Error sending email in payment:", error);
+        }
+
+        // const mailOptions = {
+        //   from: process.env.EMAILID,
+        //   to: userDB.email,
+        //   subject: "TheTopPlayer Payment",
+        //   text: "payment successful",
+        //   html: ,
+        // };
+
+        // let emailTransporter = await createTransporter();
+        // await emailTransporter.sendMail(
+        //   mailOptions,
+        //   async function (error, info) {
+        //     if (error) {
+        //       console.error("Error sending email in payment:", error);
+        //     } else {
+        //       console.log("Email sent:", info.response);
+        //     }
+        //   }
+        // );
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
@@ -1076,46 +1094,84 @@ exports.contactUS = async (req, res, next) => {
   const { name, email, message } = req.body;
 
   try {
-    const mailOptions = {
-      from: process.env.EMAILID,
-      to: process.env.EMAILID,
-      subject: "Top Player - New enquiry",
-      text: "A new enquiry from top player", // plain text body
-      html: EnquiryMail(name, message, email),
-    };
-    let emailTransporter = await createTransporter();
+    const subject = "Top Player - New enquiry";
+    const text = "A new enquiry from top player"; // plain text body
+    const html = EnquiryMail(name, message, email); // HTML body
 
-    //  const gmail = google.gmail({ version: 'v1', emailAuth });
-
-    await emailTransporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.error("Error sending email:", error);
-        res.status(500).send({
-          message:
-            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
-          // accessToken: token
-        });
-      } else {
-        console.log("Email sent:", info.response);
-        res.status(200).send({
-          message: "Please check your email to verify your account",
-        });
-      }
-    });
-
+    const isMailsend = await sendMail(
+      process.env.EMAILID,
+      subject,
+      text,
+      html
+    );
     const result = await db.contact.create({
       name: req.body.name,
       email: req.body.email,
       message: req.body.message,
     });
-
-    console.log("Contact us message saved successfully");
-    res.status(200).send({ message: "Message submitted successfully" });
+    if (isMailsend) {
+      console.log("Contact us message saved successfully and mail send");
+      res
+        .status(200)
+        .send({ message: "Message submitted successfully and mail is sent" });
+    } else {
+      console.log("Contact us message saved successfully and mail not send");
+      res.status(200).send({
+        message: "Message submitted successfully and mail is not sent",
+      });
+    }
   } catch (error) {
     console.error(`Error in saving contact us message: ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
   }
 };
+
+// exports.contactUS = async (req, res, next) => {
+//   const { name, email, message } = req.body;
+
+//   try {
+//     // const mailOptions = {
+//     //   from: process.env.EMAILID,
+//     //   to: "afsal@intersmart.in",
+//       const subject =  "Top Player - New enquiry"
+//       const text= "A new enquiry from top player" // plain text body
+//       const html = EnquiryMail(name, message, email),
+//     // };
+//     // let emailTransporter = await createTransporter();
+
+//     await sendMail("afsal@intersmart.in",subject,text,html)
+
+//     //  const gmail = google.gmail({ version: 'v1', emailAuth });
+
+//     // await emailTransporter.sendMail(mailOptions, function (error, info) {
+//     //   if (error) {
+//     //     console.error("Error sending email:", error);
+//     //     res.status(500).send({
+//     //       message:
+//     //         "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+//     //       // accessToken: token
+//     //     });
+//     //   } else {
+//     //     console.log("Email sent:", info.response);
+//     //     res.status(200).send({
+//     //       message: "Please check your email to verify your account",
+//     //     });
+//     //   }
+//     // });
+
+//     const result = await db.contact.create({
+//       name: req.body.name,
+//       email: req.body.email,
+//       message: req.body.message,
+//     });
+
+//     console.log("Contact us message saved successfully");
+//     res.status(200).send({ message: "Message submitted successfully" });
+//   } catch (error) {
+//     console.error(`Error in saving contact us message: ${error.toString()}`);
+//     res.status(500).send({ message: error.toString() });
+//   }
+// };
 
 exports.payments = async (req, res, next) => {
   const userId = req.userDecodeId;
@@ -1195,16 +1251,6 @@ exports.getVisitors = async (req, res, next) => {
       });
       res.status(200).json({ message: "Ip saved" });
     }
-  } catch (error) {
-    console.error("Error saving ip:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-exports.sendMail = async (req, res) => {
-  try {
-    const { name, mail, message } = req.body;
-    console.log(req.body);
   } catch (error) {
     console.error("Error saving ip:", error);
     res.status(500).json({ error: "Internal Server Error" });

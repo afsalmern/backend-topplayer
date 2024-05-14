@@ -13,7 +13,6 @@ exports.checkAuthDasboard = (req, res, next) => {
 
   next();
 };
-
 exports.checkUserAuth = (req, res, next) => {
   let token = req.header("X-Access-Token");
   const secret = process.env.SECRET;
@@ -35,7 +34,6 @@ console.log(token,"TOKEN");
         message: err.toString(),
       });
     }
-
     if (!decoded) {
       return res.status(401).send({
         authentication: false,
@@ -43,8 +41,11 @@ console.log(token,"TOKEN");
       });
     }
 
+    console.log("DECODED--------->",decoded);
+
     req.userDecodeId = decoded.id;
     req.token = token;
+    req.deviceId = decoded.deviceID
     next();
   });
 };

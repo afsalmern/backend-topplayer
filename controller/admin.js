@@ -7,31 +7,37 @@ const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
 const { error } = require("console");
-const { WelcomeMail, resendMail, passwordResetMail } = require("../utils/mail_content");
+const {
+  WelcomeMail,
+  resendMail,
+  passwordResetMail,
+} = require("../utils/mail_content");
+const sendMail = require("../utils/mailer");
+const { where } = require("sequelize");
 
 const stripe = require("stripe")(process.env.STRIPE_SK);
 const OAuth2 = google.auth.OAuth2;
 
 //const smtpTransport = require("../config/email.config");
-const createTransporter = async () => {
-  try {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// const createTransporter = async () => {
+//   try {
+//     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-    console.log(process.env.SENDGRID_API_KEY);
-    // Create Nodemailer transporter using SendGrid
-    const transporter = nodemailer.createTransport({
-      service: "SendGrid",
-      auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY,
-      },
-    });
-    return transporter;
-  } catch (err) {
-    console.log(`error in create transporter ${err}`);
-    return err;
-  }
-};
+//     console.log(process.env.SENDGRID_API_KEY);
+//     // Create Nodemailer transporter using SendGrid
+//     const transporter = nodemailer.createTransport({
+//       service: "SendGrid",
+//       auth: {
+//         user: "apikey",
+//         pass: process.env.SENDGRID_API_KEY,
+//       },
+//     });
+//     return transporter;
+//   } catch (err) {
+//     console.log(`error in create transporter ${err}`);
+//     return err;
+//   }
+// };
 
 exports.signup = async (req, res, next) => {
   try {
@@ -96,32 +102,51 @@ exports.signup = async (req, res, next) => {
       //     "</strong><br>Thank you!</p>", // html body
       // };
 
-      const mailOptions = {
-        from: process.env.EMAILID,
-        to: userEmail,
-        subject: "Welcome to Top Player - Verify Your Account",
-        text: "Please confirm your TheTopPlayer account", // plain text body
-        html: WelcomeMail(username, code),
-      };
-      let emailTransporter = await createTransporter();
+      const subject = "Welcome to Top Player - Verify Your Account";
+      const text = "Please confirm your TheTopPlayer account"; // plain text body
+      const html = WelcomeMail(username, code);
+
+      // const mailOptions = {
+      //   from: process.env.EMAILID,
+      //   to: userEmail,
+      //   subject: "Welcome to Top Player - Verify Your Account",
+      //   text: "Please confirm your TheTopPlayer account", // plain text body
+      //   html: WelcomeMail(username, code),
+      // };
+
+      const isMailsend = await sendMail(userEmail, subject, text, html);
+      if (isMailsend) {
+        console.log("Email sent:");
+        res.status(200).send({
+          message: "Please check your email to verify your account",
+        });
+      } else {
+        res.status(500).send({
+          message:
+            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+          // accessToken: token
+        });
+      }
+
+      // let emailTransporter = await createTransporter();
 
       //  const gmail = google.gmail({ version: 'v1', emailAuth });
 
-      await emailTransporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.error("Error sending email:", error);
-          res.status(500).send({
-            message:
-              "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
-            // accessToken: token
-          });
-        } else {
-          console.log("Email sent:", info.response);
-          res.status(200).send({
-            message: "Please check your email to verify your account",
-          });
-        }
-      });
+      // await emailTransporter.sendMail(mailOptions, function (error, info) {
+      //   if (error) {
+      //     console.error("Error sending email:", error);
+      //     res.status(500).send({
+      //       message:
+      //         "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+      //       // accessToken: token
+      //     });
+      //   } else {
+      //     console.log("Email sent:", info.response);
+      //     res.status(200).send({
+      //       message: "Please check your email to verify your account",
+      //     });
+      //   }
+      // });
     } else {
       console.log("User found:", user.username);
       res.status(409).send({
@@ -179,33 +204,52 @@ exports.resendVerification = async (req, res, next) => {
     //     "</strong><br>Thank you!</p>", // html body
     // };
 
-    const mailOptions = {
-      from: process.env.EMAILID,
-      to: userEmail,
-      subject: "TheTopPlayer verification",
-      text: "Please confirm your TheTopPlayer account", // plain text body
-      html: resendMail(user.username, code),
-    };
+    const subject = "TheTopPlayer verification";
+    const text = "Please confirm your TheTopPlayer account";
+    const html = resendMail(user.username, code);
 
-    let emailTransporter = await createTransporter();
+    const isMailsend = await sendMail(userEmail, subject, text, html);
+    if (isMailsend) {
+      console.log("Email sent:");
+      res.status(200).send({
+        message: "Please check your email to verify your account",
+      });
+    } else {
+      console.error("Error sending email:", error);
+      res.status(500).send({
+        message:
+          "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+        // accessToken: token
+      });
+    }
 
-    //  const gmail = google.gmail({ version: 'v1', emailAuth });
+    // const mailOptions = {
+    //   from: process.env.EMAILID,
+    //   to: userEmail,
+    //   subject: "TheTopPlayer verification",
+    //   text: "Please confirm your TheTopPlayer account", // plain text body
+    //   html: resendMail(user.username, code),
+    // };
 
-    await emailTransporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.error("Error sending email:", error);
-        res.status(500).send({
-          message:
-            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
-          // accessToken: token
-        });
-      } else {
-        console.log("Email sent:", info.response);
-        res.status(200).send({
-          message: "Please check your email to verify your account",
-        });
-      }
-    });
+    // let emailTransporter = await createTransporter();
+
+    // //  const gmail = google.gmail({ version: 'v1', emailAuth });
+
+    // await emailTransporter.sendMail(mailOptions, function (error, info) {
+    //   if (error) {
+    //     console.error("Error sending email:", error);
+    //     res.status(500).send({
+    //       message:
+    //         "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+    //       // accessToken: token
+    //     });
+    //   } else {
+    //     console.log("Email sent:", info.response);
+    //     res.status(200).send({
+    //       message: "Please check your email to verify your account",
+    //     });
+    //   }
+    // });
   } catch (error) {
     console.error(`error in adding new user ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
@@ -264,7 +308,10 @@ exports.login = async (req, res, next) => {
     }
 
     console.log(secret);
-    const passwordIsValid = await bcrypt.compareSync(password + secret, userDB.password);
+    const passwordIsValid = await bcrypt.compareSync(
+      password + secret,
+      userDB.password
+    );
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -277,15 +324,21 @@ exports.login = async (req, res, next) => {
     }
 
     if (!userDB.verified) {
-      console.error(`user ${userDB.username} loged in faild at ${date} because not verified`);
+      console.error(
+        `user ${userDB.username} loged in faild at ${date} because not verified`
+      );
       let err = new Error("Email not verified, please verify your email");
       err.code = 402;
       throw err;
     }
 
     if (!userDB.status) {
-      console.error(`User ${userDB.username} logged in failed at ${date} because the account is suspended.`);
-      let err = new Error("Your account is suspended. Please contact the administrator.");
+      console.error(
+        `User ${userDB.username} logged in failed at ${date} because the account is suspended.`
+      );
+      let err = new Error(
+        "Your account is suspended. Please contact the administrator."
+      );
       err.code = 401; // Updated error code to 402
       throw err;
     }
@@ -296,7 +349,9 @@ exports.login = async (req, res, next) => {
       },
     });
 
-    const isDevicePresent = devices.some((device) => device.deviceID === deviceID);
+    const isDevicePresent = devices.some(
+      (device) => device.deviceID === deviceID
+    );
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
       if (devices.length >= 2) {
@@ -311,7 +366,9 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    const token = jwt.sign({ id: userDB.id }, secret, { expiresIn: "90d" });
+    const token = jwt.sign({ id: userDB.id, deviceID }, secret, {
+      expiresIn: "90d",
+    });
 
     console.log(`user ${userDB.username} loged in successfully at ${date}`);
     res.status(200).send({
@@ -323,11 +380,41 @@ exports.login = async (req, res, next) => {
   } catch (error) {
     if (error.code == undefined) error.code = 500;
     if (error.code == 402) {
-      res.status(error.code).send({ message: error.toString(), verified: false });
+      res
+        .status(error.code)
+        .send({ message: error.toString(), verified: false });
     } else {
       console.error(`error in login ${error.toString()}`);
       res.status(error.code).send({ message: error.toString() });
     }
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  try {
+    const userId = req.userDecodeId;
+    const deviceId = req.deviceId;
+
+    const device = await db.device.findOne({
+      where: { deviceID: deviceId, userId: userId },
+    });
+
+    if (!device) {
+      // If device not found, user is already logged out
+      return res.status(200).send({
+        message: "User is already logged out",
+      });
+    }
+    if (device) {
+      await device.destroy();
+    }
+
+    res.status(200).send({
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error(`error in logout ${error.toString()}`);
+    res.status(error.code).send({ message: error.toString() });
   }
 };
 
@@ -465,7 +552,10 @@ exports.resetPassWebsite = async (req, res, next) => {
       throw err;
     }
 
-    const passwordIsValid = await bcrypt.compareSync(oldPassword + secret, userDB.password);
+    const passwordIsValid = await bcrypt.compareSync(
+      oldPassword + secret,
+      userDB.password
+    );
 
     const timestamp = Date.now();
     const date = new Date(timestamp);
@@ -550,30 +640,49 @@ exports.forgotPass = async (req, res, next) => {
     //         <p>Best Regards,<br>`,
     // };
 
-    const mailOptions = {
-      from: process.env.EMAILID,
-      to: userDB.email,
-      subject: "TheTopPlayer Password Reset",
-      text: "Password Reset",
-      html: passwordResetMail(userDB.username, code),
-    };
+    const subject = "TheTopPlayer Password Reset";
+    const text = "Password Reset"; // plain text body
+    const html = passwordResetMail(userDB.username, code);
 
-    let emailTransporter = await createTransporter();
-    await emailTransporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.error("Error sending email:", error);
-        res.status(500).send({
-          message:
-            "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
-          // accessToken: token
-        });
-      } else {
-        console.log("Email sent:", info.response);
-        res.status(200).send({
-          message: "Please check your email to Reset your pass",
-        });
-      }
-    });
+    const isMailsend = await sendMail(userDB.email, subject, text, html);
+    if (isMailsend) {
+      console.log("Email sent:");
+      res.status(200).send({
+        message: "Please check your email to Reset your pass",
+      });
+    } else {
+      console.error("Error sending email:", error);
+      res.status(500).send({
+        message:
+          "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+        // accessToken: token
+      });
+    }
+
+    // const mailOptions = {
+    //   from: process.env.EMAILID,
+    //   to: userDB.email,
+    //   subject: "TheTopPlayer Password Reset",
+    //   text: "Password Reset",
+    //   html: passwordResetMail(userDB.username, code),
+    // };
+
+    // let emailTransporter = await createTransporter();
+    // await emailTransporter.sendMail(mailOptions, function (error, info) {
+    //   if (error) {
+    //     console.error("Error sending email:", error);
+    //     res.status(500).send({
+    //       message:
+    //         "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
+    //       // accessToken: token
+    //     });
+    //   } else {
+    //     console.log("Email sent:", info.response);
+    //     res.status(200).send({
+    //       message: "Please check your email to Reset your pass",
+    //     });
+    //   }
+    // });
   } catch (error) {
     if (error.code == undefined) error.code = 500;
     console.error(`error in login ${error.toString()}`);
@@ -587,7 +696,8 @@ exports.verifyresetPass = async (req, res) => {
     const symbol = req.query.symbol;
 
     console.log(`user trying to verify his email ${req.query.id}`);
-    if (req.query.id == undefined || req.query.id == null) res.send("unverified code");
+    if (req.query.id == undefined || req.query.id == null)
+      res.send("unverified code");
     else {
       const token = req.query.id;
       jwt.verify(token, secret, (err, decoded) => {
@@ -610,9 +720,13 @@ exports.verifyresetPass = async (req, res) => {
               console.log("user can reset his password");
               //  res.send(token)
 
-              res.redirect(`${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`);
+              res.redirect(
+                `${process.env.CLIENT_HOST}/${symbol}/admin/change/${token}`
+              );
             } else {
-              res.status(401).send({ message: "Sorry but the user does not found" });
+              res
+                .status(401)
+                .send({ message: "Sorry but the user does not found" });
             }
           })
           .catch((error) => {
