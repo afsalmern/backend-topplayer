@@ -392,23 +392,27 @@ exports.login = async (req, res, next) => {
 
 exports.logout = async (req, res, next) => {
   try {
+    let device = null;
     const userId = req.userDecodeId;
     const deviceId = req.deviceId;
 
-    const device = await db.device.findOne({
-      where: { deviceID: deviceId, userId: userId },
-    });
-
+    if (deviceId !== undefined) {
+      device = await db.device.findOne({
+        where: { deviceID: deviceId, userId: userId },
+      });
+    }
     if (!device) {
       // If device not found, user is already logged out
+      console.log("Logged out successfully,no devices found!");
       return res.status(200).send({
-        message: "User is already logged out",
+        message: "Logged out successfully,no devices found!",
       });
     }
     if (device) {
       await device.destroy();
     }
-
+    
+    console.log("Logged out successfully");
     res.status(200).send({
       message: "Logged out successfully",
     });
