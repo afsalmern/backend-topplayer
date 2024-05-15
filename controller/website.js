@@ -8,7 +8,11 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
+const {
+  passwordResetMail,
+  EnquiryMail,
+  paymentSuccessMail,
+} = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
@@ -347,9 +351,9 @@ exports.getCourseMaterial = async (req, res, next) => {
       where: {
         courseId: courseId,
         userId: userId,
-        createdAt: {
-          [db.Op.gte]: monthsAgo,
-        },
+        // createdAt: {
+        //   [db.Op.gte]: monthsAgo,
+        // },
       },
     });
 
@@ -377,10 +381,9 @@ exports.getCourseMaterial = async (req, res, next) => {
       const startDate = new Date(registeredCourse.createdAt);
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + courseDB.duration);
-      
 
-      console.log("START",startDate);
-      console.log("END",endDate);
+      console.log("START", startDate);
+      console.log("END", endDate);
 
       const watched_videos_id = watchedVideo.map((item) => item.videoId);
       const final_course = {};
@@ -434,7 +437,7 @@ exports.getCourseMaterial = async (req, res, next) => {
         });
       }
 
-      console.log("FINAL",final_course);
+      console.log("FINAL", final_course);
 
       res.status(200).send(final_course);
     } else {
@@ -756,6 +759,8 @@ exports.getSubscribedCourse = (req, res, next) => {
         return res.status(404).send({ message: "User not found" });
       }
 
+      console.log("USER", user);
+
       const subscribedCourses = user.courses.map((course) => ({
         courseId: course.id,
         courseName: course.name,
@@ -1024,14 +1029,13 @@ exports.stripeWebhook = async (req, res) => {
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
-        const html = paymentSuccessMail(userDB.username, amount, paymentIntent.id);
-
-        const isMailsend = await sendMail(
-          userDB.email,
-          subject,
-          text,
-          html
+        const html = paymentSuccessMail(
+          userDB.username,
+          amount,
+          paymentIntent.id
         );
+
+        const isMailsend = await sendMail(userDB.email, subject, text, html);
 
         if (isMailsend) {
           console.log("Email sent:");
@@ -1104,12 +1108,7 @@ exports.contactUS = async (req, res, next) => {
     const text = "A new enquiry from top player"; // plain text body
     const html = EnquiryMail(name, message, email); // HTML body
 
-    const isMailsend = await sendMail(
-      process.env.EMAILID,
-      subject,
-      text,
-      html
-    );
+    const isMailsend = await sendMail(process.env.EMAILID, subject, text, html);
     const result = await db.contact.create({
       name: req.body.name,
       email: req.body.email,
