@@ -17,6 +17,7 @@ async function sendMail(to, subject, text, html) {
       subject: subject, // Subject line
       text: text, // plain text body
       html: html, // html body
+      cc:["afsal@intersmart.in,salwa@intersmart.ae"]
     });
     console.log("Message sent: %s", info.messageId);
     return true; // Email sent successfully

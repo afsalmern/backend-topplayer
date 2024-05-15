@@ -738,18 +738,18 @@ exports.getSubscribedCourse = (req, res, next) => {
           model: db.course,
           through: {
             model: db.registeredCourse,
-            where: {
-              [db.Sequelize.Op.or]: [
-                {
-                  // courseId: 2,
-                  createdAt: {
-                    [db.Sequelize.Op.gt]: db.Sequelize.literal(
-                      "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
-                    ),
-                  },
-                },
-              ],
-            },
+            // where: {
+            //   [db.Sequelize.Op.or]: [
+            //     {
+            //       // courseId: 2,
+            //       createdAt: {
+            //         [db.Sequelize.Op.gt]: db.Sequelize.literal(
+            //           "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
+            //         ),
+            //       },
+            //     },
+            //   ],
+            // },
           },
         },
       ],
