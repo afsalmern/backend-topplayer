@@ -374,9 +374,13 @@ exports.getCourseMaterial = async (req, res, next) => {
         },
       });
 
-      const startDate = new Date(courseDB.createdAt);
+      const startDate = new Date(registeredCourse.createdAt);
       const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + courseDB.duration); // Add course duration in months
+      endDate.setMonth(endDate.getMonth() + courseDB.duration);
+      
+
+      console.log("START",startDate);
+      console.log("END",endDate);
 
       const watched_videos_id = watchedVideo.map((item) => item.videoId);
       const final_course = {};
@@ -429,6 +433,8 @@ exports.getCourseMaterial = async (req, res, next) => {
           finished_weeks: finished_weeks,
         });
       }
+
+      console.log("FINAL",final_course);
 
       res.status(200).send(final_course);
     } else {
