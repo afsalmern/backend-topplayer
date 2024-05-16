@@ -817,7 +817,7 @@ exports.postStripePayment = async (req, res) => {
       amount,
       currency: "USD",
       customer: customerId,
-      payment_method_types: ["apple_pay", "card", "link"],
+      paymentMethodOrder: ["apple_pay", "card", "link", "google_pay"],
       metadata: {
         courseId: courseId,
         amount: amount,
