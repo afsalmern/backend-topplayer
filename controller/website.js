@@ -817,8 +817,6 @@ exports.postStripePayment = async (req, res) => {
       amount,
       currency: "USD",
       customer: customerId,
-      // payment_method_types: ["card", "link", "googlepay", "applepay"],
-      setup_future_usage: 'off_session',
       metadata: {
         courseId: courseId,
         amount: amount,
