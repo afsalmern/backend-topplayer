@@ -813,7 +813,7 @@ exports.postStripePayment = async (req, res) => {
       amount,
       currency: "USD",
       customer: customerId,
-      setup_future_usage: "none",
+      setup_future_usage: "on_session",
       metadata: {
         courseId: courseId,
         amount: amount,
