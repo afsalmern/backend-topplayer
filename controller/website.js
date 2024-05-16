@@ -818,7 +818,7 @@ exports.postStripePayment = async (req, res) => {
         amount: amount,
         userId: userDB.id,
       },
-      payment_intent_data: {
+      payment_method_data: {
         setup_future_usage: "none",
       },
     });
