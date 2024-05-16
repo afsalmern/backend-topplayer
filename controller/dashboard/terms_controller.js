@@ -1,12 +1,12 @@
 const db = require("../../models");
 
 exports.addTermsAndConditions = async (req, res, next) => {
-  const { content, content_ar } = req.body;
+  const { editorHtmlAr, editorHtmlEng } = req.body;
 
   try {
     await db.termsAndConditions.create({
-      content: content,
-      content_ar: content_ar,
+      content: editorHtmlEng,
+      content_ar: editorHtmlAr,
     });
     console.log("Terms and conditions added successfully");
     res
@@ -30,7 +30,7 @@ exports.getTermsAndConditions = async (req, res, next) => {
 
 exports.updateTermsAndConditions = async (req, res, next) => {
   const { id } = req.params;
-  let { content, content_ar } = req.body;
+  let { editorHtmlAr, editorHtmlEng } = req.body;
 
   console.log(req.body);
 
@@ -40,8 +40,8 @@ exports.updateTermsAndConditions = async (req, res, next) => {
       return res.status(404).send({ message: "Item not found" });
     }
     const updatedData = await data.update({
-      content: content,
-      content_ar: content_ar,
+      content: editorHtmlEng,
+      content_ar: editorHtmlAr,
     });
     console.log("Terms and conditions updated successfully");
     res.status(200).json({
