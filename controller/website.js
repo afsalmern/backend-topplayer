@@ -813,9 +813,7 @@ exports.postStripePayment = async (req, res) => {
       amount,
       currency: "USD",
       customer: customerId,
-      payment_intent_data: {
-        setup_future_usage: "none",
-      },
+      setup_future_usage: "none",
       metadata: {
         courseId: courseId,
         amount: amount,
