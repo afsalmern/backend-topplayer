@@ -30,7 +30,9 @@ exports.getTermsAndConditions = async (req, res, next) => {
 
 exports.updateTermsAndConditions = async (req, res, next) => {
   const { id } = req.params;
-  const { content, content_ar } = req.body;
+  let { content, content_ar } = req.body;
+
+  console.log(req.body);
 
   try {
     const data = await db.termsAndConditions.findByPk(id);
@@ -38,16 +40,14 @@ exports.updateTermsAndConditions = async (req, res, next) => {
       return res.status(404).send({ message: "Item not found" });
     }
     const updatedData = await data.update({
-      content: content || data.content,
-      content_ar: content_ar || data.content_ar,
+      content: content,
+      content_ar: content_ar,
     });
     console.log("Terms and conditions updated successfully");
-    res
-      .status(200)
-      .json({
-        message: "Terms and conditions updated successfully",
-        data: updatedData,
-      });
+    res.status(200).json({
+      message: "Terms and conditions updated successfully",
+      data: updatedData,
+    });
   } catch (error) {
     console.error("Error updating terms and conditions:", error);
     res.status(500).json({ error: "Internal Server Error" });
