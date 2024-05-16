@@ -8,11 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const {
-  passwordResetMail,
-  EnquiryMail,
-  paymentSuccessMail,
-} = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
@@ -817,6 +813,9 @@ exports.postStripePayment = async (req, res) => {
       amount,
       currency: "USD",
       customer: customerId,
+      payment_intent_data: {
+        setup_future_usage: "none",
+      },
       metadata: {
         courseId: courseId,
         amount: amount,
@@ -974,11 +973,7 @@ exports.stripeWebhook = async (req, res) => {
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
-        const html = paymentSuccessMail(
-          userDB.username,
-          amount,
-          paymentIntent.id
-        );
+        const html = paymentSuccessMail(userDB.username, amount, paymentIntent.id);
 
         const isMailsend = await sendMail(userDB.email, subject, text, html);
 
