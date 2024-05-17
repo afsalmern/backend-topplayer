@@ -311,6 +311,7 @@ exports.login = async (req, res, next) => {
 
     console.log("DEVICE ID FROM LOGIN ------------------->", deviceID);
     console.log("REQ HEADERS --------> ",req.headers);
+    console.log("REQUEST --------> ",req);
 
     // console.log("DEVICE", deviceID.toString());
 
