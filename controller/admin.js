@@ -47,17 +47,8 @@ exports.signup = async (req, res, next) => {
     const username = req.body.username;
     //const langsymbol = req.body.symbol;
     const mobile = req.body.mobile;
-    const netId =
-      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-    const browserID = req.body.deviceId;
-    // const deviceId = req.body.deviceId;
-    // const deviceId = req.ip || req.connection.remoteAddress;
-    const deviceId = `${browserID}${netId}`;
-    // const deviceId =
-    //   req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const deviceId = req.body.deviceId;
     const password = bcrypt.hashSync(req.body.password + process.env.SECRET);
-
-    console.log("DEVICE ID FROM SIGNUP ---------------->>>", deviceId);
 
     const characters = "0123456789";
     let code = "";
@@ -80,6 +71,7 @@ exports.signup = async (req, res, next) => {
     });
 
     if (created) {
+      console.log("User created:", user.username);
       // const link = process.env.HOST + "/admin/auth/verify?id=" + vc + "&userId=" + user.id + "&lansymbol=" + langsymbol;
 
       const customer = await stripe.customers.create({
@@ -156,6 +148,7 @@ exports.signup = async (req, res, next) => {
       //   }
       // });
     } else {
+      console.log("User found:", user.username);
       res.status(409).send({
         message: "user already exist",
       });
@@ -300,20 +293,7 @@ exports.login = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     const secret = process.env.SECRET;
-    const browserID = req.body.deviceId;
-    const netId = req.headers["x-forwarded-for"];
-
-    // const deviceID = req.ip || req.connection.remoteAddress;
-    const deviceID = `${browserID}${netId}`;
-    // const deviceID =
-    //   browserID + req.headers["x-forwarded-for"] ||
-    //   req.connection.remoteAddress;
-
-    console.log("DEVICE ID FROM LOGIN ------------------->", deviceID);
-    console.log("REQ HEADERS --------> ",req.headers);
-    console.log("REQUEST --------> ",req);
-
-    // console.log("DEVICE", deviceID.toString());
+    const deviceID = req.body.deviceId;
 
     const userDB = await db.user.findOne({
       where: {
@@ -376,7 +356,7 @@ exports.login = async (req, res, next) => {
     if (!isDevicePresent) {
       if (devices.length >= 2) {
         let err = new Error(
-          "Maximum allowed logins reached. Please log out from your other devices to proceed."
+          "Maximum allowed logins reached. Please log out from your other devices to proceed"
         );
         err.code = 401;
         throw err;
@@ -393,7 +373,6 @@ exports.login = async (req, res, next) => {
     });
 
     console.log(`user ${userDB.username} loged in successfully at ${date}`);
-
     res.status(200).send({
       accessToken: token,
       status: userDB.status,
