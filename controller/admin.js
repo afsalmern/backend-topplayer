@@ -72,7 +72,6 @@ exports.signup = async (req, res, next) => {
     });
 
     if (created) {
-      console.log("User created:", user.username);
       // const link = process.env.HOST + "/admin/auth/verify?id=" + vc + "&userId=" + user.id + "&lansymbol=" + langsymbol;
 
       const customer = await stripe.customers.create({
@@ -149,7 +148,6 @@ exports.signup = async (req, res, next) => {
       //   }
       // });
     } else {
-      console.log("User found:", user.username);
       res.status(409).send({
         message: "user already exist",
       });
@@ -297,8 +295,12 @@ exports.login = async (req, res, next) => {
     // const deviceID = req.body.deviceId;
 
     const deviceID = req.ip || req.connection.remoteAddress;
+    const deviceIP = req.headers["x-forward-for"];
 
-    console.log("DEVICE", deviceID.toString());
+    console.log("DEVICEIP-------------------", deviceIP);
+    console.log("HEADER-------------------", req.headers);
+
+    // console.log("DEVICE", deviceID.toString());
 
     const userDB = await db.user.findOne({
       where: {
