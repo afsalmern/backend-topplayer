@@ -310,6 +310,7 @@ exports.login = async (req, res, next) => {
     //   req.connection.remoteAddress;
 
     console.log("DEVICE ID FROM LOGIN ------------------->", deviceID);
+    console.log("REQ HEADERS --------> ",req.headers);
 
     // console.log("DEVICE", deviceID.toString());
 
