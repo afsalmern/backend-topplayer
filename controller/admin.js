@@ -47,10 +47,14 @@ exports.signup = async (req, res, next) => {
     const username = req.body.username;
     //const langsymbol = req.body.symbol;
     const mobile = req.body.mobile;
+    const netId =
+      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const browserID = req.body.deviceId;
     // const deviceId = req.body.deviceId;
     // const deviceId = req.ip || req.connection.remoteAddress;
-    const deviceId =
-      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const deviceId = `${browserID}${netId}`;
+    // const deviceId =
+    //   req.headers["x-forwarded-for"] || req.connection.remoteAddress;
     const password = bcrypt.hashSync(req.body.password + process.env.SECRET);
 
     const characters = "0123456789";
@@ -294,11 +298,14 @@ exports.login = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     const secret = process.env.SECRET;
-    // const deviceID = req.body.deviceId;
+    const browserID = req.body.deviceId;
+    const netId = req.headers["x-forwarded-for"];
 
     // const deviceID = req.ip || req.connection.remoteAddress;
-    const deviceID =
-      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const deviceID = `${browserID}${netId}`;
+    // const deviceID =
+    //   browserID + req.headers["x-forwarded-for"] ||
+    //   req.connection.remoteAddress;
 
     console.log("HEADER-------------------", req.headers);
 
