@@ -753,6 +753,7 @@ exports.resetPassEmail = async (req, res, next) => {
     const newPasswordReq = req.body.newpassword;
     const email = req.body.email;
     const VC = req.body.verification_code;
+    const deviceID = req.body.deviceId;
 
     const userDB = await db.user.findOne({
       where: {
@@ -775,10 +776,43 @@ exports.resetPassEmail = async (req, res, next) => {
     if (VC !== vcDB.VC && VC !== "verified") {
       throw new Error("verification code not valid");
     }
+
+    const devices = await db.device.findAll({
+      where: {
+        userId: userDB.id,
+      },
+    });
+
+    const isDevicePresent = devices.some(
+      (device) => device.deviceID === deviceID
+    );
+    console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
+    if (!isDevicePresent) {
+      if (devices.length >= 2) {
+        let err = new Error(
+          "Maximum allowed logins reached. Please log out from your other devices to proceed"
+        );
+        err.code = 401;
+        throw err;
+      } else {
+        await db.device.create({
+          userId: userDB.id,
+          deviceID: deviceID,
+        });
+      }
+    }
+
     const new_password = bcrypt.hashSync(newPasswordReq + secret);
     userDB.password = new_password;
     await userDB.save();
-    res.status(200).send({ message: "password updated successfully" });
+
+    const token = jwt.sign({ id: userDB.id, deviceID }, secret, {
+      expiresIn: "90d",
+    });
+
+    res
+      .status(200)
+      .send({ accessToken: token, message: "password updated successfully" });
   } catch (error) {
     if (error.code == undefined) error.code = 500;
     console.error(`error in updating user password ${error.toString()}`);
