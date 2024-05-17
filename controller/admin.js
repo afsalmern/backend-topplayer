@@ -57,6 +57,8 @@ exports.signup = async (req, res, next) => {
     //   req.headers["x-forwarded-for"] || req.connection.remoteAddress;
     const password = bcrypt.hashSync(req.body.password + process.env.SECRET);
 
+    console.log("DEVICE ID FROM SIGNUP ---------------->>>", deviceId);
+
     const characters = "0123456789";
     let code = "";
 
@@ -307,7 +309,7 @@ exports.login = async (req, res, next) => {
     //   browserID + req.headers["x-forwarded-for"] ||
     //   req.connection.remoteAddress;
 
-    console.log("HEADER-------------------", req.headers);
+    console.log("DEVICE ID FROM LOGIN ------------------->", deviceID);
 
     // console.log("DEVICE", deviceID.toString());
 
