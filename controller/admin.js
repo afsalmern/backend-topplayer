@@ -355,7 +355,7 @@ exports.login = async (req, res, next) => {
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
       if (devices.length >= 2) {
-        let err = new Error("You are already logged in on two devices. Please log out from one of the devices and try again");
+        let err = new Error("Maximum allowed logins reached. Please log out from your other devices to proceed.");
         err.code = 401;
         throw err;
       } else {
