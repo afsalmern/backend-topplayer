@@ -47,7 +47,8 @@ exports.signup = async (req, res, next) => {
     const username = req.body.username;
     //const langsymbol = req.body.symbol;
     const mobile = req.body.mobile;
-    const deviceId = req.body.deviceId;
+    // const deviceId = req.body.deviceId;
+    const deviceId = req.ip || req.connection.remoteAddress;
     const password = bcrypt.hashSync(req.body.password + process.env.SECRET);
 
     const characters = "0123456789";
@@ -293,7 +294,11 @@ exports.login = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     const secret = process.env.SECRET;
-    const deviceID = req.body.deviceId;
+    // const deviceID = req.body.deviceId;
+
+    const deviceID = req.ip || req.connection.remoteAddress;
+
+    console.log("DEVICE", deviceID.toString());
 
     const userDB = await db.user.findOne({
       where: {
@@ -355,7 +360,9 @@ exports.login = async (req, res, next) => {
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
       if (devices.length >= 2) {
-        let err = new Error("Maximum allowed logins reached. Please log out from your other devices to proceed.");
+        let err = new Error(
+          "Maximum allowed logins reached. Please log out from your other devices to proceed."
+        );
         err.code = 401;
         throw err;
       } else {
@@ -371,6 +378,7 @@ exports.login = async (req, res, next) => {
     });
 
     console.log(`user ${userDB.username} loged in successfully at ${date}`);
+
     res.status(200).send({
       accessToken: token,
       status: userDB.status,
@@ -411,7 +419,7 @@ exports.logout = async (req, res, next) => {
     if (device) {
       await device.destroy();
     }
-    
+
     console.log("Logged out successfully");
     res.status(200).send({
       message: "Logged out successfully",
