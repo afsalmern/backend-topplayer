@@ -83,6 +83,33 @@ const uploadNewsImage = multer({
   storage: multerStorageNewsImage,
 });
 
+const multerStorageNews = multer.diskStorage({
+  destination: (req, file, cb) => {
+    console.log("Inside multer", file);
+
+    const folder = {
+      images: "public/newsImages",
+      coverimage: "public/newsCoverImages",
+    };
+    const uploadFolder = folder[file.fieldname]; // Get folder based on field name
+    cb(null, uploadFolder);
+    // cb(null, 'public/uploads')
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${file.fieldname}-${Date.now()}${ext}`); // Unique filename with timestamp
+  },
+});
+
+const uploadNewsFiles = multer({
+  storage: multerStorageNews, // Limit file size to 5MB (optional)
+});
+
+const newsFileUpload = uploadNewsFiles.fields([
+  { name: "images", maxCount: 15 },
+  { name: "coverimage", maxCount: 1 },
+]);
+
 const multerStorageWhoVideo = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/who_we_videos");
@@ -252,14 +279,14 @@ router.delete(
 router.post(
   "/news",
   [authMiddleware.checkUserAuth],
-  uploadNewsImage.any(),
+  newsFileUpload,
   newsController.addNews
 );
 router.get("/news", [authMiddleware.checkUserAuth], newsController.getAllNews);
 router.put(
   "/news/:id",
   [authMiddleware.checkUserAuth],
-  uploadNewsImage.any(),
+  newsFileUpload,
   newsController.updateNews
 );
 
@@ -427,8 +454,6 @@ router.post(
     res.status(200).send({ message: "saved successfully" });
   }
 );
-
-
 
 router.get("/enquiries", [authMiddleware.checkUserAuth], getAllEnquiries);
 router.delete("/enquiries/:id", [authMiddleware.checkUserAuth], deleteEnquiry);

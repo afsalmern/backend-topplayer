@@ -11,12 +11,11 @@ const messages_en = {
 
 exports.addNews = (req, res, next) => {
   const { title_en, title_ar, description_en, description_ar } = req.body;
-  console.log("images", req.body);
+
   const imageUrls = [];
 
-  console.log("req.files===>", req.body);
-
   console.log("files==============>", req.files);
+
   // Check if files are uploaded
   if (!req.files) {
     return res
@@ -25,11 +24,15 @@ exports.addNews = (req, res, next) => {
   }
 
   // Extract image URLs from the uploaded files
-  for (const image of req.files) {
+  for (const image of req.files.images) {
     // Assuming each image object has a `buffer` property containing the image data
     const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
     imageUrls.push(imageUrl);
   }
+
+  const coverimage = req.files.coverimage
+    ? req.files.coverimage[0].filename
+    : null;
 
   // First, create the news
   db.news
@@ -38,6 +41,7 @@ exports.addNews = (req, res, next) => {
       title_ar,
       description_en,
       description_ar,
+      coverimage,
     })
     .then((createdNews) => {
       // If news creation is successful, associate the images with the news
@@ -120,12 +124,14 @@ exports.updateNews = async (req, res, next) => {
     const { title_en, title_ar, description_en, description_ar } = req.body;
     let imageUrls = [];
 
-    if (req.files) {
-      for (const image of req.files) {
+    if (req.files.images) {
+      for (const image of req.files.images) {
         const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
         imageUrls.push(imageUrl);
       }
     }
+
+    console.log(req.files.coverimage);
 
     const news = await db.news.findByPk(newsId, {
       include: [{ model: db.newsImage, as: "images" }], // Include associated images
@@ -141,6 +147,7 @@ exports.updateNews = async (req, res, next) => {
       title_ar: title_ar || news.title_ar,
       description_en: description_en || news.description_en,
       description_ar: description_ar || news.description_ar,
+      coverimage: req.files.coverimage[0].filename || news.coverimage,
     });
 
     // Fetch existing image URLs
