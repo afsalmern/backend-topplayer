@@ -124,6 +124,10 @@ exports.updateNews = async (req, res, next) => {
     const { title_en, title_ar, description_en, description_ar } = req.body;
     let imageUrls = [];
 
+    if (req.files) {
+      console.log("HERE");
+    }
+
     if (req.files.images) {
       for (const image of req.files.images) {
         const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
@@ -131,11 +135,16 @@ exports.updateNews = async (req, res, next) => {
       }
     }
 
-    console.log(req.files.coverimage);
+    console.log("FILES-------------", req.files);
 
     const news = await db.news.findByPk(newsId, {
       include: [{ model: db.newsImage, as: "images" }], // Include associated images
     });
+
+    const coverImageFile =
+      req.files && req.files.coverimage
+        ? req.files.coverimage[0].filename
+        : news.coverimage;
 
     if (!news) {
       return res.status(404).send({ message: messages_en.news_not_found });
@@ -147,7 +156,7 @@ exports.updateNews = async (req, res, next) => {
       title_ar: title_ar || news.title_ar,
       description_en: description_en || news.description_en,
       description_ar: description_ar || news.description_ar,
-      coverimage: req.files.coverimage[0].filename || news.coverimage,
+      coverimage: coverImageFile,
     });
 
     // Fetch existing image URLs
@@ -177,24 +186,24 @@ exports.updateNews = async (req, res, next) => {
 };
 
 // Delete a news
-exports.deleteNews = (req, res, next) => {
+exports.deleteNews = async (req, res, next) => {
   const newsId = req.params.id;
-  db.news
-    .findByPk(newsId)
-    .then((news) => {
-      if (!news) {
-        return res.status(404).send({ message: messages_en.news_not_found });
-      }
-      return news.destroy();
-    })
-    .then(() => {
-      console.log(`News with ID ${newsId} deleted successfully`);
-      res.status(200).send({ message: messages_en.news_deleted_successfully });
-    })
-    .catch((err) => {
-      console.error(`Error in deleting news: ${err.toString()}`);
-      res.status(500).send({ message: messages_en.server_error });
-    });
+
+  try {
+    const news = await db.news.findByPk(newsId);
+    if (!news) {
+      return res.status(404).send({ message: messages_en.news_not_found });
+    }
+
+    await news.destroy();
+    console.log(`News with ID ${newsId} deleted successfully`);
+    return res
+      .status(200)
+      .send({ message: messages_en.news_deleted_successfully });
+  } catch (err) {
+    console.error(`Error in deleting news: ${err.toString()}`);
+    return res.status(500).send({ message: messages_en.server_error });
+  }
 };
 
 exports.deleteNewsImage = async (req, res) => {
