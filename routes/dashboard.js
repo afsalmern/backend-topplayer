@@ -97,7 +97,7 @@ const multerStorageNews = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${Date.now()}${ext}`); // Unique filename with timestamp
+    cb(null, `${file.originalname}`); // Unique filename with timestamp
   },
 });
 
