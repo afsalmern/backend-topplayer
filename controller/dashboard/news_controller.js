@@ -125,7 +125,7 @@ exports.updateNews = async (req, res, next) => {
     let imageUrls = [];
 
     if (req.files) {
-      console.log("HERE");
+      console.log("HERE files");
     }
 
     if (req.files.images) {
