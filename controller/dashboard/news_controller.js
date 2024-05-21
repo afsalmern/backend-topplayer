@@ -26,12 +26,12 @@ exports.addNews = (req, res, next) => {
   // Extract image URLs from the uploaded files
   for (const image of req.files.images) {
     // Assuming each image object has a `buffer` property containing the image data
-    const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+    const imageUrl = `${image.fieldname}`; // Adjust this based on your file storage setup
     imageUrls.push(imageUrl);
   }
 
   const coverimage = req.files.coverimage
-    ? req.files.coverimage[0].filename
+    ? req.files.coverimage[0].fieldname
     : null;
 
   // First, create the news
@@ -130,7 +130,7 @@ exports.updateNews = async (req, res, next) => {
 
     if (req.files.images) {
       for (const image of req.files.images) {
-        const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+        const imageUrl = `${image.fieldname}`; // Adjust this based on your file storage setup
         imageUrls.push(imageUrl);
       }
     }
@@ -143,7 +143,7 @@ exports.updateNews = async (req, res, next) => {
 
     const coverImageFile =
       req.files && req.files.coverimage
-        ? req.files.coverimage[0].filename
+        ? req.files.coverimage[0].fieldname
         : news.coverimage;
 
     if (!news) {
