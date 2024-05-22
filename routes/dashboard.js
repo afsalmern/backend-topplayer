@@ -72,18 +72,18 @@ const uploadImage = multer({
   storage: multerStorageImage,
 });
 
-const multerStorageNewsImage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/newsImages");
-  },
-  filename: (req, file, cb) => {
-    // const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.originalname}`);
-  },
-});
-const uploadNewsImage = multer({
-  storage: multerStorageNewsImage,
-});
+// const multerStorageNewsImage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "public/newsImages");
+//   },
+//   filename: (req, file, cb) => {
+//     // const ext = file.mimetype.split("/")[1];
+//     cb(null, `${file.originalname}`);
+//   },
+// });
+// const uploadNewsImage = multer({
+//   storage: multerStorageNewsImage,
+// });
 
 const multerStorageNews = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -120,8 +120,10 @@ const multerStorageWhoVideo = multer.diskStorage({
     cb(null, "public/who_we_videos");
   },
   filename: (req, file, cb) => {
-    const fileName = `${file.originalname}`;
-    cb(null, fileName);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadWhoVideo = multer({
@@ -141,7 +143,9 @@ const multerStorageCourse = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${Date.now()}${ext}`); // Unique filename with timestamp
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`); // Unique filename with timestamp
   },
 });
 
