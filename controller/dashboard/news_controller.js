@@ -1,5 +1,6 @@
 const db = require("../../models");
-
+const fs = require("fs");
+const path = require("path");
 // Define messages in English
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -11,10 +12,9 @@ const messages_en = {
 
 exports.addNews = (req, res, next) => {
   const { title_en, title_ar, description_en, description_ar } = req.body;
+  console.log("files==============>", req.files);
 
   const imageUrls = [];
-
-  console.log("files==============>", req.files);
 
   // Check if files are uploaded
   if (!req.files) {
@@ -22,16 +22,13 @@ exports.addNews = (req, res, next) => {
       .status(400)
       .send({ message: "Please upload at least one image." });
   }
-
-  // Extract image URLs from the uploaded files
   for (const image of req.files.images) {
-    // Assuming each image object has a `buffer` property containing the image data
-    const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+    const imageUrl = `${image.filename}`;
     imageUrls.push(imageUrl);
   }
 
   const coverimage = req.files.coverimage
-    ? req.files.coverimage[0].originalname
+    ? req.files.coverimage[0].filename
     : null;
 
   // First, create the news
@@ -130,7 +127,7 @@ exports.updateNews = async (req, res, next) => {
 
     if (req.files.images) {
       for (const image of req.files.images) {
-        const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+        const imageUrl = `${image.filename}`; // Adjust this based on your file storage setup
         imageUrls.push(imageUrl);
       }
     }
@@ -143,7 +140,7 @@ exports.updateNews = async (req, res, next) => {
 
     const coverImageFile =
       req.files && req.files.coverimage
-        ? req.files.coverimage[0].originalname
+        ? req.files.coverimage[0].filename
         : news.coverimage;
 
     if (!news) {
@@ -192,30 +189,113 @@ exports.deleteNews = async (req, res, next) => {
   try {
     const news = await db.news.findByPk(newsId);
     if (!news) {
-      return res.status(404).send({ message: messages_en.news_not_found });
+      return res.status(404).send({ message: "News not found" });
     }
 
+    const newsCoverImage = news.coverimage;
+
+    // Retrieve all associated news images
+    const newsImages = await db.newsImage.findAll({
+      where: { newsId },
+      attributes: ["imageUrl"], // Corrected 'attributes' spelling
+    });
+
+    console.log(newsImages);
+
+    // Delete the news record from the database
     await news.destroy();
     console.log(`News with ID ${newsId} deleted successfully`);
-    return res
-      .status(200)
-      .send({ message: messages_en.news_deleted_successfully });
+
+    // Delete all associated news images from the file system
+    if (newsImages && newsImages.length > 0) {
+      for (const newsImage of newsImages) {
+        const filePath = path.join(
+          __dirname,
+          "..",
+          "..",
+          "public",
+          "newsImages",
+          newsImage.imageUrl
+        );
+
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.log(`Error in deleting news image ${newsImage.imageUrl}`);
+          } else {
+            console.log(
+              `Deleted news image ${newsImage.imageUrl} from folder successfully`
+            );
+          }
+        });
+      }
+    }
+
+    // Delete the cover image from the file system
+    if (newsCoverImage) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "newsCoverImages",
+        newsCoverImage
+      );
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.log(`Error in deleting news image ${newsCoverImage}`);
+        } else {
+          console.log(
+            `Deleted news image ${newsCoverImage} from folder successfully`
+          );
+        }
+      });
+    }
+
+    return res.status(200).send({ message: "News deleted successfully" });
   } catch (err) {
     console.error(`Error in deleting news: ${err.toString()}`);
-    return res.status(500).send({ message: messages_en.server_error });
+    return res.status(500).send({ message: "Internal server error" });
   }
 };
 
 exports.deleteNewsImage = async (req, res) => {
   try {
     const { ids } = req.body;
+
+    const newsImages = await db.newsImage.findAll({
+      where: {
+        id: {
+          [db.Op.in]: ids,
+        },
+      },
+    });
+
     await db.newsImage.destroy({
       where: {
         id: {
           [db.Op.in]: ids,
         },
       },
-    }); // Pass an object with options
+    });
+
+    for (const newsImage of newsImages) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "newsImages",
+        newsImage.imageUrl
+      );
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting file ${filePath}: ${err.toString()}`);
+        } else {
+          console.log(`Deleted file ${filePath} successfully`);
+        }
+      });
+    }
+
     res.status(200).send({ message: "News image deleted successfully" });
   } catch (err) {
     console.error(`Error in deleting news image: ${err.toString()}`);

@@ -46,7 +46,7 @@ db.course.belongsTo(db.category);
 
 db.testimonial.belongsTo(db.course, { foreignKey: "courseId" });
 
-db.news.hasMany(db.newsImage, { as: "images" });
+db.news.hasMany(db.newsImage, { as: "images" ,onDelete:"cascade" });
 db.newsImage.belongsTo(db.news);
 
 db.course.hasMany(db.subcourse);

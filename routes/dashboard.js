@@ -62,8 +62,10 @@ const multerStorageImage = multer.diskStorage({
     cb(null, "public/bannerImages");
   },
   filename: (req, file, cb) => {
-    // const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.originalname}`);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadImage = multer({
@@ -85,7 +87,7 @@ const uploadNewsImage = multer({
 
 const multerStorageNews = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log("Inside multer", file);
+    console.log("Inside multer =========>", file);
 
     const folder = {
       images: "public/newsImages",
@@ -96,8 +98,11 @@ const multerStorageNews = multer.diskStorage({
     // cb(null, 'public/uploads')
   },
   filename: (req, file, cb) => {
+    console.log("Inside =========>", file);
     const ext = path.extname(file.originalname);
-    cb(null, `${file.originalname}`); // Unique filename with timestamp
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`); // Unique filename with timestamp
   },
 });
 
@@ -156,8 +161,10 @@ const multerStorageBannerVideo = multer.diskStorage({
     cb(null, "public/banner_videos");
   },
   filename: (req, file, cb) => {
-    const fileName = `${file.originalname}`;
-    cb(null, fileName);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadBannerVideo = multer({

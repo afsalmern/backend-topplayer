@@ -1,7 +1,9 @@
 const db = require("../../models");
+const path = require("path");
+const fs = require("fs");
 
 exports.addMainBanner = async (req, res, next) => {
-  console.log(req.body);
+  console.log("BANNER VIDEO ======== >", req.file);
 
   let videoPath;
   if (req.file) {
@@ -56,6 +58,37 @@ exports.getMainBannerById = async (req, res, next) => {
 
 exports.updateMainBanner = async (req, res, next) => {
   const id = req.params.id;
+
+  if (req.file && req.file.filename) {
+    const newFile = req.file.filename;
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      "banner_videos"
+    );
+
+    fs.readdir(filePath, (err, files) => {
+      if (err) {
+        console.log(`Error reading directory: ${err}`);
+        return;
+      }
+
+      files.forEach((file) => {
+        if (file !== newFile) {
+          fs.unlink(path.join(filePath, file), (err) => {
+            if (err) {
+              console.log(`Error deleting file: ${err}`);
+              return;
+            }
+            console.log(`Deleted file: ${file}`);
+          });
+        }
+      });
+    });
+  }
+
   try {
     const data = await db.mainBanner.findByPk(id);
     if (!data) {
@@ -88,7 +121,28 @@ exports.deleteMainBanner = async (req, res, next) => {
     if (!data) {
       return res.status(404).send({ message: "Banner not found" });
     }
-    await data.destroy();
+
+    const videoPath = data.videoUrl;
+
+    if (videoPath) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "banner_videos",
+        videoPath
+      );
+      fs.unlink(filePath, async (err) => {
+        if (err) {
+          console.log(`Video ${videoPath} removing failed`);
+        } else {
+          await data.destroy();
+          console.log(`Video ${videoPath} removed from folder successfully`);
+        }
+      });
+    }
+
     console.log(`Banner with ID ${id} deleted successfully`);
     res.status(200).send({ message: "Banner deleted successfully" });
   } catch (err) {
