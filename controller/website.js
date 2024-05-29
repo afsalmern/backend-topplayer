@@ -501,7 +501,7 @@ exports.getSubCourseMaterial = async (req, res, next) => {
 
       const finished_days = [];
 
-      for (let day = 1; day < 20; day++) {
+      for (let day = 1; day <= 20; day++) {
         let course_videos = subCourseDB.videos;
 
         let videos_day_id = course_videos
