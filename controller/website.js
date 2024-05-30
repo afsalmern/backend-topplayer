@@ -251,6 +251,10 @@ exports.getNewsById = (req, res, next) => {
           model: db.newsImage,
           as: "images", // Alias defined in the association
         },
+        {
+          model: db.newsMobileImage,
+          as: "mobile", // Alias defined in the association
+        },
       ],
     })
     .then((news) => {

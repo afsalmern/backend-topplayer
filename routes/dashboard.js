@@ -92,6 +92,7 @@ const multerStorageNews = multer.diskStorage({
     const folder = {
       images: "public/newsImages",
       coverimage: "public/newsCoverImages",
+      mobileimages: "public/newsMobileImages",
     };
     const uploadFolder = folder[file.fieldname]; // Get folder based on field name
     cb(null, uploadFolder);
@@ -112,6 +113,7 @@ const uploadNewsFiles = multer({
 
 const newsFileUpload = uploadNewsFiles.fields([
   { name: "images", maxCount: 15 },
+  { name: "mobileimages", maxCount: 15 },
   { name: "coverimage", maxCount: 1 },
 ]);
 
