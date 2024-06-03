@@ -75,6 +75,8 @@ db.registeredCourse = RegisteredCourse;
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
 db.course.belongsToMany(db.user, { through: RegisteredCourse });
+db.payment.belongsTo(db.registeredCourse);
+db.registeredCourse.hasMany(db.payment);
 
 db.registeredCourse.belongsTo(db.course, {
   foreignKey: "courseId",
