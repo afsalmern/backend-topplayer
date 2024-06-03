@@ -1,4 +1,5 @@
 const db = require("../../models");
+const path = require("path");
 const fs = require("fs");
 
 // Upload a banner image using Multer
@@ -21,8 +22,10 @@ exports.uploadBanner = async (req, res, next) => {
         .send({ message: "Please upload at least one image." });
     }
 
+    console.log("BANNER IMAGES =========> ", req.files);
+
     for (const image of req.files) {
-      const imageUrl = `${image.originalname}`;
+      const imageUrl = `${image.filename}`;
       imageUrls.push(imageUrl);
     }
     // Save banner image to the database
@@ -54,7 +57,6 @@ exports.uploadBanner = async (req, res, next) => {
 
 // Retrieve all banners
 exports.getAllBanners = (req, res, next) => {
-
   console.log(req.ip);
 
   db.banner
@@ -94,24 +96,50 @@ exports.getBannerById = (req, res, next) => {
 };
 
 // Delete a banner
-exports.deleteBanner = (req, res, next) => {
+exports.deleteBanner = async (req, res, next) => {
   const bannerId = req.params.id;
-  db.banner
-    .findByPk(bannerId)
-    .then((banner) => {
-      if (!banner) {
-        return res.status(404).send({ message: "Banner not found" });
-      }
-      return banner.destroy();
-    })
-    .then(() => {
-      console.log(`Banner with ID ${bannerId} deleted successfully`);
-      res.status(200).send({ message: "Banner deleted successfully" });
-    })
-    .catch((err) => {
-      console.error(`Error in deleting banner: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
+
+  try {
+    const banner = await db.banner.findByPk(bannerId);
+    if (!banner) {
+      return res.status(404).send({ message: "Banner not found" });
+    }
+
+    const bannerImages = await db.bannerImages.findAll({
+      where: {
+        bannerId: bannerId,
+      },
+
+      attributes: ["imageUrl"],
     });
+
+    await db.banner.destroy({ where: { id: bannerId } });
+
+    if (bannerImages && bannerImages.length > 0) {
+      for (const banner of bannerImages) {
+        const filepath = path.join(
+          __dirname,
+          "..",
+          "..",
+          "public",
+          "bannerImages",
+          banner.imageUrl
+        );
+
+        fs.unlink(filepath, (err) => {
+          if (err) {
+            console.log(`Error in deleting banner image ${banner.imageUrl}`);
+          } else {
+            console.log(`Banner image ${banner.imageUrl} deleted successfully`);
+          }
+        });
+      }
+    }
+    return res.status(200).send({ message: "Banner removed successfully" });
+  } catch (error) {
+    console.log(`Error in deleting banner: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
 };
 
 exports.updateBanner = async (req, res, next) => {
@@ -131,7 +159,7 @@ exports.updateBanner = async (req, res, next) => {
 
     if (req.files) {
       for (const image of req.files) {
-        const imageUrl = `${image.originalname}`; // Adjust this based on your file storage setup
+        const imageUrl = `${image.filename}`; // Adjust this based on your file storage setup
         imageUrls.push(imageUrl);
       }
     }
@@ -186,6 +214,15 @@ exports.updateBanner = async (req, res, next) => {
 exports.deleteBannerImage = async (req, res) => {
   try {
     const { ids } = req.body;
+
+    const bannerImages = await db.bannerImages.findAll({
+      where: {
+        id: {
+          [db.Op.in]: ids,
+        },
+      },
+    });
+
     await db.bannerImages.destroy({
       where: {
         id: {
@@ -193,6 +230,27 @@ exports.deleteBannerImage = async (req, res) => {
         },
       },
     });
+
+    for (const bannerImage of bannerImages) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "bannerImages",
+        bannerImage.imageUrl
+      );
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(
+            `Error deleting file ${bannerImage.imageUrl}: ${err.toString()}`
+          );
+        } else {
+          console.log(`Deleted file ${bannerImage.imageUrl} successfully`);
+        }
+      });
+    }
+
     res.status(200).send({ message: "Banner image deleted successfully" });
   } catch (err) {
     console.error(`Error in deleting banner image: ${err.toString()}`);

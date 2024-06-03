@@ -5,7 +5,7 @@ const authMiddleware = require('../middleware/auth')
 
 const router = express.Router();
 
-
+//rttSnd99&y
 router.post('/signup',admnController.signup);
 router.post("/auth/verify", admnController.verifyAccFun);
 router.post('/login', admnController.login);

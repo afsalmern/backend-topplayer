@@ -62,34 +62,70 @@ const multerStorageImage = multer.diskStorage({
     cb(null, "public/bannerImages");
   },
   filename: (req, file, cb) => {
-    // const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.originalname}`);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadImage = multer({
   storage: multerStorageImage,
 });
 
-const multerStorageNewsImage = multer.diskStorage({
+// const multerStorageNewsImage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "public/newsImages");
+//   },
+//   filename: (req, file, cb) => {
+//     // const ext = file.mimetype.split("/")[1];
+//     cb(null, `${file.originalname}`);
+//   },
+// });
+// const uploadNewsImage = multer({
+//   storage: multerStorageNewsImage,
+// });
+
+const multerStorageNews = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/newsImages");
+    console.log("Inside multer =========>", file);
+
+    const folder = {
+      images: "public/newsImages",
+      coverimage: "public/newsCoverImages",
+      mobileimages: "public/newsMobileImages",
+    };
+    const uploadFolder = folder[file.fieldname]; // Get folder based on field name
+    cb(null, uploadFolder);
+    // cb(null, 'public/uploads')
   },
   filename: (req, file, cb) => {
-    // const ext = file.mimetype.split("/")[1];
-    cb(null, `${file.originalname}`);
+    console.log("Inside =========>", file);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`); // Unique filename with timestamp
   },
 });
-const uploadNewsImage = multer({
-  storage: multerStorageNewsImage,
+
+const uploadNewsFiles = multer({
+  storage: multerStorageNews, // Limit file size to 5MB (optional)
 });
+
+const newsFileUpload = uploadNewsFiles.fields([
+  { name: "images", maxCount: 15 },
+  { name: "mobileimages", maxCount: 15 },
+  { name: "coverimage", maxCount: 1 },
+]);
 
 const multerStorageWhoVideo = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/who_we_videos");
   },
   filename: (req, file, cb) => {
-    const fileName = `${file.originalname}`;
-    cb(null, fileName);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadWhoVideo = multer({
@@ -109,7 +145,9 @@ const multerStorageCourse = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${Date.now()}${ext}`); // Unique filename with timestamp
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`); // Unique filename with timestamp
   },
 });
 
@@ -129,8 +167,10 @@ const multerStorageBannerVideo = multer.diskStorage({
     cb(null, "public/banner_videos");
   },
   filename: (req, file, cb) => {
-    const fileName = `${file.originalname}`;
-    cb(null, fileName);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
   },
 });
 const uploadBannerVideo = multer({
@@ -252,14 +292,14 @@ router.delete(
 router.post(
   "/news",
   [authMiddleware.checkUserAuth],
-  uploadNewsImage.any(),
+  newsFileUpload,
   newsController.addNews
 );
 router.get("/news", [authMiddleware.checkUserAuth], newsController.getAllNews);
 router.put(
   "/news/:id",
   [authMiddleware.checkUserAuth],
-  uploadNewsImage.any(),
+  newsFileUpload,
   newsController.updateNews
 );
 
@@ -427,8 +467,6 @@ router.post(
     res.status(200).send({ message: "saved successfully" });
   }
 );
-
-
 
 router.get("/enquiries", [authMiddleware.checkUserAuth], getAllEnquiries);
 router.delete("/enquiries/:id", [authMiddleware.checkUserAuth], deleteEnquiry);

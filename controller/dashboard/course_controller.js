@@ -144,17 +144,10 @@ exports.updateCourse = async (req, res, next) => {
     let bannerUrl;
     let videoUrl;
 
-    // Check and handle uploaded files (image, banner, video)
-    try {
-      if (req.files) {
-        imageUrl = req.files.image ? req.files.image[0].filename : null; // Get image URL if uploaded
-        bannerUrl = req.files.banner ? req.files.banner[0].filename : null; // Get banner URL if uploaded
-        videoUrl = req.files.video ? req.files.video[0].filename : null; // Get video URL if uploaded
-      }
-    } catch (error) {
-      console.error(`Error handling uploaded files: ${error.toString()}`);
-      // Handle specific file upload errors here (e.g., wrong format, size limit exceeded)
-      return res.status(400).send({ message: "Error handling uploaded files" });
+    if (req.files) {
+      imageUrl = req.files.image ? req.files.image[0].filename : null; // Get image URL if uploaded
+      bannerUrl = req.files.banner ? req.files.banner[0].filename : null; // Get banner URL if uploaded
+      videoUrl = req.files.video ? req.files.video[0].filename : null; // Get video URL if uploaded
     }
 
     // Find course by ID
@@ -210,41 +203,51 @@ exports.deleteCourse = async (req, res, next) => {
       return res.status(404).send({ message: "Course not found" });
     }
 
-    if (course.imageUrl) {
-      const img = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "courseImages",
-        course.imageUrl
-      );
-      fs.unlinkSync(img);
-    }
+    // if (course.imageUrl) {
+    //   const img = path.join(
+    //     __dirname,
+    //     "..",
+    //     "..",
+    //     "public",
+    //     "courseImages",
+    //     course.imageUrl
+    //   );
+    //   fs.unlink(img);
+    // }
 
-    if (course.videoUrl) {
-      const video = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "courseImages",
-        course.videoUrl
-      );
-      fs.unlinkSync(video);
-    }
+    // if (course.videoUrl) {
+    //   const video = path.join(
+    //     __dirname,
+    //     "..",
+    //     "..",
+    //     "public",
+    //     "courseImages",
+    //     course.videoUrl
+    //   );
+    //   fs.unlink(video);
+    // }
 
-    if (course.bannerUrl) {
-      const banner = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "courseImages",
-        course.bannerUrl
-      );
-      fs.unlinkSync(banner);
-    }
+    // if (course.bannerUrl) {
+    //   const banner = path.join(
+    //     __dirname,
+    //     "..",
+    //     "..",
+    //     "public",
+    //     "courseImages",
+    //     course.bannerUrl
+    //   );
+    //   fs.unlink(banner);
+    // }
+
+    const mediaUrls = ["imageUrl", "videoUrl", "bannerUrl"];
+    const mediaDir = path.join(__dirname, "..", "..", "public", "courseImages");
+
+    mediaUrls.forEach((urlProperty) => {
+      const filePath = path.join(mediaDir, course[urlProperty]);
+      if (course[urlProperty] && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    });
 
     course.isDeleted = true;
     await course.save();
@@ -259,10 +262,9 @@ exports.deleteCourse = async (req, res, next) => {
 
 // Delete a course
 
-
 exports.deleteMedia = async (req, res, next) => {
   const { id, filename, type } = req.params;
-
+console.log(filename);
   try {
     const course = await db.course.findByPk(id);
 

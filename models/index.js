@@ -35,6 +35,7 @@ db.testimonial = require("./testimonials")(sequelize, Sequelize);
 db.banner = require("./banner")(sequelize, Sequelize);
 db.bannerImages = require("./bannerImages")(sequelize, Sequelize);
 db.newsImage = require("./newsImage")(sequelize, Sequelize);
+db.newsMobileImage = require("./newsMobileImages")(sequelize, Sequelize);
 db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 db.contact = require("./contact_us")(sequelize, Sequelize);
@@ -46,8 +47,14 @@ db.course.belongsTo(db.category);
 
 db.testimonial.belongsTo(db.course, { foreignKey: "courseId" });
 
-db.news.hasMany(db.newsImage, { as: "images" });
+db.news.hasMany(db.newsImage, { as: "images", onDelete: "cascade" });
 db.newsImage.belongsTo(db.news);
+
+db.news.hasMany(db.newsMobileImage, {
+  as: "mobile",
+  onDelete: "cascade",
+});
+db.newsMobileImage.belongsTo(db.news);
 
 db.course.hasMany(db.subcourse);
 db.subcourse.belongsTo(db.course);
@@ -63,7 +70,6 @@ const RegisteredCourse = sequelize.define("registered_course", {
     primaryKey: true,
   },
 });
-
 
 db.registeredCourse = RegisteredCourse;
 
