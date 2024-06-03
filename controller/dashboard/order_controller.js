@@ -14,7 +14,7 @@ exports.getAllorders = async (req, res) => {
             {
               model: db.payment,
               as: "payments",
-              attributes: ["amount", "stripeId"],
+              attributes: ["offerAmount", "stripeId"],
             },
             {
               model: db.category,

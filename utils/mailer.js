@@ -8,6 +8,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAILPASS,
   },
 });
+
 async function sendMail(to, subject, text, html) {
   try {
     // send mail with defined transport object
@@ -17,7 +18,7 @@ async function sendMail(to, subject, text, html) {
       subject: subject, // Subject line
       text: text, // plain text body
       html: html, // html body
-      cc:["afsal@intersmart.in,salwa@intersmart.ae"]
+      cc: ["afsal@intersmart.in,salwa@intersmart.ae"],
     });
     console.log("Message sent: %s", info.messageId);
     return true; // Email sent successfully
