@@ -5,6 +5,7 @@ exports.addCategory = (req, res, next) => {
   db.category
     .create({
       name: req.body.name,
+      isCamp: req.body.isCamp,
     })
     .then((result) => {
       console.log(`a category added successfully`);
@@ -51,6 +52,9 @@ exports.getCategoryById = (req, res, next) => {
 
 exports.updateCategory = (req, res, next) => {
   const categoryId = req.params.id;
+
+  console.log(req.body);
+
   db.category
     .findByPk(categoryId)
     .then((category) => {
@@ -60,6 +64,7 @@ exports.updateCategory = (req, res, next) => {
       return category.update({
         name: req.body.name || category.name,
         active: req.body.active || category.active,
+        isCamp: req.body.isCamp,
       });
     })
     .then((updatedCategory) => {

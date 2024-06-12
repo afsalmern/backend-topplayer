@@ -83,8 +83,8 @@ exports.getAllCourses = (req, res, next) => {
       include: [
         {
           model: db.category,
-          attributes: ["name"],
-          where: { active: true },
+          attributes: ["name", "isCamp","isDeleted"],
+          where: { active: true},
         },
       ],
     })
@@ -93,43 +93,49 @@ exports.getAllCourses = (req, res, next) => {
 
       // Iterate through courses and group them by categoryName
       courses.forEach((course) => {
-        const categoryName = course.category.name;
+        if (!course.category.isDeleted) {
+          const categoryName = course.category.name;
+          const isCamp = course.category.isCamp;
 
-        // Splitting the description into checklist items
-        const checklistItems = course?.description?.split("\n");
-        const checklistItemsAr = course?.description_ar?.split("\n");
-        // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
-        const checklistHTMLAr = checklistItemsAr
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
+          // Splitting the description into checklist items
+          const checklistItems = course?.description?.split("\n");
+          const checklistItemsAr = course?.description_ar?.split("\n");
+          // Generating HTML markup for the checklist
+          const checklistHTML = checklistItems
+            ?.map((item) => `<li><p>${item}</p></li>`)
+            .join("");
+          const checklistHTMLAr = checklistItemsAr
+            ?.map((item) => `<li><p>${item}</p></li>`)
+            .join("");
 
-        const difference = course?.amount - course?.offerAmount;
-        const offerPercentage = Math.round((difference / course?.amount) * 100);
+          const difference = course?.amount - course?.offerAmount;
+          const offerPercentage = Math.round(
+            (difference / course?.amount) * 100
+          );
 
-        const modifiedCourse = {
-          ...course.toJSON(),
-          category_name: course.category ? course.category.name : null,
-          descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
-          descriptionHTMLAr: checklistHTMLAr ? `${checklistHTMLAr}` : null, // Wrap checklist items in <ul> element
-          description: course.description || null,
-          description_ar: course.description_ar || null,
-          offerPercentage: offerPercentage || null,
-          enroll_text_ar: course.description_ar || null,
-        };
-
-        // If the category doesn't exist in groupedCourses, create a new array for it
-        if (!groupedCourses[categoryName]) {
-          groupedCourses[categoryName] = {
-            categoryName,
-            courses: [],
+          const modifiedCourse = {
+            ...course.toJSON(),
+            category_name: course.category ? course.category.name : null,
+            descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+            descriptionHTMLAr: checklistHTMLAr ? `${checklistHTMLAr}` : null, // Wrap checklist items in <ul> element
+            description: course.description || null,
+            description_ar: course.description_ar || null,
+            offerPercentage: offerPercentage || null,
+            enroll_text_ar: course.description_ar || null,
           };
-        }
 
-        // Push the modifiedCourse to the array corresponding to its categoryName
-        groupedCourses[categoryName].courses.push(modifiedCourse);
+          // If the category doesn't exist in groupedCourses, create a new array for it
+          if (!groupedCourses[categoryName]) {
+            groupedCourses[categoryName] = {
+              categoryName,
+              isCamp,
+              courses: [],
+            };
+          }
+
+          // Push the modifiedCourse to the array corresponding to its categoryName
+          groupedCourses[categoryName].courses.push(modifiedCourse);
+        }
       });
 
       // Convert the groupedCourses object to an array of objects
@@ -152,7 +158,7 @@ exports.getCourseById = (req, res, next) => {
       include: [
         {
           model: db.category,
-          attributes: ["name"],
+          attributes: ["name","isCamp"],
         },
       ],
     })
