@@ -8,7 +8,7 @@ const { createTamaraPayment, tamaraWebHook } = require("../controller/tamarapay"
 
 const router = express.Router();
 
-router.post("/create-tamara-payment", createTamaraPayment);
+router.post("/create-tamara-payment", [authMiddleware.checkUserAuth], createTamaraPayment);
 router.post("/tamara-webhook", tamaraWebHook);
 
 router.get("/courses", websiteController.getAllCourses);
