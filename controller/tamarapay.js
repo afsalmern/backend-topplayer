@@ -16,6 +16,7 @@ exports.createTamaraPayment = async (req, res) => {
     const tamara = TamaraClientFactory.createApiClient(config);
 
     const userDB = await db.user.findByPk(req.userDecodeId);
+    console.log("userDB=========>", userDB);
 
     const course_id = courseId || 8;
 
@@ -91,7 +92,7 @@ exports.createTamaraPayment = async (req, res) => {
       courseId: course_id,
       referenceOrderId: referenceOrderId,
       referenceId: referenceId,
-      userId: userDB.id
+      userId: userDB?.id
     });
 
     console.log("checkout===============>", checkout);
