@@ -90,14 +90,14 @@ exports.createTamaraPayment = async (req, res) => {
 
 exports.tamaraWebHook = async (req, res) => {
     try {
-      console.log("req body:", req.body); // Log only the request body
+      console.log("req body=============>:", req.body); // Log only the request body
   
       const notificationService = TamaraClientFactory.createNotificationService(config);
   
       // Assuming processWebhook returns a Promise (check documentation)
       const payload = await notificationService.processWebhook(req);
   
-      console.log("payload:", payload); // Log the processed payload
+      console.log("payload:==================>", payload); // Log the processed payload
   
       const notificationType = payload.notificationType; // Use notificationType (assuming it's the correct property)
       const order = payload.order;
