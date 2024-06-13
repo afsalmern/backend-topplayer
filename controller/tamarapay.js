@@ -89,50 +89,52 @@ exports.createTamaraPayment = async (req, res) => {
 };
 
 exports.tamaraWebHook = async (req, res) => {
-    try {
-      console.log("req body=============>:", req.body); // Log only the request body
-  
-      const notificationService = TamaraClientFactory.createNotificationService(config);
-  
-      // Assuming processWebhook returns a Promise (check documentation)
-      const payload = await notificationService.processWebhook(req);
-  
-      console.log("payload:==================>", payload); // Log the processed payload
-  
-      const notificationType = payload.notificationType; // Use notificationType (assuming it's the correct property)
-      const order = payload.order;
-  
-      console.log(`Received webhook notification: ${notificationType}`);
-  
-      // Process notification data based on notification type
-      switch (notificationType) {
-        case 'ORDER_CREATED':
-          // Handle order creation notification
-          console.log("Order created:", order.referenceOrderId);
-          // Update your application data (e.g., mark order as created)
-          break;
-        case 'ORDER_CONFIRMED':
-          // Handle order confirmation notification
-          console.log("Order confirmed:", order.referenceOrderId);
-          // Update your application data (e.g., mark order as confirmed)
-          break;
-        case 'ORDER_PAYMENT_CAPTURED':
-          // Handle successful payment notification
-          console.log("Payment captured:", order.referenceOrderId);
-          // Update your application data (e.g., mark order as paid)
-          // You can access payment details from the order object
-          break;
-        case 'ORDER_CANCELLED':
-          // Handle order cancellation notification
-          console.log("Order cancelled:", order.referenceOrderId);
-          // Update your application data (e.g., mark order as cancelled)
-          break;
-        // Handle other notification types as needed
-      }
-  
-      res.sendStatus(200); // Acknowledge receipt of the webhook
-    } catch (err) {
-      console.error("error:", err.message);
-      res.status(400).send(`Error processing webhook: ${err.message}`);
+  try {
+    console.log("req body=============>:", req.body); // Log only the request body
+
+    const notificationService = TamaraClientFactory.createNotificationService(config);
+
+    // Assuming processWebhook returns a Promise (check documentation)
+    const payload = notificationService.processWebhook(req);
+
+    payload.then((res) => {
+      console.log("payload:==================>", res); // Log the processed payload
+    });
+
+    const notificationType = payload.notificationType; // Use notificationType (assuming it's the correct property)
+    const order = payload.order;
+
+    console.log(`Received webhook notification: ${notificationType}`);
+
+    // Process notification data based on notification type
+    switch (notificationType) {
+      case "ORDER_CREATED":
+        // Handle order creation notification
+        console.log("Order created:", order.referenceOrderId);
+        // Update your application data (e.g., mark order as created)
+        break;
+      case "ORDER_CONFIRMED":
+        // Handle order confirmation notification
+        console.log("Order confirmed:", order.referenceOrderId);
+        // Update your application data (e.g., mark order as confirmed)
+        break;
+      case "ORDER_PAYMENT_CAPTURED":
+        // Handle successful payment notification
+        console.log("Payment captured:", order.referenceOrderId);
+        // Update your application data (e.g., mark order as paid)
+        // You can access payment details from the order object
+        break;
+      case "ORDER_CANCELLED":
+        // Handle order cancellation notification
+        console.log("Order cancelled:", order.referenceOrderId);
+        // Update your application data (e.g., mark order as cancelled)
+        break;
+      // Handle other notification types as needed
     }
-  };
+
+    res.sendStatus(200); // Acknowledge receipt of the webhook
+  } catch (err) {
+    console.error("error:", err.message);
+    res.status(400).send(`Error processing webhook: ${err.message}`);
+  }
+};
