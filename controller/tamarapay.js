@@ -1,4 +1,6 @@
 const { TamaraClientFactory } = require("tamara-sdk");
+const { v4: uuidv4 } = require("uuid"); // Import the UUID package
+const db = require("../models");
 
 const config = {
   baseUrl: "https://api-sandbox.tamara.co",
@@ -13,7 +15,9 @@ exports.createTamaraPayment = async (req, res) => {
   try {
     const tamara = TamaraClientFactory.createApiClient(config);
 
-    const course_id = courseId || 4;
+    const userDB = await db.user.findByPk(req.userDecodeId);
+
+    const course_id = courseId || 8;
 
     const customerData = {
       email: "customer@email.com",
@@ -56,6 +60,9 @@ exports.createTamaraPayment = async (req, res) => {
       phone_number: "532298658",
     };
 
+    const referenceOrderId = uuidv4();
+    const referenceId = uuidv4();
+
     const merchant_url = {
       cancel: "http://awesome-qa-tools.s3-website.me-south-1.amazonaws.com/#/cancel",
       failure: "http://awesome-qa-tools.s3-website.me-south-1.amazonaws.com/#/fail",
@@ -67,8 +74,8 @@ exports.createTamaraPayment = async (req, res) => {
       totalAmount: total_amount,
       shippingAmount: shipping_amount,
       taxAmount: shipping_amount,
-      referenceOrderId: "123",
-      referenceId: "S1233",
+      referenceOrderId: referenceOrderId,
+      referenceId: referenceId,
       items: items,
       consumer: customerData,
       countryCode: "AE",
@@ -77,6 +84,14 @@ exports.createTamaraPayment = async (req, res) => {
       instalments: 4,
       shippingAddress: shipping_address,
       merchantUrl: merchant_url,
+    });
+
+    await db.tamaraPayment.create({
+      amount: total_amount.amount,
+      courseId: course_id,
+      referenceOrderId: referenceOrderId,
+      referenceId: referenceId,
+      userId: userDB.id
     });
 
     console.log("checkout===============>", checkout);
@@ -107,8 +122,8 @@ exports.tamaraWebHook = async (req, res) => {
     console.log(`Received webhook notification: ${notificationType}`);
 
     // Process notification data based on notification type
-    switch (notificationType) {
-      case "ORDER_CREATED":
+    switch (req.body.event_type) {
+      case "event_type":
         // Handle order creation notification
         console.log("Order created:", order.referenceOrderId);
         // Update your application data (e.g., mark order as created)
