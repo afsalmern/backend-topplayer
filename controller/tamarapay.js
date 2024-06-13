@@ -15,6 +15,7 @@ exports.createTamaraPayment = async (req, res) => {
   try {
     const tamara = TamaraClientFactory.createApiClient(config);
 
+    console.log("req.userDecodeId====>", req.userDecodeId);
     const userDB = await db.user.findByPk(req.userDecodeId);
     console.log("userDB=========>", userDB);
 
