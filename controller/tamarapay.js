@@ -90,10 +90,9 @@ exports.createTamaraPayment = async (req, res) => {
 
 exports.tamaraWebHook = async (req, res) => {
   try {
+    console.log("req====>", req);
     const notificationService = TamaraClientFactory.createNotificationService(config);
     const payload = notificationService.processWebhook(req);
-
-    console.log("req====>", req);
 
     console.log("payload===>", payload);
 
