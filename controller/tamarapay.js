@@ -92,11 +92,11 @@ exports.tamaraWebHook = async (req, res) => {
   try {
     console.log("req====>", req.body);
     const notificationService = TamaraClientFactory.createNotificationService(config);
-    const payload = notificationService.processWebhook(req.body);
+    const payload = notificationService.processWebhook(req);
 
     console.log("payload===>", payload);
 
-    const notificationType = payload.notificationType;
+    const notificationType = payload.event_type;
     const order = payload.order;
 
     console.log(`Received webhook notification: ${notificationType}`);
