@@ -12,33 +12,31 @@ const config = {
 };
 
 exports.createTamaraPayment = async (req, res) => {
-  const { shippingAddress, courseId } = req.body;
+  const { shippingAddress, courseId, lang, amount } = req.body;
 
   try {
     const tamara = TamaraClientFactory.createApiClient(config);
 
     console.log("req.userDecodeId====>", req.userDecodeId);
     const userDB = await db.user.findByPk(req.userDecodeId);
-    console.log("userDB=========>", userDB);
-
-    const course_id = courseId || 8;
+    const courseDB = await db.course.findByPk(courseId);
 
     const customerData = {
-      email: "customer@email.com",
-      first_name: "Mona",
-      last_name: "Lisa",
-      phone_number: "566027755",
+      email: userDB?.email,
+      first_name: userDB?.username.split(" ")[0],
+      last_name: userDB?.username.split(" ")[1],
+      phone_number: userDB?.mobile,
     };
 
     const items = [
       {
-        name: "Summer camp",
+        name: courseDB?.name,
         type: "camp",
-        reference_id: "123",
+        reference_id: courseDB?.id,
         sku: "1",
         quantity: 1,
         total_amount: {
-          amount: 100,
+          amount: amount,
           currency: "AED",
         },
       },
@@ -50,7 +48,7 @@ exports.createTamaraPayment = async (req, res) => {
     };
 
     const total_amount = {
-      amount: 300,
+      amount: amount,
       currency: "AED",
     };
 
@@ -68,9 +66,9 @@ exports.createTamaraPayment = async (req, res) => {
     const referenceId = uuidv4();
 
     const merchant_url = {
-      cancel: "http://awesome-qa-tools.s3-website.me-south-1.amazonaws.com/#/cancel",
-      failure: "http://awesome-qa-tools.s3-website.me-south-1.amazonaws.com/#/fail",
-      success: `http://localhost:4000/en/user/payment/confirm/${course_id}`,
+      cancel: `${process.env.CLIENT_HOST}/${lang}/cancel`,
+      failure: `${process.env.CLIENT_HOST}/${lang}/fail`,
+      success: `${process.env.CLIENT_HOST}/${lang}/user/payment/confirm/${courseId}`,
       notification: "https://store-demo.com/payments/tamarapay",
     };
 
@@ -83,7 +81,7 @@ exports.createTamaraPayment = async (req, res) => {
       items: items,
       consumer: customerData,
       countryCode: "AE",
-      description: "lorem ipsum dolor",
+      description: courseDB?.description,
       paymentType: "PAY_BY_INSTALMENTS",
       instalments: 4,
       shippingAddress: shipping_address,
@@ -92,13 +90,11 @@ exports.createTamaraPayment = async (req, res) => {
 
     await db.tamaraPayment.create({
       amount: total_amount.amount,
-      courseId: course_id,
+      courseId: courseId,
       referenceOrderId: referenceOrderId,
       referenceId: referenceId,
       userId: userDB?.id,
     });
-
-    console.log("checkout===============>", checkout);
 
     res.status(200).send({ status: true, data: checkout.data });
   } catch (err) {
@@ -122,8 +118,8 @@ exports.tamaraWebHook = async (req, res) => {
     console.log("orderDetails=====>", orderDetails);
     console.log("orderDetails referenceId=====>", orderDetails.referenceId);
 
-    const courseId = orderDetails.courseId
-    const userId = orderDetails.userId
+    const courseId = orderDetails.courseId;
+    const userId = orderDetails.userId;
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
@@ -144,6 +140,8 @@ exports.tamaraWebHook = async (req, res) => {
         }
 
         const userDB = await db.user.findByPk(userId);
+
+        console.log("userDB===>", userDB);
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
