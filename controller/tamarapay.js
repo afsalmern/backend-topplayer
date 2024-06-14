@@ -66,9 +66,9 @@ exports.createTamaraPayment = async (req, res) => {
     const referenceId = uuidv4();
 
     const merchant_url = {
-      cancel: `${process.env.CLIENT_HOST}/${lang}/cancel`,
-      failure: `${process.env.CLIENT_HOST}/${lang}/fail`,
-      success: `${process.env.CLIENT_HOST}/${lang}/user/payment/confirm/${courseId}`,
+      cancel: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
+      failure: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
+      success: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
       notification: "https://store-demo.com/payments/tamarapay",
     };
 
