@@ -93,7 +93,7 @@ exports.createTamaraPayment = async (req, res) => {
       courseId: course_id,
       referenceOrderId: referenceOrderId,
       referenceId: referenceId,
-      userId: userDB?.id
+      userId: userDB?.id,
     });
 
     console.log("checkout===============>", checkout);
@@ -108,6 +108,12 @@ exports.createTamaraPayment = async (req, res) => {
 exports.tamaraWebHook = async (req, res) => {
   try {
     console.log("req body=============>:", req.body); // Log only the request body
+
+    const orderDetails = await db.tamaraPayment.findOne({
+      where: { referenceOrderId: req.body.order_reference_id },
+    });
+
+    console.log("orderDetails=====>", orderDetails);
 
     const notificationService = TamaraClientFactory.createNotificationService(config);
 
@@ -125,7 +131,7 @@ exports.tamaraWebHook = async (req, res) => {
 
     // Process notification data based on notification type
     switch (req.body.event_type) {
-      case "event_type":
+      case "order_approved":
         // Handle order creation notification
         console.log("Order created:", order.referenceOrderId);
         // Update your application data (e.g., mark order as created)
