@@ -111,11 +111,7 @@ exports.tamaraWebHook = async (req, res) => {
 
     const referenceOrderId = req.body.order_id;
     console.log("referenceOrderId ==>", referenceOrderId);
-    const orderDetails = await db.tamaraPayment.findOne({
-      where: {
-        referenceOrderId: referenceOrderId,
-      },
-    });
+    const orderDetails = await db.tamaraPayment.findAll();
 
     console.log("orderDetails=====>", orderDetails);
 
