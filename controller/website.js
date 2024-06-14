@@ -751,7 +751,7 @@ exports.postStripePayment = async (req, res) => {
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "USD",
+      currency: "AED",
       customer: customerId,
       metadata: {
         courseId: courseId,
