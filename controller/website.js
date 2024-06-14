@@ -8,11 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const {
-  passwordResetMail,
-  EnquiryMail,
-  paymentSuccessMail,
-} = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
@@ -27,25 +23,6 @@ const messages_en = {
 
 const FAQ = db.faq;
 const Testimonial = db.testimonial;
-
-// const createTransporter = async () => {
-//   try {
-//     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-//     // Create Nodemailer transporter using SendGrid
-//     const transporter = nodemailer.createTransport({
-//       service: "SendGrid",
-//       auth: {
-//         user: "apikey",
-//         pass: process.env.SENDGRID_API_KEY,
-//       },
-//     });
-//     return transporter;
-//   } catch (err) {
-//     console.log(`error in create transporter ${err}`);
-//     return err;
-//   }
-// };
 
 // Retrieve all banners
 exports.getAllBanners = async (req, res, next) => {
@@ -83,8 +60,8 @@ exports.getAllCourses = (req, res, next) => {
       include: [
         {
           model: db.category,
-          attributes: ["name", "isCamp","isDeleted"],
-          where: { active: true},
+          attributes: ["name", "isCamp", "isDeleted"],
+          where: { active: true },
         },
       ],
     })
@@ -101,17 +78,11 @@ exports.getAllCourses = (req, res, next) => {
           const checklistItems = course?.description?.split("\n");
           const checklistItemsAr = course?.description_ar?.split("\n");
           // Generating HTML markup for the checklist
-          const checklistHTML = checklistItems
-            ?.map((item) => `<li><p>${item}</p></li>`)
-            .join("");
-          const checklistHTMLAr = checklistItemsAr
-            ?.map((item) => `<li><p>${item}</p></li>`)
-            .join("");
+          const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+          const checklistHTMLAr = checklistItemsAr?.map((item) => `<li><p>${item}</p></li>`).join("");
 
           const difference = course?.amount - course?.offerAmount;
-          const offerPercentage = Math.round(
-            (difference / course?.amount) * 100
-          );
+          const offerPercentage = Math.round((difference / course?.amount) * 100);
 
           const modifiedCourse = {
             ...course.toJSON(),
@@ -158,7 +129,7 @@ exports.getCourseById = (req, res, next) => {
       include: [
         {
           model: db.category,
-          attributes: ["name","isCamp"],
+          attributes: ["name", "isCamp"],
         },
       ],
     })
@@ -170,20 +141,12 @@ exports.getCourseById = (req, res, next) => {
       const categoryName = course.category ? course.category.name : null;
 
       // Splitting the description into checklist items
-      const checklistItems = course.description
-        ? course.description.split("\n")
-        : [];
-      const checklistItemsAr = course.description_ar
-        ? course.description_ar.split("\n")
-        : [];
+      const checklistItems = course.description ? course.description.split("\n") : [];
+      const checklistItemsAr = course.description_ar ? course.description_ar.split("\n") : [];
 
       // Generating HTML markup for the checklist
-      const checklistHTML = checklistItems
-        .map((item) => `<li><p>${item}</p></li>`)
-        .join("");
-      const checklistHTMLAr = checklistItemsAr
-        .map((item) => `<li><p>${item}</p></li>`)
-        .join("");
+      const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+      const checklistHTMLAr = checklistItemsAr.map((item) => `<li><p>${item}</p></li>`).join("");
 
       const difference = course.amount - course.offerAmount;
       const offerPercentage = Math.round((difference / course.amount) * 100);
@@ -203,9 +166,7 @@ exports.getCourseById = (req, res, next) => {
       res.status(200).json({ course: modifiedCourse });
     })
     .catch((err) => {
-      console.error(
-        `Error in retrieving course ${courseId}: ${err.toString()}`
-      );
+      console.error(`Error in retrieving course ${courseId}: ${err.toString()}`);
       res.status(500).send({ message: err.toString() });
     });
 };
@@ -312,9 +273,7 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     });
 
     if (!testimonials || testimonials.length === 0) {
-      return res
-        .status(404)
-        .json({ message: `No testimonials found for course ${courseId}` });
+      return res.status(404).json({ message: `No testimonials found for course ${courseId}` });
     }
 
     // Manipulate the course name for each testimonial and set the role in the JSON response
@@ -328,14 +287,10 @@ exports.getAllTestimonialsById = async (req, res, next) => {
       };
     });
 
-    console.log(
-      `Retrieved all testimonials for course ${courseId} successfully`
-    );
+    console.log(`Retrieved all testimonials for course ${courseId} successfully`);
     res.status(200).json({ testimonials: testimonialsWithRole });
   } catch (err) {
-    console.error(
-      `Error in retrieving testimonials for course ${courseId}: ${err}`
-    );
+    console.error(`Error in retrieving testimonials for course ${courseId}: ${err}`);
     const statusCode = err.status || 500;
     res.status(statusCode).json({
       error: `Error in retrieving testimonials for course ${courseId}`,
@@ -417,27 +372,18 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day <= 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos
-            .filter((video) => video.day === day)
-            .map((item) => item.id);
+          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-          if (
-            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-            videos_day_id.length > 0
-          )
+          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
             finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item)))
-          finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item)))
-          finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item)))
-          finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item)))
-          finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -514,27 +460,18 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day <= 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos
-          .filter((video) => video.day === day)
-          .map((item) => item.id);
+        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-        if (
-          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-          videos_day_id.length > 0
-        )
+        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0)
           finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item)))
-        finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item)))
-        finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item)))
-        finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item)))
-        finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
       (final_sub_course.name = subCourseDB.name),
@@ -687,15 +624,7 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(
-          __dirname,
-          "..",
-          "assets",
-          "trojanTTt",
-          "videos",
-          "new",
-          video.url
-        );
+        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video.url);
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -753,9 +682,7 @@ exports.getSubscribedCourse = (req, res, next) => {
                 {
                   // courseId: 2,
                   createdAt: {
-                    [db.Sequelize.Op.gt]: db.Sequelize.literal(
-                      "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
-                    ),
+                    [db.Sequelize.Op.gt]: db.Sequelize.literal("DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"),
                   },
                 },
               ],
@@ -786,55 +713,6 @@ exports.getSubscribedCourse = (req, res, next) => {
       res.status(500).send({ message: "Internal server error" });
     });
 };
-
-// exports.getSubscribedCourse = (req, res, next) => {
-//   const monthsAgo = new Date();
-//   monthsAgo.setMonth(monthsAgo.getMonth() - 3);
-
-//   const monthsAgo2 = new Date();
-//   monthsAgo2.setMonth(monthsAgo2.getMonth() - 4);
-
-//   db.user
-//     .findOne({
-//       where: {
-//         id: req.userDecodeId,
-//       },
-//       include: [
-//         {
-//           model: db.course,
-//           through: {
-//             model: db.registeredCourse,
-//             where: {
-//               [db.Sequelize.Op.or]: [
-//                 { createdAt: { [db.Sequelize.Op.gt]: monthsAgo } },
-//                 {
-//                   courseId: 2,
-//                   createdAt: { [db.Sequelize.Op.gt]: monthsAgo2 },
-//                 },
-//               ],
-//             },
-//           },
-//         },
-//       ],
-//     })
-//     .then((user) => {
-//       if (!user) {
-//         return res.status(404).send({ message: "User not found" });
-//       }
-
-//       const subscribedCourses = user.courses.map((course) => ({
-//         courseId: course.id,
-//         courseName: course.courseName, // Assuming this is the column name for the course name
-//         // Include other course details as needed
-//       }));
-
-//       res.status(200).send(subscribedCourses);
-//     })
-//     .catch((error) => {
-//       console.log(`Error in getting subscribed courses: ${error.toString()}`);
-//       res.status(500).send({ message: "Internal server error" });
-//     });
-// };
 
 exports.watchVideo = (req, res, next) => {
   const videoId = req.body.videoId;
@@ -889,65 +767,6 @@ exports.postStripePayment = async (req, res) => {
   }
 };
 
-// exports.postStripePayment = async (req, res) => {
-//   try {
-//     const { courseId } = req.body;
-//     const courseDB = await db.course.findByPk(courseId);
-//     const amount = courseDB.offerAmount * 100;
-
-//     // Check for Apple Pay payment method
-//     const paymentData = req.body.paymentData; // Assuming payment data is sent in request body
-
-//     if (paymentData) {
-//       // Process Apple Pay payment
-//       return await handleApplePayPayment(paymentData, amount);
-//     } else {
-//       // Process card payment using existing code
-//       const userDB = await db.user.findByPk(req.userDecodeId);
-//       const customerId = userDB.stripe_customer_id;
-
-//       const paymentIntent = await stripe.paymentIntents.create({
-//         amount,
-//         currency: "USD",
-//         customer: customerId,
-//         metadata: {
-//           courseId: courseId,
-//           amount: amount,
-//           userId: userDB.id,
-//         },
-//       });
-
-//       res.json({ clientSecret: paymentIntent.client_secret });
-//     }
-//   } catch (error) {
-//     console.log(`error in pay ${error.toString()}`);
-//     res.status(500).send({ message: error.toString() });
-//   }
-// };
-
-// async function handleApplePayPayment(paymentData, amount) {
-//   try {
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount,
-//       currency: "USD",
-//       payment_method_types: ["apple_pay"],
-//       confirmation_method: "automatic", // Automatic confirmation for seamless experience
-//     });
-
-//     // Use Stripe.js library to display Apple Pay sheet and handle payment
-//     const { paymentIntent: confirmedIntent } = await stripe.confirmCardPayment(paymentIntent.client_secret, {
-//       payment_method: paymentData,
-//     });
-
-//     // Handle successful payment (e.g., update course access for user)
-//     console.log("Payment successful:", confirmedIntent);
-//     return { message: "Payment successful!" };
-//   } catch (error) {
-//     console.error("Error processing Apple Pay:", error);
-//     return { message: "Payment failed.", error: error.message };
-//   }
-// }
-
 exports.stripeWebhook = async (req, res) => {
   console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
   const endpointSecret = process.env.STRIPE_ENDPOINT_SEC;
@@ -965,11 +784,7 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature);
       try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          signature,
-          endpointSecret
-        );
+        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -987,10 +802,7 @@ exports.stripeWebhook = async (req, res) => {
         const userId = paymentIntent.metadata.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(
-          `PaymentIntent was successful for customer ${customerId}:`,
-          paymentIntent.id
-        );
+        console.log(`PaymentIntent was successful for customer ${customerId}:`, paymentIntent.id);
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -1013,37 +825,10 @@ exports.stripeWebhook = async (req, res) => {
         });
 
         const userDB = await db.user.findByPk(userId);
-        //       const mailOptions = {
-        //         from: process.env.EMAILID,
-        //         to: userDB.email,
-        //         subject: "TheTopPlayer Payment",
-        //         text: "payment successful",
-        //         html: `
-        //                   <h2 style="color: green;">Payment Success - Reference ${paymentIntent.id}</h2>
-        //                   <p>Dear ${userDB.username},</p>
-
-        //                   <p>We are thrilled to inform you that your recent payment was successful! Thank you for choosing our services.</p>
-
-        //                   <p><strong>Payment Details:</strong></p>
-        // <ul>
-        //   <li>Amount: ${amount}$</li>
-        //   <li>Reference Number: ${paymentIntent.id}</li>
-        // </ul>
-
-        // <p>Your support is invaluable to us, and we appreciate your trust in our platform. If you have any questions or concerns, feel free to reach out to our customer support team .</p>
-
-        //                   <p>Thank you for choosing TheTopPlayer.</p>
-
-        //                   <p>Best Regards,<br>`,
-        //       };
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
-        const html = paymentSuccessMail(
-          userDB.username,
-          amount,
-          paymentIntent.id
-        );
+        const html = paymentSuccessMail(userDB.username, amount, paymentIntent.id);
 
         const isMailsend = await sendMail(userDB.email, subject, text, html);
 
@@ -1052,34 +837,11 @@ exports.stripeWebhook = async (req, res) => {
         } else {
           console.error("Error sending email in payment:", error);
         }
-
-        // const mailOptions = {
-        //   from: process.env.EMAILID,
-        //   to: userDB.email,
-        //   subject: "TheTopPlayer Payment",
-        //   text: "payment successful",
-        //   html: ,
-        // };
-
-        // let emailTransporter = await createTransporter();
-        // await emailTransporter.sendMail(
-        //   mailOptions,
-        //   async function (error, info) {
-        //     if (error) {
-        //       console.error("Error sending email in payment:", error);
-        //     } else {
-        //       console.log("Email sent:", info.response);
-        //     }
-        //   }
-        // );
         break;
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(
-          `PaymentIntent failed for customer ${failedCustomerId}:`,
-          failedPaymentIntent.id
-        );
+        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
         break;
       // Add more cases for other events as needed
       default:
@@ -1104,9 +866,7 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res
-        .status(500)
-        .send({ message: `error in adding subscriber ${error.toString()}` });
+      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
@@ -1126,9 +886,7 @@ exports.contactUS = async (req, res, next) => {
     });
     if (isMailsend) {
       console.log("Contact us message saved successfully and mail send");
-      res
-        .status(200)
-        .send({ message: "Message submitted successfully and mail is sent" });
+      res.status(200).send({ message: "Message submitted successfully and mail is sent" });
     } else {
       console.log("Contact us message saved successfully and mail not send");
       res.status(200).send({
@@ -1140,53 +898,6 @@ exports.contactUS = async (req, res, next) => {
     res.status(500).send({ message: error.toString() });
   }
 };
-
-// exports.contactUS = async (req, res, next) => {
-//   const { name, email, message } = req.body;
-
-//   try {
-//     // const mailOptions = {
-//     //   from: process.env.EMAILID,
-//     //   to: "afsal@intersmart.in",
-//       const subject =  "Top Player - New enquiry"
-//       const text= "A new enquiry from top player" // plain text body
-//       const html = EnquiryMail(name, message, email),
-//     // };
-//     // let emailTransporter = await createTransporter();
-
-//     await sendMail("afsal@intersmart.in",subject,text,html)
-
-//     //  const gmail = google.gmail({ version: 'v1', emailAuth });
-
-//     // await emailTransporter.sendMail(mailOptions, function (error, info) {
-//     //   if (error) {
-//     //     console.error("Error sending email:", error);
-//     //     res.status(500).send({
-//     //       message:
-//     //         "Your email address couldn't be found or is unable to receive email. please check your email and try again.",
-//     //       // accessToken: token
-//     //     });
-//     //   } else {
-//     //     console.log("Email sent:", info.response);
-//     //     res.status(200).send({
-//     //       message: "Please check your email to verify your account",
-//     //     });
-//     //   }
-//     // });
-
-//     const result = await db.contact.create({
-//       name: req.body.name,
-//       email: req.body.email,
-//       message: req.body.message,
-//     });
-
-//     console.log("Contact us message saved successfully");
-//     res.status(200).send({ message: "Message submitted successfully" });
-//   } catch (error) {
-//     console.error(`Error in saving contact us message: ${error.toString()}`);
-//     res.status(500).send({ message: error.toString() });
-//   }
-// };
 
 exports.payments = async (req, res, next) => {
   const userId = req.userDecodeId;
