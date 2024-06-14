@@ -120,13 +120,40 @@ exports.tamaraWebHook = async (req, res) => {
     console.log("orderDetails=====>", orderDetails);
     console.log("orderDetails referenceId=====>", orderDetails.referenceId);
 
-
-    console.log(`Received webhook notification: ${notificationType}`);
-
+    const courseId = orderDetails.courseId
+    const userId = orderDetails.userId
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
         // Handle order creation notification
+        const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
+          where: {
+            courseId: courseId,
+            userId: userId,
+          },
+          defaults: {
+            courseId: courseId,
+            userId: userId,
+          },
+        });
+
+        if (!created) {
+          await regCourseDB.update({ createdDate: new Date() });
+        }
+
+        const userDB = await db.user.findByPk(userId);
+
+        const subject = "TheTopPlayer Payment";
+        const text = "payment successful"; // plain text body
+        const html = paymentSuccessMail(userDB.username, amount, orderDetails.referenceId);
+
+        const isMailsend = await sendMail(userDB.email, subject, text, html);
+
+        if (isMailsend) {
+          console.log("Email sent:");
+        } else {
+          console.error("Error sending email in payment:", error);
+        }
 
         console.log("Order created: ==>", referenceOrderId);
         // Update your application data (e.g., mark order as created)
