@@ -118,18 +118,8 @@ exports.tamaraWebHook = async (req, res) => {
     });
 
     console.log("orderDetails=====>", orderDetails);
+    console.log("orderDetails referenceId=====>", orderDetails.referenceId);
 
-    const notificationService = TamaraClientFactory.createNotificationService(config);
-
-    // Assuming processWebhook returns a Promise (check documentation)
-    const payload = notificationService.processWebhook(req);
-
-    payload.then((res) => {
-      console.log("payload:==================>", res); // Log the processed payload
-    });
-
-    const notificationType = payload.notificationType; // Use notificationType (assuming it's the correct property)
-    const order = payload.order;
 
     console.log(`Received webhook notification: ${notificationType}`);
 
@@ -137,7 +127,8 @@ exports.tamaraWebHook = async (req, res) => {
     switch (req.body.event_type) {
       case "order_approved":
         // Handle order creation notification
-        console.log("Order created:", order.referenceOrderId);
+
+        console.log("Order created: ==>", referenceOrderId);
         // Update your application data (e.g., mark order as created)
         break;
       case "ORDER_CONFIRMED":
