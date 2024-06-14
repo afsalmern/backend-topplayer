@@ -1,6 +1,8 @@
 const { TamaraClientFactory } = require("tamara-sdk");
 const { v4: uuidv4 } = require("uuid"); // Import the UUID package
 const db = require("../models");
+const sendMail = require("../utils/mailer");
+const { paymentSuccessMail } = require("../utils/mail_content");
 
 const config = {
   baseUrl: "https://api-sandbox.tamara.co",
