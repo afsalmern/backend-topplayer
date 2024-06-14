@@ -1,6 +1,7 @@
 const db = require("../../models");
 const fs = require("fs");
 const path = require("path");
+const { where } = require("sequelize");
 
 // Create a new course
 
@@ -42,12 +43,25 @@ exports.addCourse = async (req, res, next) => {
 };
 
 exports.getAllCourses = async (req, res, next) => {
-  db.course
-    .findAll({
+  try {
+    const { filter } = req.params;
+
+    let whereClause = {};
+
+    console.log(filter);
+
+    if (filter === "course") {
+      whereClause = { iscamp: false };
+    } else if (filter === "camp") {
+      whereClause = { iscamp: true };
+    }
+
+    const courses = await db.course.findAll({
       where: { isDeleted: false },
       include: {
         model: db.category, // Include the Category model
-        attributes: ["name"], // Only retrieve the 'name' attribute from the Category model
+        attributes: ["name", "iscamp"],
+        where: whereClause, // Only retrieve the 'name' attribute from the Category model
       },
       attributes: [
         "id",
@@ -66,53 +80,52 @@ exports.getAllCourses = async (req, res, next) => {
         "duration",
       ],
       order: [["createdAt", "DESC"]],
-    })
-    .then((courses) => {
-      console.log(`Retrieved all courses successfully`);
-
-      const courseOnlyData = courses;
-
-      // Manipulating the response to have category_name instead of category object
-      const modifiedCourses = courses?.map((course) => {
-        // Splitting the description into checklist items
-        const checklistItems = course?.description?.split("\n");
-        // Generating HTML markup for the checklist
-        const checklistHTML = checklistItems
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
-
-        const offerPercentage = Math.round(
-          ((course.amount - course.offerAmount) / course.amount) * 100
-        );
-
-        const checklistItems2 = course?.description_ar?.split("\n");
-        // Generating HTML markup for the checklist
-        const checklistHTML2 = checklistItems2
-          ?.map((item) => `<li><p>${item}</p></li>`)
-          .join("");
-
-        return {
-          ...course.toJSON(),
-          category_name: course.category ? course.category?.name : null,
-          descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
-          descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
-          description: course?.description || null,
-          description_ar: course?.description_ar || null,
-          offerPercentage,
-        };
-      });
-
-      // Remove the nested category object and original description field
-      modifiedCourses.forEach((course) => {
-        delete course.category;
-      });
-
-      res.status(200).json({ courses: modifiedCourses, courseOnlyData });
-    })
-    .catch((err) => {
-      console.error(`Error in retrieving courses: ${err.toString()}`);
-      res.status(500).send({ message: err.toString() });
     });
+
+    console.log(`Retrieved all courses successfully`);
+
+    const courseOnlyData = courses;
+
+    // Manipulating the response to have category_name instead of category object
+    const modifiedCourses = courses?.map((course) => {
+      // Splitting the description into checklist items
+      const checklistItems = course?.description?.split("\n");
+      // Generating HTML markup for the checklist
+      const checklistHTML = checklistItems
+        ?.map((item) => `<li><p>${item}</p></li>`)
+        .join("");
+
+      const offerPercentage = Math.round(
+        ((course.amount - course.offerAmount) / course.amount) * 100
+      );
+
+      const checklistItems2 = course?.description_ar?.split("\n");
+      // Generating HTML markup for the checklist
+      const checklistHTML2 = checklistItems2
+        ?.map((item) => `<li><p>${item}</p></li>`)
+        .join("");
+
+      return {
+        ...course.toJSON(),
+        category_name: course.category ? course.category?.name : null,
+        descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
+        descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
+        description: course?.description || null,
+        description_ar: course?.description_ar || null,
+        offerPercentage,
+      };
+    });
+
+    // Remove the nested category object and original description field
+    modifiedCourses.forEach((course) => {
+      delete course.category;
+    });
+
+    res.status(200).json({ courses: modifiedCourses });
+  } catch (error) {
+    console.error(`Error in retrieving courses: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
 };
 
 // Retrieve a single course by ID
@@ -264,7 +277,7 @@ exports.deleteCourse = async (req, res, next) => {
 
 exports.deleteMedia = async (req, res, next) => {
   const { id, filename, type } = req.params;
-console.log(filename);
+  console.log(filename);
   try {
     const course = await db.course.findByPk(id);
 

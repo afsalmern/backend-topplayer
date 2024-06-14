@@ -211,7 +211,7 @@ router.get(
   getMainBannerById
 );
 
-router.get("/orders", [authMiddleware.checkUserAuth], getAllorders);
+router.get("/orders/:filter?", [authMiddleware.checkUserAuth], getAllorders);
 router.patch(
   "/orders/:courseId",
   [authMiddleware.checkUserAuth],
@@ -246,7 +246,7 @@ router.post(
   courseController.addCourse
 );
 router.get(
-  "/course",
+  "/course/:filter?",
   authMiddleware.checkUserAuth,
   courseController.getAllCourses
 );

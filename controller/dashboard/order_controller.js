@@ -58,14 +58,23 @@ const { Op, Sequelize } = require("sequelize");
 
 exports.getAllorders = async (req, res) => {
   try {
-    // Retrieve registered courses with associated users and courses
+    let whereClause = {};
+    let { filter } = req.params;
+    let courseWhereClause = {};
+
+    if (filter === "course") {
+      whereClause = { iscamp: false };
+    } else if (filter === "camp") {
+      whereClause = { iscamp: true };
+    }
+
+    courseWhereClause = {
+      ...courseWhereClause,
+      id: { [db.Sequelize.Op.ne]: null }, // Ensures courseId is not null
+    };
+
     let orders = await db.registeredCourse.findAll({
       include: [
-        { 
-          model: db.user, 
-          as: "user", 
-          attributes: ["id", "username", "email"] 
-        },
         {
           model: db.course,
           as: "course",
@@ -73,19 +82,26 @@ exports.getAllorders = async (req, res) => {
           include: [
             {
               model: db.category,
-              attributes: ["id", "name"]
-            }
-          ]
-        }
+              attributes: ["id", "name", "iscamp"],
+              where: whereClause,
+            },
+          ],
+          where: courseWhereClause,
+        },
+        {
+          model: db.user,
+          as: "user",
+          attributes: ["id", "username", "email"],
+        },
       ],
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
     });
 
     // Iterate through each order and fetch payments for the associated user
     for (let order of orders) {
       // Retrieve payments for the user associated with the order
       const payments = await db.payment.findAll({
-        where: { userId: order.userId } // Filter payments by userId
+        where: { userId: order.userId }, // Filter payments by userId
       });
       // Assign payments to the order
       order.payments = payments;
@@ -112,7 +128,7 @@ exports.getAllorders = async (req, res) => {
       payments: order.payments, // Include payments made by the user
       subscriptionStartDate: order.createdAt,
       subscriptionEndDate: order.subscriptionEndDate,
-      remainingDays: order.remainingDays
+      remainingDays: order.remainingDays,
     }));
 
     res.status(200).json({ orders: formattedOrders });
@@ -121,8 +137,6 @@ exports.getAllorders = async (req, res) => {
     res.status(500).send({ message: error.toString() });
   }
 };
-
-
 
 exports.updateOrderSubscription = async (req, res) => {
   try {
