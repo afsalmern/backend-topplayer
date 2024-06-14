@@ -55,11 +55,11 @@ exports.createTamaraPayment = async (req, res) => {
     const shipping_address = {
       city: "Riyadh",
       country_code: "AE",
-      first_name: "Mona",
-      last_name: "Lisa",
+      first_name: userDB?.username.split(" ")[0],
+      last_name: userDB?.username.split(" ")[1],
       line1: "3764 Al Urubah Rd",
       line2: "string",
-      phone_number: "532298658",
+      phone_number: userDB?.mobile,
     };
 
     const referenceOrderId = uuidv4();
