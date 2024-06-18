@@ -12,7 +12,7 @@ const config = {
 };
 
 exports.createTamaraPayment = async (req, res) => {
-  const { shippingAddress, courseId, lang, amount } = req.body;
+  const { shippingAddress, courseId, lang, amount, type } = req.body;
 
   try {
     const tamara = TamaraClientFactory.createApiClient(config);
@@ -66,9 +66,9 @@ exports.createTamaraPayment = async (req, res) => {
     const referenceId = uuidv4();
 
     const merchant_url = {
-      cancel: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
-      failure: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
-      success: `${process.env.CLIENT_HOST}/${lang}/user/camps/details/${courseId}`,
+      cancel: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
+      failure: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
+      success: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
       notification: "https://store-demo.com/payments/tamarapay",
     };
 
