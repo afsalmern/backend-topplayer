@@ -72,6 +72,21 @@ const uploadImage = multer({
   storage: multerStorageImage,
 });
 
+const multerStrNewsBannerImg = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/news-banner-images");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${basename}-${uniqueSuffix}${ext}`);
+  },
+});
+const uploadNwsBnrImage = multer({
+  storage: multerStrNewsBannerImg,
+});
+
 // const multerStorageNewsImage = multer.diskStorage({
 //   destination: (req, file, cb) => {
 //     cb(null, "public/newsImages");
@@ -288,6 +303,19 @@ router.delete(
   [authMiddleware.checkUserAuth],
   subCourseController.deleteSubCourse
 );
+
+router.get("/news-image", newsController.getNewsCvrImage);
+router.post(
+  "/news-image",
+  uploadNwsBnrImage.single("file"),
+  newsController.addNewsCvrImage
+);
+router.put(
+  "/news-image/:id",
+  uploadNwsBnrImage.single("file"),
+  newsController.updateNewsCvrImage
+);
+router.delete("/news-image/:id", newsController.deleteNewsCvrImage);
 
 router.post(
   "/news",

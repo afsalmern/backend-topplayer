@@ -40,6 +40,7 @@ db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 db.contact = require("./contact_us")(sequelize, Sequelize);
 db.visitors = require("./visitors")(sequelize, Sequelize);
+db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize)
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);

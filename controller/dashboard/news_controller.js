@@ -389,3 +389,136 @@ exports.deleteNewsImage = async (req, res) => {
     res.status(500).send({ message: "Error deleting news image" });
   }
 };
+exports.addNewsCvrImage = async (req, res) => {
+  try {
+    const { banner_text, banner_text_ar } = req.body;
+    let imgPath;
+    if (req.file) {
+      imgPath = req.file.filename;
+    }
+
+    const newsBanner = await db.newsBannerImages.create({
+      banner_text,
+      banner_text_ar,
+      imageUrl: imgPath,
+    });
+
+    res.status(200).send({
+      message: "News cover image added successfully",
+      data: newsBanner,
+    });
+  } catch (err) {
+    console.error(`Error in adding news cover image: ${err.toString()}`);
+    res.status(500).send({ message: "Error adding news cover image" });
+  }
+};
+exports.getNewsCvrImage = async (req, res) => {
+  try {
+    const newsBanner = await db.newsBannerImages.findAll();
+
+    res.status(200).send({
+      message: "News cover image fetched successfully",
+      data: newsBanner,
+    });
+  } catch (err) {
+    console.error(`Error in fetching news cover image: ${err.toString()}`);
+    res.status(500).send({ message: "Error fetching news cover image" });
+  }
+};
+
+exports.updateNewsCvrImage = async (req, res) => {
+  try {
+
+    console.log("HEREEE");
+
+    const id = req.params.id;
+    const { banner_text, banner_text_ar } = req.body;
+
+    if (req.file && req.file.filename) {
+      const newFile = req.file.filename;
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "news-banner-images"
+      );
+
+      fs.readdir(filePath, (err, files) => {
+        if (err) {
+          console.log(`Error reading directory: ${err}`);
+          return;
+        }
+
+        files.forEach((file) => {
+          if (file !== newFile) {
+            fs.unlink(path.join(filePath, file), (err) => {
+              if (err) {
+                console.log(`Error deleting file: ${err}`);
+                return;
+              }
+              console.log(`Deleted file: ${file}`);
+            });
+          }
+        });
+      });
+    }
+
+    const newsBanner = await db.newsBannerImages.findByPk(id);
+    if (!newsBanner) {
+      return res.status(404).send({ message: "Banner not found" });
+    }
+    const updatedData = await newsBanner.update({
+      imageUrl: req.file ? req.file.filename : newsBanner.imageUrl,
+      banner_text: banner_text || newsBanner.banner_text,
+      banner_text_ar: banner_text_ar || newsBanner.banner_text_ar,
+    });
+    console.log(`News banner with ID ${id} updated successfully`);
+    res.status(200).send({
+      message: "Updated news banner successfully",
+      data: updatedData,
+    });
+  } catch (err) {
+    console.error(`Error in updating news cover image: ${err.toString()}`);
+    res.status(500).send({ message: "Error updating news cover image" });
+  }
+};
+
+exports.deleteNewsCvrImage = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const newsBanner = await db.newsBannerImages.findByPk(id);
+    if (!newsBanner) {
+      return res.status(404).send({ message: "News banner not found" });
+    }
+
+    const imgPath = newsBanner.imageUrl;
+
+    if (imgPath) {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "news-banner-images",
+        imgPath
+      );
+      fs.unlink(filePath, async (err) => {
+        if (err) {
+          console.log(`Banner image ${imgPath} removing failed`);
+        } else {
+          await newsBanner.destroy();
+          console.log(
+            `Banner image ${imgPath} removed from folder successfully`
+          );
+        }
+      });
+    }
+
+    console.log(`News banner with ID ${id} deleted successfully`);
+    res.status(200).send({ message: "News banner deleted successfully" });
+  } catch (err) {
+    console.error(`Error in deleting newsBanner: ${err.toString()}`);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
