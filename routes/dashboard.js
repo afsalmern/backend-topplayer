@@ -257,7 +257,7 @@ router.put(
   courseController.updateCourse
 );
 router.delete(
-  "/course/:id",
+  "/course/:id/:checked",
   [authMiddleware.checkUserAuth],
   courseController.deleteCourse
 );

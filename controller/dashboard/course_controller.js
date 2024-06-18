@@ -57,7 +57,6 @@ exports.getAllCourses = async (req, res, next) => {
     }
 
     const courses = await db.course.findAll({
-      where: { isDeleted: false },
       include: {
         model: db.category, // Include the Category model
         attributes: ["name", "iscamp"],
@@ -78,6 +77,7 @@ exports.getAllCourses = async (req, res, next) => {
         "bannerUrl",
         "videoUrl",
         "duration",
+        "isDeleted",
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -121,7 +121,7 @@ exports.getAllCourses = async (req, res, next) => {
       delete course.category;
     });
 
-    res.status(200).json({ courses: modifiedCourses });
+    res.status(200).json({ courses: modifiedCourses, courseOnlyData });
   } catch (error) {
     console.error(`Error in retrieving courses: ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
@@ -208,6 +208,7 @@ exports.updateCourse = async (req, res, next) => {
 // Delete a course
 exports.deleteCourse = async (req, res, next) => {
   const courseId = req.params.id;
+  const checked = req.params.checked === "false";
 
   try {
     const course = await db.course.findByPk(courseId);
@@ -252,21 +253,21 @@ exports.deleteCourse = async (req, res, next) => {
     //   fs.unlink(banner);
     // }
 
-    const mediaUrls = ["imageUrl", "videoUrl", "bannerUrl"];
-    const mediaDir = path.join(__dirname, "..", "..", "public", "courseImages");
+    // const mediaUrls = ["imageUrl", "videoUrl", "bannerUrl"];
+    // const mediaDir = path.join(__dirname, "..", "..", "public", "courseImages");
 
-    mediaUrls.forEach((urlProperty) => {
-      const filePath = path.join(mediaDir, course[urlProperty]);
-      if (course[urlProperty] && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    });
+    // mediaUrls.forEach((urlProperty) => {
+    //   const filePath = path.join(mediaDir, course[urlProperty]);
+    //   if (course[urlProperty] && fs.existsSync(filePath)) {
+    //     fs.unlinkSync(filePath);
+    //   }
+    // });
 
-    course.isDeleted = true;
+    course.isDeleted = checked ? 1 : 0;
     await course.save();
 
     console.log(`Course with ID ${courseId} deleted successfully`);
-    res.status(200).send({ message: "Course deleted successfully" });
+    res.status(200).send({ message: "Course updated successfully" });
   } catch (err) {
     console.error(`Error in deleting course: ${err.toString()}`);
     res.status(500).send({ message: err.toString() });
