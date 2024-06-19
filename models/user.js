@@ -36,6 +36,16 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
     },
+    deviceCount: {
+      type: Sequelize.INTEGER,
+      defaultValue: 2,
+      validate: {
+        max: {
+          args: 11,
+          msg: "Device count cannot exceed 5",
+        },
+      },
+    },
   });
 
   return User;

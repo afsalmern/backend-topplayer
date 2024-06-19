@@ -12,6 +12,8 @@ exports.getDashboardDetails = async (req, res) => {
       col: "userId", // Count unique user IDs
     });
 
+    const freeUsersCount = registeredUsersCount - activeUsersCount;
+
     const enrolledUsersPerCourse = await db.registeredCourse.findAll({
       attributes: [
         "courseId",
@@ -30,15 +32,55 @@ exports.getDashboardDetails = async (req, res) => {
       group: ["courseId"],
     });
 
+    const allRegisteredCourses = await db.registeredCourse.findAll({
+      include: [
+        {
+          model: db.course,
+          as: "course",
+          attributes: ["id", "name", "duration"], // Include 'duration' attribute
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const currentDate = new Date();
+    const expiredCourses = [];
+    const notExpiredCourses = [];
+
+    allRegisteredCourses.forEach((registeredCourse) => {
+      const courseEndDate = new Date(registeredCourse.createdAt);
+      courseEndDate.setDate(
+        courseEndDate.getDate() + registeredCourse.course.duration
+      );
+
+      if (currentDate > courseEndDate) {
+        expiredCourses.push(registeredCourse);
+      } else {
+        notExpiredCourses.push(registeredCourse);
+      }
+    });
+
     const monthlyPaymentCounts = await db.payment.findAll({
       attributes: [
         [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
         [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"],
-        [Sequelize.fn("COUNT", "*"), "payment_count"],
+        [Sequelize.fn("COUNT", Sequelize.col("*")), "payment_count"],
+        [
+          Sequelize.fn(
+            "ROUND",
+            Sequelize.fn("SUM", Sequelize.col("amount")),
+            2
+          ),
+          "total_amount",
+        ],
       ],
       group: [
-        Sequelize.fn("YEAR", Sequelize.col("createdAt")),
-        Sequelize.fn("MONTH", Sequelize.col("createdAt")),
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt"))],
+      ],
+      order: [
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "ASC"],
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "ASC"],
       ],
     });
 
@@ -65,13 +107,13 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
-    const paymentCounts = await db.payment.findAll({
-      attributes: [
-        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
-        [Sequelize.fn("COUNT", "*"), "payment_count"],
-      ],
-      group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
-    });
+    // const paymentCounts = await db.payment.findAll({
+    //   attributes: [
+    //     [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
+    //     [Sequelize.fn("COUNT", "*"), "payment_count"],
+    //   ],
+    //   group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
+    // });
 
     const visitors = await db.visitors.findAll({
       attributes: [
@@ -90,16 +132,28 @@ exports.getDashboardDetails = async (req, res) => {
     // Send the counts in the response
     res.status(200).json({
       activeUsersCount,
-      paymentCounts,
+      // paymentCounts,
+      freeUsersCount,
       registeredUsersCount,
       monthlyPaymentCounts,
       enrolledUsersPerCourse,
       recentUsers,
       visitors,
       totatlVisitors,
+      activeOrders: notExpiredCourses.length,
+      expiredOrders: expiredCourses.length,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+
+
+
+
+
+

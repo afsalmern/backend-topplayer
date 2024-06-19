@@ -343,6 +343,10 @@ exports.login = async (req, res, next) => {
       throw err;
     }
 
+    const maxDeviceCount = userDB.deviceCount;
+
+    console.log(maxDeviceCount, "MAX COUNT");
+
     const devices = await db.device.findAll({
       where: {
         userId: userDB.id,
@@ -354,7 +358,7 @@ exports.login = async (req, res, next) => {
     );
     console.log(`${isDevicePresent} ${userDB.id} ${deviceID}`);
     if (!isDevicePresent) {
-      if (devices.length >= 2) {
+      if (devices.length >= maxDeviceCount) {
         let err = new Error(
           "Maximum allowed logins reached. Please log out from your other devices to proceed"
         );

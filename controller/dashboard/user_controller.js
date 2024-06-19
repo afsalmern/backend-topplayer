@@ -45,6 +45,59 @@ exports.getAllusers = async (req, res) => {
   }
 };
 
+exports.updateDeviceCountGlobally = async (req, res) => {
+  try {
+    const { value } = req.body;
+
+    if (value < 2) {
+      return res.status(400).json({ message: "Invalid operation" });
+    }
+    const result = await db.user.update(
+      { deviceCount: value }, // Set deviceCount to the provided count
+      { where: {} } // Empty where clause updates all records
+    );
+
+    // Check if any records were updated
+    if (result[0] > 0) {
+      return res.status(200).json({ message: "Updated successfully" });
+    } else {
+      return res.status(404).json({ message: "No users found" });
+    }
+  } catch (error) {
+    console.log(error);
+    console.error(`Error in updating user status: ${error.toString()}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.updateDeviceCount = async (req, res) => {
+  try {
+    const { userId, count } = req.body;
+
+    console.log(typeof count);
+
+    if (count < 2) {
+      return res.status(400).json({ message: "Invalid operation" });
+    }
+    const user = await UserDb.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const maxDeviceCount = user.deviceCount;
+
+    if (maxDeviceCount === count) {
+      return res.status(400).json({ message: "Updation successfully" });
+    }
+
+    user.deviceCount = parseInt(count);
+    await user.save();
+    res.status(200).json({ message: "Updated successfully" });
+  } catch (error) {
+    console.log(error);
+    console.error(`Error in updating user status: ${error.toString()}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.updateUserStatus = async (req, res) => {
   try {
     const { id, value } = req.body;

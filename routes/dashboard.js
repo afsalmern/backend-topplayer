@@ -18,6 +18,8 @@ const {
   getAllusers,
   updateUserStatus,
   manageUser,
+  updateDeviceCount,
+  updateDeviceCountGlobally,
 } = require("../controller/dashboard/user_controller");
 const {
   getAllorders,
@@ -195,6 +197,8 @@ const uploadBannerVideo = multer({
 router.get("/users/:filter?", authMiddleware.checkUserAuth, getAllusers);
 router.post("/users", authMiddleware.checkUserAuth, manageUser);
 router.patch("/users", authMiddleware.checkUserAuth, updateUserStatus);
+router.patch("/users/devices", authMiddleware.checkUserAuth, updateDeviceCount);
+router.put("/devices", authMiddleware.checkUserAuth, updateDeviceCountGlobally);
 
 // router
 //   .route("/users")
