@@ -1,4 +1,5 @@
-const { where } = require("sequelize");
+const { where, Sequelize, literal } = require("sequelize");
+
 const db = require("../../models");
 
 const UserDb = db.user;
@@ -38,7 +39,17 @@ exports.getAllusers = async (req, res) => {
       users = Allusers;
     }
 
-    res.status(200).json({ users });
+    const maxDeviceCountinDb = await db.user.findOne({
+      attributes: [
+        "deviceCount",
+        [Sequelize.fn("COUNT", Sequelize.col("deviceCount")), "count"],
+      ],
+      group: ["deviceCount"],
+      order: [[Sequelize.literal("count"), "DESC"]],
+      limit: 1,
+    });
+
+    res.status(200).json({ users, maxDeviceCountinDb });
   } catch (error) {
     console.error(`Error in retrieving users: ${error.toString()}`);
     res.status(500).json({ message: "Internal server error" });
