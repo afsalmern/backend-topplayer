@@ -48,12 +48,11 @@ exports.getDashboardDetails = async (req, res) => {
     const notExpiredCourses = [];
 
     allRegisteredCourses.forEach((registeredCourse) => {
-      const courseEndDate = new Date(registeredCourse.createdAt);
-      courseEndDate.setDate(
-        courseEndDate.getDate() + registeredCourse.course.duration
-      );
+      const startDate = new Date(registeredCourse.createdAt);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + registeredCourse.course.duration);
 
-      if (currentDate > courseEndDate) {
+      if (currentDate > endDate) {
         expiredCourses.push(registeredCourse);
       } else {
         notExpiredCourses.push(registeredCourse);
@@ -148,12 +147,3 @@ exports.getDashboardDetails = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
-
-
-
-
-
-
