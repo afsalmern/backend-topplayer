@@ -56,10 +56,10 @@ const { Op, Sequelize } = require("sequelize");
 //   }
 // };
 
-exports.getAllorders = async (req, res) => {
+exports.getAllOrders = async (req, res) => {
   try {
     let whereClause = {};
-    let { filter } = req.params;
+    let { filter, status } = req.params;
     let courseWhereClause = {};
 
     if (filter === "course") {
@@ -119,6 +119,13 @@ exports.getAllorders = async (req, res) => {
       order.remainingDays = remainingDays;
       return order;
     });
+
+    // Filter orders based on status
+    if (status === "expired") {
+      orders = orders.filter((order) => order.remainingDays <= 0);
+    } else if (status === "active") {
+      orders = orders.filter((order) => order.remainingDays > 0);
+    }
 
     // Extracting only necessary data for response
     const formattedOrders = orders.map((order) => ({

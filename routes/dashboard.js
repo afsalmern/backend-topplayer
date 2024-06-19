@@ -24,6 +24,7 @@ const {
 const {
   getAllorders,
   updateOrderSubscription,
+  getAllOrders,
 } = require("../controller/dashboard/order_controller");
 const {
   addMainBanner,
@@ -230,7 +231,7 @@ router.get(
   getMainBannerById
 );
 
-router.get("/orders/:filter?", [authMiddleware.checkUserAuth], getAllorders);
+router.get("/orders/:filter?/:status?", [authMiddleware.checkUserAuth], getAllOrders);
 router.patch(
   "/orders/:courseId",
   [authMiddleware.checkUserAuth],
