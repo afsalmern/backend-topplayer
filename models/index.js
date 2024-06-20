@@ -40,7 +40,7 @@ db.mainBanner = require("./mainBanner")(sequelize, Sequelize);
 db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 db.contact = require("./contact_us")(sequelize, Sequelize);
 db.visitors = require("./visitors")(sequelize, Sequelize);
-db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize)
+db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize);
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
@@ -77,8 +77,14 @@ db.registeredCourse = RegisteredCourse;
 
 db.user.belongsToMany(db.course, { through: RegisteredCourse });
 db.course.belongsToMany(db.user, { through: RegisteredCourse });
-db.payment.belongsTo(db.registeredCourse);
-db.registeredCourse.hasMany(db.payment);
+db.payment.belongsTo(db.registeredCourse, {
+  onDelete: "cascade",
+  foreignKey: "registeredCourseId",
+});
+db.registeredCourse.hasMany(db.payment, {
+  onDelete: "cascade",
+  foreignKey: "registeredCourseId",
+});
 
 db.registeredCourse.belongsTo(db.course, {
   foreignKey: "courseId",
@@ -104,7 +110,7 @@ db.watchedVideo = WatchedVideo;
 db.user.belongsToMany(db.video, { through: WatchedVideo });
 db.video.belongsToMany(db.user, { through: WatchedVideo });
 
-db.user.hasMany(db.payment);
+db.user.hasMany(db.payment, { onDelete: "cascade" });
 db.user.hasMany(db.device);
 
 db.course.hasMany(db.payment, {

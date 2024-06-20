@@ -4,7 +4,16 @@ const db = require("../../models");
 exports.getDashboardDetails = async (req, res) => {
   try {
     // Count the total number of registered users
-    const registeredUsersCount = await db.user.count();
+    const totalUsers = await db.user.count();
+    const registeredUsersCount = await db.user.count({
+      where: {
+        id: {
+          [Sequelize.Op.notIn]: Sequelize.literal(
+            `(SELECT userId FROM registered_courses)`
+          ),
+        },
+      },
+    });
 
     // Count the number of unique user IDs from the Course model (active users)
     const activeUsersCount = await db.payment.count({
@@ -12,9 +21,22 @@ exports.getDashboardDetails = async (req, res) => {
       col: "userId", // Count unique user IDs
     });
 
-    const freeUsersCount = registeredUsersCount - activeUsersCount;
+    const registeredCourses = await db.registeredCourse.findAll({
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("userId")), "userId"],
+      ],
+      where: {
+        id: {
+          [db.Op.notIn]: Sequelize.literal(
+            `(SELECT registeredCourseId FROM payments WHERE registeredCourseId IS NOT NULL)`
+          ),
+        },
+      },
+    });
 
-    const enrolledUsersPerCourse = await db.registeredCourse.findAll({
+    const freeUsersCount = registeredCourses.length;
+
+    const enrolledUsersPerCourse = await db.payment.findAll({
       attributes: [
         "courseId",
         [
@@ -39,9 +61,17 @@ exports.getDashboardDetails = async (req, res) => {
           as: "course",
           attributes: ["id", "name", "duration"], // Include 'duration' attribute
         },
+        {
+          model: db.payment,
+          as: "payments",
+          attributes: [], // No need to select any attributes from payments
+          required: true, // Ensures an inner join
+        },
       ],
       order: [["createdAt", "DESC"]],
     });
+
+    // Process the results if needed
 
     const currentDate = new Date();
     const expiredCourses = [];
@@ -132,6 +162,7 @@ exports.getDashboardDetails = async (req, res) => {
     res.status(200).json({
       activeUsersCount,
       // paymentCounts,
+      totalUsers,
       freeUsersCount,
       registeredUsersCount,
       monthlyPaymentCounts,
