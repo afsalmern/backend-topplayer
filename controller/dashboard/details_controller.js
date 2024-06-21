@@ -3,8 +3,56 @@ const db = require("../../models");
 
 exports.getDashboardDetails = async (req, res) => {
   try {
-    // Count the total number of registered users
+    // Query to get count of expired , active and total orders
+    const [commonCombos] = await db.sequelize.query(`
+      SELECT rc.userId, rc.courseId, rc.createdAt, c.duration
+      FROM registered_courses rc
+      INNER JOIN payments p
+      ON rc.userId = p.userId AND rc.courseId = p.courseId
+      INNER JOIN courses c
+      ON rc.courseId = c.id
+    `);
+
+    const currentDate = new Date();
+    const expiredCourses = [];
+    const notExpiredCourses = [];
+
+    commonCombos.forEach((registeredCourse) => {
+      const startDate = new Date(registeredCourse.createdAt);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + registeredCourse.duration);
+
+      if (currentDate > endDate) {
+        expiredCourses.push(registeredCourse);
+      } else {
+        notExpiredCourses.push(registeredCourse);
+      }
+    });
+
+    // Query to get count of paid users
+    const [paidUsers] = await db.sequelize.query(`
+      SELECT COUNT(DISTINCT rc.userId) AS paidUsers
+      FROM registered_courses rc
+      INNER JOIN payments p
+      ON rc.userId = p.userId AND rc.courseId = p.courseId
+    `);
+
+    // Query to get count of free users
+    const [freeUsers] = await db.sequelize.query(`
+      SELECT COUNT(DISTINCT rc.userId) AS freeUsers
+      FROM registered_courses rc
+      LEFT JOIN payments p
+      ON rc.userId = p.userId AND rc.courseId = p.courseId
+      WHERE p.userId IS NULL
+      `);
+
+    // Count the number of free and paid users
+    const freeUsersCount = freeUsers[0].freeUsers;
+    const paidUsersCount = paidUsers[0].paidUsers;
+
+    // Query to get count of total users
     const totalUsers = await db.user.count();
+    // Query to get count of registered users
     const registeredUsersCount = await db.user.count({
       where: {
         id: {
@@ -15,27 +63,7 @@ exports.getDashboardDetails = async (req, res) => {
       },
     });
 
-    // Count the number of unique user IDs from the Course model (active users)
-    const activeUsersCount = await db.payment.count({
-      distinct: true,
-      col: "userId", // Count unique user IDs
-    });
-
-    const registeredCourses = await db.registeredCourse.findAll({
-      attributes: [
-        [Sequelize.fn("DISTINCT", Sequelize.col("userId")), "userId"],
-      ],
-      where: {
-        id: {
-          [db.Op.notIn]: Sequelize.literal(
-            `(SELECT registeredCourseId FROM payments WHERE registeredCourseId IS NOT NULL)`
-          ),
-        },
-      },
-    });
-
-    const freeUsersCount = registeredCourses.length;
-
+    // Query to get count of paid users in each course
     const enrolledUsersPerCourse = await db.payment.findAll({
       attributes: [
         "courseId",
@@ -54,41 +82,7 @@ exports.getDashboardDetails = async (req, res) => {
       group: ["courseId"],
     });
 
-    const allRegisteredCourses = await db.registeredCourse.findAll({
-      include: [
-        {
-          model: db.course,
-          as: "course",
-          attributes: ["id", "name", "duration"], // Include 'duration' attribute
-        },
-        {
-          model: db.payment,
-          as: "payments",
-          attributes: [], // No need to select any attributes from payments
-          required: true, // Ensures an inner join
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
-
-    // Process the results if needed
-
-    const currentDate = new Date();
-    const expiredCourses = [];
-    const notExpiredCourses = [];
-
-    allRegisteredCourses.forEach((registeredCourse) => {
-      const startDate = new Date(registeredCourse.createdAt);
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + registeredCourse.course.duration);
-
-      if (currentDate > endDate) {
-        expiredCourses.push(registeredCourse);
-      } else {
-        notExpiredCourses.push(registeredCourse);
-      }
-    });
-
+    // Query to get count of monthly revenue
     const monthlyPaymentCounts = await db.payment.findAll({
       attributes: [
         [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
@@ -113,6 +107,7 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
+    // Query to get count of recent users
     const recentUsers = await db.user.findAll({
       order: [["createdAt", "DESC"]],
       limit: 10,
@@ -136,19 +131,13 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
-    // const paymentCounts = await db.payment.findAll({
-    //   attributes: [
-    //     [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
-    //     [Sequelize.fn("COUNT", "*"), "payment_count"],
-    //   ],
-    //   group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
-    // });
-
+    // Query to get count visitors
     const visitors = await db.visitors.findAll({
       attributes: [
         [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
         [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"],
         [Sequelize.fn("COUNT", "*"), "visitors"],
+        [Sequelize.literal("(SELECT COUNT(*) FROM visitors)"), "totalVisitors"],
       ],
       group: [
         Sequelize.fn("YEAR", Sequelize.col("createdAt")),
@@ -156,12 +145,11 @@ exports.getDashboardDetails = async (req, res) => {
       ],
     });
 
-    const totatlVisitors = await db.visitors.count();
+    const totatlVisitors = visitors.length > 0 ? visitors[0].totalVisitors : 0;
 
     // Send the counts in the response
     res.status(200).json({
-      activeUsersCount,
-      // paymentCounts,
+      activeUsersCount: paidUsersCount,
       totalUsers,
       freeUsersCount,
       registeredUsersCount,

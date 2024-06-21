@@ -86,6 +86,11 @@ db.registeredCourse.hasMany(db.payment, {
   foreignKey: "registeredCourseId",
 });
 
+db.course.hasMany(db.registeredCourse, {
+  foreignKey: "courseId",
+  as: "registered",
+});
+
 db.registeredCourse.belongsTo(db.course, {
   foreignKey: "courseId",
   as: "course", // Alias for the association
