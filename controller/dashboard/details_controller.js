@@ -34,7 +34,7 @@ exports.getDashboardDetails = async (req, res) => {
     const [paidUsers] = await db.sequelize.query(`
       SELECT COUNT(DISTINCT rc.userId) AS paidUsers,c.isDeleted
       FROM registered_courses rc
-      INNER JOIN courses c
+      INNER JOIN courses c ON rc.courseId = c.id
       INNER JOIN payments p
       ON rc.userId = p.userId AND rc.courseId = p.courseId
       WHERE c.isDeleted = false
@@ -42,11 +42,11 @@ exports.getDashboardDetails = async (req, res) => {
 
     // Query to get count of free users
     const [freeUsers] = await db.sequelize.query(`
-      SELECT COUNT(DISTINCT rc.userId) AS freeUsers
-      FROM registered_courses rc
-      LEFT JOIN payments p
-      ON rc.userId = p.userId AND rc.courseId = p.courseId
-      WHERE p.userId IS NULL
+     SELECT COUNT(DISTINCT rc.userId) AS freeUsers
+    FROM registered_courses rc
+    INNER JOIN courses c ON rc.courseId = c.id
+    LEFT JOIN payments p ON rc.userId = p.userId AND rc.courseId = p.courseId
+    WHERE p.userId IS NULL AND c.isDeleted = false
       `);
 
     // Count the number of free and paid users
