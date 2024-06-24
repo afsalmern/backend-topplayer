@@ -66,14 +66,17 @@ exports.getDashboardDetails = async (req, res) => {
       },
     });
 
+    const allCourses = await db.course.findAll({
+      where: {
+        isDeleted: false,
+      },
+    });
+
     // Query to get count of paid users in each course
     const enrolledUsersPerCourse = await db.payment.findAll({
       attributes: [
         "courseId",
-        [
-          Sequelize.fn("COUNT", Sequelize.literal(' "userId"')),
-          "enrolled_users",
-        ],
+        [Sequelize.fn("COUNT", Sequelize.literal("userId")), "enrolled_users"],
       ],
       include: [
         {
@@ -87,6 +90,29 @@ exports.getDashboardDetails = async (req, res) => {
         userId: { [Sequelize.Op.not]: null },
       },
       group: ["courseId"],
+    });
+
+    const enrolledUsersMap = new Map();
+
+    // Populate enrolledUsersMap with Sequelize results
+    enrolledUsersPerCourse.forEach((course) => {
+      const dataValues = course.dataValues;
+      const courseId = dataValues.courseId;
+      const enrolled_users =
+        dataValues.enrolled_users == 0 ? 0 : dataValues.enrolled_users; // Access enrolled_users using get() method
+      enrolledUsersMap.set(courseId, enrolled_users);
+    });
+
+    // Iterate over allCourses and add enrolled_users from enrolledUsersMap
+    const coursesWithEnrollment = allCourses.map((course) => {
+      const courseId = course.id;
+      const enrolled_users = enrolledUsersMap.get(courseId) || 0; // Default to 0 if no enrolled_users found
+      return {
+        courseId: course.id,
+        name: course.name,
+        isDeleted: course.isDeleted,
+        enrolled_users: enrolled_users,
+      };
     });
 
     // Query to get count of monthly revenue
@@ -172,7 +198,7 @@ exports.getDashboardDetails = async (req, res) => {
       freeUsersCount,
       registeredUsersCount,
       monthlyPaymentCounts,
-      enrolledUsersPerCourse,
+      enrolledUsersPerCourse: coursesWithEnrollment,
       recentUsers,
       visitors,
       totatlVisitors,
