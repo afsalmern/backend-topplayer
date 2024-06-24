@@ -60,7 +60,7 @@ exports.getAllOrders = async (req, res) => {
   try {
     let whereClause = {};
     let { filter, status } = req.params;
-    let courseWhereClause = {};
+    let courseWhereClause = { isDeleted: false };
 
     if (filter === "course") {
       whereClause = { iscamp: false };
@@ -78,7 +78,14 @@ exports.getAllOrders = async (req, res) => {
         {
           model: db.course,
           as: "course",
-          attributes: ["id", "name", "amount", "offerAmount", "duration"], // Include 'duration' attribute
+          attributes: [
+            "id",
+            "name",
+            "amount",
+            "offerAmount",
+            "duration",
+            "isDeleted",
+          ], // Include 'duration' attribute
           include: [
             {
               model: db.category,
