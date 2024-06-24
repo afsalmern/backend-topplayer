@@ -44,23 +44,28 @@ exports.addCourse = async (req, res, next) => {
 
 exports.getAllCourses = async (req, res, next) => {
   try {
-    const { filter } = req.params;
+    const { filter, status } = req.params;
 
+    let whereClauseCtegory = {};
     let whereClause = {};
 
-    console.log(filter);
+    if (status === "enabled") {
+      whereClause = { isDeleted: false };
+    } else if (status === "disabled") {
+      whereClause = { isDeleted: true };
+    }
 
     if (filter === "course") {
-      whereClause = { iscamp: false };
+      whereClauseCtegory = { iscamp: false };
     } else if (filter === "camp") {
-      whereClause = { iscamp: true };
+      whereClauseCtegory = { iscamp: true };
     }
 
     const courses = await db.course.findAll({
       include: {
         model: db.category, // Include the Category model
         attributes: ["name", "iscamp"],
-        where: whereClause, // Only retrieve the 'name' attribute from the Category model
+        where: whereClauseCtegory, // Only retrieve the 'name' attribute from the Category model
       },
       attributes: [
         "id",
@@ -79,6 +84,7 @@ exports.getAllCourses = async (req, res, next) => {
         "duration",
         "isDeleted",
       ],
+      where: whereClause,
       order: [["createdAt", "DESC"]],
     });
 

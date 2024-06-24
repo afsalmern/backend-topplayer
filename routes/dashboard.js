@@ -266,7 +266,7 @@ router.post(
   courseController.addCourse
 );
 router.get(
-  "/course/:filter?",
+  "/course/:filter?/:status?",
   authMiddleware.checkUserAuth,
   courseController.getAllCourses
 );
