@@ -1,16 +1,17 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize, where } = require("sequelize");
 const db = require("../../models");
 
 exports.getDashboardDetails = async (req, res) => {
   try {
     // Query to get count of expired , active and total orders
     const [commonCombos] = await db.sequelize.query(`
-      SELECT rc.userId, rc.courseId, rc.createdAt, c.duration
+      SELECT rc.userId, rc.courseId, rc.createdAt, c.duration,c.isDeleted
       FROM registered_courses rc
       INNER JOIN payments p
       ON rc.userId = p.userId AND rc.courseId = p.courseId
       INNER JOIN courses c
       ON rc.courseId = c.id
+      WHERE c.isDeleted = false
     `);
 
     const currentDate = new Date();
@@ -31,10 +32,12 @@ exports.getDashboardDetails = async (req, res) => {
 
     // Query to get count of paid users
     const [paidUsers] = await db.sequelize.query(`
-      SELECT COUNT(DISTINCT rc.userId) AS paidUsers
+      SELECT COUNT(DISTINCT rc.userId) AS paidUsers,c.isDeleted
       FROM registered_courses rc
+      INNER JOIN courses c
       INNER JOIN payments p
       ON rc.userId = p.userId AND rc.courseId = p.courseId
+      WHERE c.isDeleted = false
     `);
 
     // Query to get count of free users
@@ -75,8 +78,9 @@ exports.getDashboardDetails = async (req, res) => {
       include: [
         {
           model: db.course,
-          attributes: ["name"],
+          attributes: ["name", "isDeleted"],
           as: "course",
+          where: { isDeleted: false },
         },
       ],
       group: ["courseId"],
@@ -84,26 +88,34 @@ exports.getDashboardDetails = async (req, res) => {
 
     // Query to get count of monthly revenue
     const monthlyPaymentCounts = await db.payment.findAll({
+      include: [
+        {
+          model: db.course,
+          attributes: [],
+          as: "course",
+          where: { isDeleted: false },
+        },
+      ],
       attributes: [
-        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "year"],
-        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "month"],
+        [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt")), "year"],
+        [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt")), "month"],
         [Sequelize.fn("COUNT", Sequelize.col("*")), "payment_count"],
         [
           Sequelize.fn(
             "ROUND",
-            Sequelize.fn("SUM", Sequelize.col("amount")),
+            Sequelize.fn("SUM", Sequelize.col("payment.amount")),
             2
           ),
           "total_amount",
         ],
       ],
       group: [
-        [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
-        [Sequelize.fn("MONTH", Sequelize.col("createdAt"))],
+        [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt"))],
+        [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt"))],
       ],
       order: [
-        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "ASC"],
-        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "ASC"],
+        [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt")), "ASC"],
+        [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt")), "ASC"],
       ],
     });
 
