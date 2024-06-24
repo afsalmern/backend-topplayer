@@ -83,6 +83,9 @@ exports.getDashboardDetails = async (req, res) => {
           where: { isDeleted: false },
         },
       ],
+      where: {
+        userId: { [Sequelize.Op.not]: null },
+      },
       group: ["courseId"],
     });
 
@@ -109,6 +112,9 @@ exports.getDashboardDetails = async (req, res) => {
           "total_amount",
         ],
       ],
+      where: {
+        userId: { [Sequelize.Op.not]: null },
+      },
       group: [
         [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt"))],
         [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt"))],
