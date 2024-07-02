@@ -57,6 +57,15 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: false,
     },
+    isFull: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    enr_count: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
   });
 
   return Course;

@@ -231,7 +231,11 @@ router.get(
   getMainBannerById
 );
 
-router.get("/orders/:filter?/:status?", [authMiddleware.checkUserAuth], getAllOrders);
+router.get(
+  "/orders/:filter?/:status?",
+  [authMiddleware.checkUserAuth],
+  getAllOrders
+);
 router.patch(
   "/orders/:courseId",
   [authMiddleware.checkUserAuth],
@@ -275,6 +279,11 @@ router.put(
   [authMiddleware.checkUserAuth],
   courseFileUpload,
   courseController.updateCourse
+);
+router.patch(
+  "/course/:id",
+  [authMiddleware.checkUserAuth],
+  courseController.updateCampEnrollments
 );
 router.delete(
   "/course/:id/:checked",

@@ -131,8 +131,8 @@ exports.getAllCourses = (req, res, next) => {
     });
 };
 
-exports.getCourseById = (req, res, next) => {
-  const courseId = req.params.id; // Assuming the course ID is passed as a route parameter
+exports.getCourseById = async (req, res, next) => {
+  const courseId = req.params.id;
 
   db.course
     .findByPk(courseId, {
@@ -808,7 +808,15 @@ exports.watchVideo = (req, res, next) => {
 exports.postStripePayment = async (req, res) => {
   try {
     const { courseId } = req.body;
+
     const courseDB = await db.course.findByPk(courseId);
+
+    if (courseDB.isFull) {
+      console.log("The course/camp is full");
+      res.status(500).send({ message: "The camp is full" });
+      return;
+    }
+
     const amount = courseDB.offerAmount * 100;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
@@ -824,7 +832,6 @@ exports.postStripePayment = async (req, res) => {
         userId: userDB.id,
       },
     });
-
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.log(`error in pay ${error.toString()}`);
@@ -895,6 +902,33 @@ exports.stripeWebhook = async (req, res) => {
           amount: amount,
           stripeId: paymentIntent.id,
         });
+
+        const courseCamp = await db.course.findOne({
+          where: {
+            id: courseId,
+          },
+          include: [
+            {
+              model: db.category,
+              attributes: ["name", "isCamp"],
+            },
+          ],
+        });
+
+        if (courseCamp && courseCamp.category && courseCamp.category.isCamp) {
+          const getUserCountInCamp = await db.payment.count({
+            where: {
+              courseId: courseId,
+            },
+            distinct: true,
+            col: "userId",
+          });
+
+          if (getUserCountInCamp >= courseCamp.enr_count) {
+            courseCamp.isfull = true; // Set `isfull` to true
+            await courseCamp.save();
+          }
+        }
 
         const userDB = await db.user.findByPk(userId);
 

@@ -30,6 +30,7 @@ exports.addCourse = async (req, res, next) => {
       enroll_text: req.body.enroll_text,
       enroll_text_ar: req.body.enroll_text_ar,
       duration: req.body.duration,
+      enr_count: req.body.enr_count == "" ? 0 : req.body.enr_count,
       imageUrl,
       bannerUrl,
       videoUrl,
@@ -64,7 +65,7 @@ exports.getAllCourses = async (req, res, next) => {
     const courses = await db.course.findAll({
       include: {
         model: db.category, // Include the Category model
-        attributes: ["name", "iscamp"],
+        attributes: ["name", "isCamp"],
         where: whereClauseCtegory, // Only retrieve the 'name' attribute from the Category model
       },
       attributes: [
@@ -83,6 +84,8 @@ exports.getAllCourses = async (req, res, next) => {
         "videoUrl",
         "duration",
         "isDeleted",
+        "isFull",
+        "enr_count",
       ],
       where: whereClause,
       order: [["createdAt", "DESC"]],
@@ -113,6 +116,7 @@ exports.getAllCourses = async (req, res, next) => {
 
       return {
         ...course.toJSON(),
+        isCamp: course.category.isCamp,
         category_name: course.category ? course.category?.name : null,
         descriptionHTML: checklistHTML ? `${checklistHTML}` : null, // Wrap checklist items in <ul> element
         descriptionHTMLAr: checklistHTML2 ? `${checklistHTML2}` : null, // Wrap checklist items in <ul> element
@@ -130,6 +134,54 @@ exports.getAllCourses = async (req, res, next) => {
     res.status(200).json({ courses: modifiedCourses, courseOnlyData });
   } catch (error) {
     console.error(`Error in retrieving courses: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
+};
+
+exports.updateCampEnrollments = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const { checked } = req.body;
+    const getUserCountInCamp = await db.payment.count({
+      where: {
+        courseId: courseId,
+      },
+      distinct: true,
+      col: "userId",
+    });
+
+    const course = await db.course.findByPk(courseId);
+    if (course.isFull && getUserCountInCamp >= course.enr_count) {
+      res.status(400).send({
+        success: false,
+        message: "Please increase the enrollment count",
+      });
+      return;
+    }
+
+    if (!course.isFull && getUserCountInCamp < course.enr_count) {
+      course.isFull = checked;
+      await course.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Updated successfully",
+      });
+      return;
+    }
+
+    if (course.isFull && getUserCountInCamp < course.enr_count) {
+      course.isFull = checked;
+      await course.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Updated successfully",
+      });
+      return;
+    }
+  } catch (error) {
+    console.error(`Error in updating enrollments in camp: ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
   }
 };
@@ -188,6 +240,8 @@ exports.updateCourse = async (req, res, next) => {
       enroll_text: req.body.enroll_text || course.enroll_text,
       enroll_text_ar: req.body.enroll_text_ar || course.enroll_text_ar,
       duration: req.body.duration || course.duration,
+      enr_count:
+        req.body.enr_count === "" ? course.enr_count : req.body.enr_count, // Convert empty string to 0
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,
       videoUrl: videoUrl || course.videoUrl,
