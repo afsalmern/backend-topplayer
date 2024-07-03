@@ -809,23 +809,6 @@ exports.postStripePayment = async (req, res) => {
   try {
     const { courseId, currency_code, currency_rate } = req.body;
 
-    const Intent = await stripe.paymentIntents.retrieve(
-      "pi_3PYPmgBIK7a01kKz1QH4GkTB"
-    );
-
-    const charge = await stripe.charges.retrieve(Intent.latest_charge);
-
-    const balanceTransaction = await stripe.balanceTransactions.retrieve(
-      charge.balance_transaction
-    );
-
-    console.log(balanceTransaction, "BANK");
-
-    const exchangeRate = balanceTransaction.exchange_rate || 1;
-    const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
-
-    console.log(amountInBaseCurrency, "AMOUNT");
-
     const courseDB = await db.course.findByPk(courseId);
 
     const convertedAmount = courseDB.offerAmount * currency_rate;
@@ -885,12 +868,21 @@ exports.stripeWebhook = async (req, res) => {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
 
-        console.log(paymentIntent, "PAYMENT INTENT");
+        const { latest_charge, customer, metadata } = paymentIntent;
 
-        const customerId = paymentIntent.customer;
-        const courseId = paymentIntent.metadata.courseId;
-        const amount = paymentIntent.metadata.amount / 100.0;
-        const userId = paymentIntent.metadata.userId;
+        const charge = await stripe.charges.retrieve(latest_charge);
+
+        const balanceTransaction = await stripe.balanceTransactions.retrieve(
+          charge.balance_transaction
+        );
+
+        const exchangeRate = balanceTransaction.exchange_rate || 1;
+        const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
+
+        const customerId = customer;
+        const courseId = metadata?.courseId;
+        const amount = Number(amountInBaseCurrency.toFixed(2));
+        const userId = metadata?.userId;
 
         // Your logic to handle successful payment for a specific customer
         console.log(
