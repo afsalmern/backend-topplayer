@@ -868,6 +868,8 @@ exports.stripeWebhook = async (req, res) => {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
 
+        console.log(paymentIntent,"PAYMENT INTENT");
+
         const customerId = paymentIntent.customer;
         const courseId = paymentIntent.metadata.courseId;
         const amount = paymentIntent.metadata.amount / 100.0;
