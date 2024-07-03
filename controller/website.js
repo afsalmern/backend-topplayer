@@ -813,11 +813,18 @@ exports.postStripePayment = async (req, res) => {
       "pi_3PYPmgBIK7a01kKz1QH4GkTB"
     );
 
-    console.log(Intent, "PAYMENT INTENT");
-    if (Intent.latest_charge) {
-      const charge = await stripe.charges.retrieve(Intent.latest_charge);
-      console.log(charge, "CHARGE");
-    }
+    const charge = await stripe.charges.retrieve(Intent.latest_charge);
+
+    const balanceTransaction = await stripe.balanceTransactions.retrieve(
+      charge.balance_transaction
+    );
+
+    console.log(balanceTransaction, "BANK");
+
+    const exchangeRate = balanceTransaction.exchange_rate || 1;
+    const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
+
+    console.log(amountInBaseCurrency, "AMOUNT");
 
     const courseDB = await db.course.findByPk(courseId);
 
