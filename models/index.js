@@ -42,6 +42,7 @@ db.contact = require("./contact_us")(sequelize, Sequelize);
 db.visitors = require("./visitors")(sequelize, Sequelize);
 db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize);
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
+db.currency = require("./currency")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });

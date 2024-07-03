@@ -44,6 +44,12 @@ const {
   getAllSubscriptions,
   deleteSubscription,
 } = require("../controller/dashboard/subscription_controller");
+const {
+  addCurrency,
+  getAllCurrencies,
+  updateCurrency,
+  deleteCurrency,
+} = require("../controller/dashboard/currency_controller");
 
 const router = express.Router();
 
@@ -262,6 +268,12 @@ router.delete(
   [authMiddleware.checkUserAuth],
   categoryController.deleteCategory
 );
+
+router.post("/currency", [authMiddleware.checkUserAuth], addCurrency);
+router.get("/currency", [authMiddleware.checkUserAuth], getAllCurrencies);
+router.put("/currency/:id", [authMiddleware.checkUserAuth], updateCurrency);
+router.patch("/currency/:id", [authMiddleware.checkUserAuth], updateCurrency);
+router.delete("/currency/:id", [authMiddleware.checkUserAuth], deleteCurrency);
 
 router.post(
   "/course",

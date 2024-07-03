@@ -807,24 +807,20 @@ exports.watchVideo = (req, res, next) => {
 
 exports.postStripePayment = async (req, res) => {
   try {
-    const { courseId } = req.body;
+    const { courseId, currency_code, currency_rate } = req.body;
 
     const courseDB = await db.course.findByPk(courseId);
 
-    if (courseDB.isFull) {
-      console.log("The course/camp is full");
-      res.status(500).send({ message: "The camp is full" });
-      return;
-    }
+    const convertedAmount = courseDB.offerAmount * currency_rate;
 
-    const amount = courseDB.offerAmount * 100;
+    const amount = convertedAmount * 100;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "AED",
+      currency: currency_code.toLowerCase(),
       customer: customerId,
       metadata: {
         courseId: courseId,
@@ -832,6 +828,7 @@ exports.postStripePayment = async (req, res) => {
         userId: userDB.id,
       },
     });
+
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.log(`error in pay ${error.toString()}`);
@@ -844,7 +841,6 @@ exports.stripeWebhook = async (req, res) => {
   const endpointSecret = process.env.STRIPE_ENDPOINT_SEC;
 
   console.log(endpointSecret);
-
   try {
     let event = req.body;
     console.log(event);
@@ -1094,6 +1090,16 @@ exports.getVisitors = async (req, res, next) => {
       });
       res.status(200).json({ message: "Ip saved" });
     }
+  } catch (error) {
+    console.error("Error saving ip:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getCurrencies = async (req, res, next) => {
+  try {
+    const currencies = await db.currency.findAll({});
+    res.status(200).json({ data: currencies });
   } catch (error) {
     console.error("Error saving ip:", error);
     res.status(500).json({ error: "Internal Server Error" });

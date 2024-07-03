@@ -33,6 +33,7 @@ router.get("/who_are_we_data", websiteController.getAllWhoAreWeData);
 router.get("/banner", websiteController.getAllBanners);
 router.get("/main_banner", getAllMainBanner);
 router.get("/terms", websiteController.getTermsAndConditions);
+router.get("/currency", websiteController.getCurrencies);
 
 router.get(
   "/subscribedCourse",
