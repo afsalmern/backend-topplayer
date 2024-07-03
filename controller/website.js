@@ -870,15 +870,33 @@ exports.stripeWebhook = async (req, res) => {
 
         const { id, customer, metadata } = paymentIntent;
 
-        const paymentIntentData = await stripe.paymentIntents.retrieve(id);
+        // Log the successful payment intent
+        console.log(
+          `PaymentIntent was successful for customer ${customer}:`,
+          paymentIntent.id
+        );
 
-        const { latest_charge } = paymentIntentData;
+        // Additional logic for successful payment can be added here if needed
 
-        const charge = await stripe.charges.retrieve(latest_charge);
+        break;
+
+      case "charge.updated":
+        const charge = event.data.object;
+
+        const { balance_transaction, payment_intent } = charge;
+
+        if (!balance_transaction || !payment_intent) {
+          console.log(
+            "Missing balance transaction or payment intent information."
+          );
+          break;
+        }
+
+        const paymentIntentData = await stripe.paymentIntents.retrieve(
+          payment_intent
+        );
 
         console.log(charge, "CHARGE");
-
-        const { balance_transaction } = charge;
 
         const balanceTransaction = await stripe.balanceTransactions.retrieve(
           balance_transaction
@@ -888,16 +906,12 @@ exports.stripeWebhook = async (req, res) => {
         const exchangeRate = balanceTransaction.exchange_rate || 1;
         const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
 
-        const customerId = customer;
-        const courseId = metadata?.courseId;
+        const customerId = paymentIntentData.customer;
+        const courseId = paymentIntentData.metadata?.courseId;
         const amount = Number(amountInBaseCurrency.toFixed(2));
-        const userId = metadata?.userId;
+        const userId = paymentIntentData.metadata?.userId;
 
         // Your logic to handle successful payment for a specific customer
-        console.log(
-          `PaymentIntent was successful for customer ${customerId}:`,
-          paymentIntent.id
-        );
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
             courseId: courseId,
@@ -912,11 +926,12 @@ exports.stripeWebhook = async (req, res) => {
         if (!created) {
           await regCourseDB.update({ createdDate: new Date() });
         }
+
         await db.payment.create({
           userId: userId,
           courseId: courseId,
           amount: amount,
-          stripeId: paymentIntent.id,
+          stripeId: paymentIntentData.id,
         });
 
         const courseCamp = await db.course.findOne({
@@ -953,7 +968,7 @@ exports.stripeWebhook = async (req, res) => {
         const html = paymentSuccessMail(
           userDB.username,
           amount,
-          paymentIntent.id
+          paymentIntentData.id
         );
 
         const isMailsend = await sendMail(userDB.email, subject, text, html);
@@ -963,7 +978,9 @@ exports.stripeWebhook = async (req, res) => {
         } else {
           console.error("Error sending email in payment:", error);
         }
+
         break;
+
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
@@ -972,6 +989,7 @@ exports.stripeWebhook = async (req, res) => {
           failedPaymentIntent.id
         );
         break;
+
       // Add more cases for other events as needed
       default:
         console.log(`Unhandled event type: ${event.type}`);
