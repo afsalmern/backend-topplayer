@@ -815,7 +815,7 @@ exports.postStripePayment = async (req, res) => {
 
     console.log(Intent, "PAYMENT INTENT");
     if (Intent.latest_Charge) {
-      const charge = await stripe.charges.retrieve(Intent.latest_Charge);
+      const charge = await stripe.charges.retrieve(Intent.latest_charge);
       console.log(charge, "CHARGE");
     }
 
