@@ -813,10 +813,11 @@ exports.postStripePayment = async (req, res) => {
       "pi_3PYPmgBIK7a01kKz1QH4GkTB"
     );
 
-    const charge = await stripe.charges.retrieve(Intent.latest_Charge);
-
     console.log(Intent, "PAYMENT INTENT");
-    console.log(charge,"CHARGE");
+    if (Intent.latest_Charge) {
+      const charge = await stripe.charges.retrieve(Intent.latest_Charge);
+      console.log(charge, "CHARGE");
+    }
 
     const courseDB = await db.course.findByPk(courseId);
 
