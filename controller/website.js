@@ -872,10 +872,15 @@ exports.stripeWebhook = async (req, res) => {
 
         const charge = await stripe.charges.retrieve(latest_charge);
 
+        console.log(charge,"CHARGE");
+        
+        const { balance_transaction } = charge;
+        
         const balanceTransaction = await stripe.balanceTransactions.retrieve(
-          charge.balance_transaction
+          balance_transaction
         );
-
+        console.log(balance_transaction,"BALANCE");
+        
         const exchangeRate = balanceTransaction.exchange_rate || 1;
         const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
 
