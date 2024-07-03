@@ -809,6 +809,12 @@ exports.postStripePayment = async (req, res) => {
   try {
     const { courseId, currency_code, currency_rate } = req.body;
 
+    const Intent = await stripe.paymentIntents.retrieve(
+      "pi_3PYPmgBIK7a01kKz1QH4GkTB"
+    );
+
+    console.log(Intent, "PAYMENT INTENT");
+
     const courseDB = await db.course.findByPk(courseId);
 
     const convertedAmount = courseDB.offerAmount * currency_rate;
@@ -850,7 +856,7 @@ exports.stripeWebhook = async (req, res) => {
       // Get the signature sent by Stripe
 
       const signature = req.headers["stripe-signature"];
-      console.log(signature);
+      console.log(signature, "SIGNATURE");
       try {
         event = stripe.webhooks.constructEvent(
           req.body,
@@ -868,7 +874,7 @@ exports.stripeWebhook = async (req, res) => {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
 
-        console.log(paymentIntent,"PAYMENT INTENT");
+        console.log(paymentIntent, "PAYMENT INTENT");
 
         const customerId = paymentIntent.customer;
         const courseId = paymentIntent.metadata.courseId;
