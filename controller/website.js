@@ -809,16 +809,6 @@ exports.postStripePayment = async (req, res) => {
   try {
     const { courseId, currency_code, currency_rate } = req.body;
 
-    const Intent = await stripe.paymentIntents.retrieve(
-      "pi_3PYPmgBIK7a01kKz1QH4GkTB"
-    );
-
-    console.log(Intent, "PAYMENT INTENT");
-    if (Intent.latest_Charge) {
-      const charge = await stripe.charges.retrieve(Intent.latest_charge);
-      console.log(charge, "CHARGE");
-    }
-
     const courseDB = await db.course.findByPk(courseId);
 
     const convertedAmount = courseDB.offerAmount * currency_rate;
@@ -878,7 +868,11 @@ exports.stripeWebhook = async (req, res) => {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
 
-        console.log(paymentIntent, "PAYMENT INTENT");
+        const { latest_charge } = paymentIntent;
+
+        const charge = await stripe.charges.retrieve(latest_charge);
+
+        console.log(charge, "CHARGE");
 
         const customerId = paymentIntent.customer;
         const courseId = paymentIntent.metadata.courseId;
