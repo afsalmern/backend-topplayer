@@ -901,15 +901,20 @@ exports.stripeWebhook = async (req, res) => {
         const balanceTransaction = await stripe.balanceTransactions.retrieve(
           balance_transaction
         );
-        console.log(balance_transaction, "BALANCE");
+        const netAmount = balanceTransaction.net / 100;
 
+        
         const exchangeRate = balanceTransaction.exchange_rate || 1;
         const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
-
+        
         const customerId = paymentIntentData.customer;
         const courseId = paymentIntentData.metadata?.courseId;
         const amount = Number(amountInBaseCurrency.toFixed(2));
         const userId = paymentIntentData.metadata?.userId;
+
+
+        console.log("NET AMOUNT", netAmount);
+        console.log("AMOUNT", amount);
 
         // Your logic to handle successful payment for a specific customer
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
