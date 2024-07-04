@@ -811,7 +811,9 @@ exports.postStripePayment = async (req, res) => {
 
     const courseDB = await db.course.findByPk(courseId);
 
-    const convertedAmount = courseDB.offerAmount * currency_rate;
+    const convertedAmount = Math.ceil(
+      (courseDB.offerAmount * currency_rate).toFixed(2)
+    );
 
     const amount = convertedAmount * 100;
 

@@ -31,7 +31,7 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
       },
       currency_rate: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(10, 6),
         allowNull: false,
       },
     },
