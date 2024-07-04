@@ -12,6 +12,9 @@ module.exports = (sequelize, Sequelize) => {
     net_amount: {
       type: Sequelize.FLOAT,
     },
+    stripe_fee: {
+      type: Sequelize.FLOAT,
+    },
     courseId: {
       type: Sequelize.INTEGER,
     },
