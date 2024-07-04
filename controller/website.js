@@ -903,15 +903,13 @@ exports.stripeWebhook = async (req, res) => {
         );
         const netAmount = balanceTransaction.net / 100;
 
-        
         const exchangeRate = balanceTransaction.exchange_rate || 1;
         const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
-        
+
         const customerId = paymentIntentData.customer;
         const courseId = paymentIntentData.metadata?.courseId;
         const amount = Number(amountInBaseCurrency.toFixed(2));
         const userId = paymentIntentData.metadata?.userId;
-
 
         console.log("NET AMOUNT", netAmount);
         console.log("AMOUNT", amount);
@@ -936,6 +934,7 @@ exports.stripeWebhook = async (req, res) => {
           userId: userId,
           courseId: courseId,
           amount: amount,
+          net_amount: netAmount,
           stripeId: paymentIntentData.id,
         });
 
