@@ -16,7 +16,16 @@ const config = {
 };
 
 exports.createTamaraPayment = async (req, res) => {
-  const { shippingAddress, courseId, lang, amount, type } = req.body;
+  const {
+    shippingAddress,
+    courseId,
+    lang,
+    amount,
+    type,
+    currency_rate,
+    currency_code,
+    currency_flag,
+  } = req.body;
 
   try {
     const tamara = TamaraClientFactory.createApiClient(config);
@@ -24,6 +33,8 @@ exports.createTamaraPayment = async (req, res) => {
     console.log("req.userDecodeId====>", req.userDecodeId);
     const userDB = await db.user.findByPk(req.userDecodeId);
     const courseDB = await db.course.findByPk(courseId);
+
+    const convertedAmount = Math.ceil((amount * currency_rate).toFixed(2));
 
     const customerData = {
       email: userDB?.email,
@@ -40,20 +51,20 @@ exports.createTamaraPayment = async (req, res) => {
         sku: "1",
         quantity: 1,
         total_amount: {
-          amount: amount,
-          currency: "AED",
+          amount: convertedAmount,
+          currency: currency_code,
         },
       },
     ];
 
     const shipping_amount = {
       amount: 0,
-      currency: "AED",
+      currency: currency_code,
     };
 
     const total_amount = {
-      amount: amount,
-      currency: "AED",
+      amount: convertedAmount,
+      currency: currency_code,
     };
 
     const shipping_address = {
@@ -84,7 +95,7 @@ exports.createTamaraPayment = async (req, res) => {
       referenceId: referenceId,
       items: items,
       consumer: customerData,
-      countryCode: "AE",
+      countryCode: currency_flag,
       description: courseDB?.description,
       paymentType: "PAY_BY_INSTALMENTS",
       instalments: 4,
@@ -171,7 +182,7 @@ exports.tamaraWebHook = async (req, res) => {
         console.log("Order confirmed:", order.referenceOrderId);
         // Update your application data (e.g., mark order as confirmed)
         break;
-      case "ORDER_DECLINED":
+      case "order_declined":
         // Handle order confirmation notification
         console.log("Order declined:", order.referenceOrderId);
 
