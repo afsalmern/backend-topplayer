@@ -1144,7 +1144,9 @@ exports.getVisitors = async (req, res, next) => {
 
 exports.getCurrencies = async (req, res, next) => {
   try {
-    const currencies = await db.currency.findAll({});
+    const currencies = await db.currency.findAll({
+      where: { isDeleted: false, isActive: true },
+    });
     res.status(200).json({ data: currencies });
   } catch (error) {
     console.error("Error saving ip:", error);
