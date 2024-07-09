@@ -139,7 +139,7 @@ exports.getAllOrders = async (req, res) => {
       course_registration_id: order.id,
       user: order.user,
       course: order.course,
-      payments: order.payments, // Include payments made by the user
+      payments: order.payments,
       subscriptionStartDate: order.createdAt,
       subscriptionEndDate: order.subscriptionEndDate,
       remainingDays: order.remainingDays,
