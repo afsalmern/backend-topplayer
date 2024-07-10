@@ -521,7 +521,7 @@ router.get(
 );
 
 router.get(
-  "/revenue_usd/:filter?/:from?",
+  "/revenue_usd/:filter?/:from?/:to?",
   [authMiddleware.checkUserAuth],
   getOrdersUsd
 );
