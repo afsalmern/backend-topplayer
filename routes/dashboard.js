@@ -36,6 +36,7 @@ const {
 const {
   getDashboardDetails,
   getOrders,
+  getOrdersUsd,
 } = require("../controller/dashboard/details_controller");
 const {
   getAllEnquiries,
@@ -517,6 +518,12 @@ router.get(
   "/revenue/:filter?/:from?/:to?",
   [authMiddleware.checkUserAuth],
   getOrders
+);
+
+router.get(
+  "/revenue_usd/:filter?/:from?",
+  [authMiddleware.checkUserAuth],
+  getOrdersUsd
 );
 
 router.post(

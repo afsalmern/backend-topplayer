@@ -320,3 +320,114 @@ exports.getOrders = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+exports.getOrdersUsd = async (req, res) => {
+  try {
+    const { filter, from } = req.params;
+
+    const where = {};
+
+    console.log("DATES>>>>", from);
+
+    if (from !== undefined) {
+      where.createdAt = {
+        [Sequelize.Op.between]: [
+          new Date(from).toISOString(),
+          new Date(
+            new Date("2024-06-14").setDate(new Date("2024-06-14").getDate() + 1)
+          ).toISOString(),
+        ],
+      };
+    }
+
+    let whereClause = { isDeleted: false };
+
+    if (filter == "camp") {
+      whereClause = { iscamp: true, isDeleted: false };
+    } else if (filter == "course") {
+      whereClause = { iscamp: false, isDeleted: false };
+    }
+
+    const payments = await db.payment.findAll({
+      where: where,
+      include: [
+        {
+          model: db.course,
+          attributes: ["name"],
+          include: [
+            {
+              model: db.category,
+              where: whereClause,
+              attributes: [],
+            },
+          ],
+          where: {
+            id: { [Sequelize.Op.not]: null }, // Ensure the course is not null
+          },
+          required: true, // This ensures that only payments with a course are included
+        },
+      ],
+      attributes: [
+        "courseId",
+        [
+          Sequelize.fn("SUM", Sequelize.col("payment.amount")),
+          "totalIncome",
+        ],
+        [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
+      ],
+      group: ["courseId"],
+    });
+
+    const enrolledUsersPerCourse = await db.payment.findAll({
+      where: where,
+      attributes: [
+        "courseId",
+        [
+          Sequelize.fn("SUM", Sequelize.literal("payment.amount")),
+          "revenue",
+        ],
+        [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
+      ],
+      include: [
+        {
+          model: db.course,
+          attributes: ["name"],
+          as: "course",
+          include: [
+            {
+              model: db.category,
+              where: whereClause,
+              attributes: [],
+            },
+          ],
+          where: {
+            id: { [Sequelize.Op.not]: null }, // Ensure the course is not null
+          },
+          required: true, // This ensures that only payments with a course are included
+        },
+      ],
+      group: ["courseId"],
+    });
+
+    const totals = await db.payment.findAll({
+      attributes: [
+        [
+          Sequelize.fn("SUM", Sequelize.col("payment.amount")),
+          "totalIncome",
+        ],
+        [
+          Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
+          "numberOfOrders",
+        ],
+      ],
+    });
+
+    res.status(200).json({
+      payments,
+      enrolledUsersPerCourse,
+      totals,
+    });
+  } catch (error) {
+    console.error(`Error in getting dashboard details: ${error}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
