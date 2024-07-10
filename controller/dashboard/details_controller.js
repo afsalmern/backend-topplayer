@@ -281,10 +281,17 @@ exports.getOrders = async (req, res) => {
       attributes: [
         "courseId",
         [
-          Sequelize.fn("SUM", Sequelize.col("payment.net_amount")),
+          Sequelize.fn(
+            "ROUND",
+            Sequelize.literal("SUM(payment.net_amount)"),
+            2
+          ),
           "totalIncome",
         ],
-        [Sequelize.fn("SUM", Sequelize.col("payment.amount")), "totalRevenue"],
+        [
+          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
+          "totalRevenue",
+        ],
         [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
       ],
       group: ["courseId"],
@@ -295,7 +302,11 @@ exports.getOrders = async (req, res) => {
       attributes: [
         "courseId",
         [
-          Sequelize.fn("SUM", Sequelize.literal("payment.net_amount")),
+          Sequelize.fn(
+            "ROUND",
+            Sequelize.literal("SUM(payment.net_amount)"),
+            2
+          ),
           "revenue",
         ],
         [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
@@ -325,10 +336,17 @@ exports.getOrders = async (req, res) => {
     const totals = await db.payment.findAll({
       attributes: [
         [
-          Sequelize.fn("SUM", Sequelize.col("payment.net_amount")),
+          Sequelize.fn(
+            "ROUND",
+            Sequelize.literal("SUM(payment.net_amount)"),
+            2
+          ),
           "totalIncome",
         ],
-        [Sequelize.fn("SUM", Sequelize.col("payment.amount")), "totalRevenue"],
+        [
+          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
+          "totalRevenue",
+        ],
         [
           Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
           "numberOfOrders",
@@ -346,6 +364,7 @@ exports.getOrders = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 exports.getOrdersUsd = async (req, res) => {
   try {
     const { filter, from, to } = req.params;
@@ -410,7 +429,10 @@ exports.getOrdersUsd = async (req, res) => {
       ],
       attributes: [
         "courseId",
-        [Sequelize.fn("SUM", Sequelize.col("payment.amount")), "totalIncome"],
+        [
+          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
+          "totalIncome",
+        ],
         [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
       ],
       group: ["courseId"],
@@ -420,7 +442,10 @@ exports.getOrdersUsd = async (req, res) => {
       where: where,
       attributes: [
         "courseId",
-        [Sequelize.fn("SUM", Sequelize.literal("payment.amount")), "revenue"],
+        [
+          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
+          "revenue",
+        ],
         [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
       ],
       include: [
@@ -446,7 +471,10 @@ exports.getOrdersUsd = async (req, res) => {
 
     const totals = await db.payment.findAll({
       attributes: [
-        [Sequelize.fn("SUM", Sequelize.col("payment.amount")), "totalIncome"],
+        [
+          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
+          "totalIncome",
+        ],
         [
           Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
           "numberOfOrders",
