@@ -1,5 +1,5 @@
 const db = require("../../models");
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize, where } = require("sequelize");
 
 // exports.getAllorders = async (req, res) => {
 //   try {
@@ -170,7 +170,7 @@ exports.getAllRevenues = async (req, res) => {
             "offerAmount",
             "duration",
             "isDeleted",
-          ], // Include 'duration' attribute
+          ],
           include: [
             {
               model: db.category,
@@ -188,6 +188,9 @@ exports.getAllRevenues = async (req, res) => {
       where: {
         createdAt: {
           [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+        userId: {
+          [db.Sequelize.Op.ne]: null, // Ensures userId is not null
         },
       },
       order: [["createdAt", "DESC"]],
@@ -245,6 +248,9 @@ exports.getAllRevenuesOld = async (req, res) => {
       where: {
         createdAt: {
           [db.Sequelize.Op.lt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+        userId: {
+          [db.Sequelize.Op.ne]: null, // Ensures userId is not null
         },
       },
       order: [["createdAt", "DESC"]],
