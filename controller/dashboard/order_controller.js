@@ -216,10 +216,6 @@ exports.getAllRevenues = async (req, res) => {
 
 exports.getAllRevenuesOld = async (req, res) => {
   try {
-    const courseWhereClause = {
-      id: { [db.Sequelize.Op.ne]: null }, // Ensures courseId is not null
-    };
-
     let orders = await db.payment.findAll({
       include: [
         {
@@ -239,7 +235,6 @@ exports.getAllRevenuesOld = async (req, res) => {
               attributes: ["id", "name", "iscamp"],
             },
           ],
-          where: courseWhereClause,
         },
         {
           model: db.user,
@@ -264,14 +259,13 @@ exports.getAllRevenuesOld = async (req, res) => {
       course_amount: order.course.offerAmount,
       course_duration: order.course.duration,
       course_category: order.course.category.name,
-      user_id: order.users.id,
       user_username: order.users.username,
       user_email: order.users.email,
     }));
 
     res.status(200).json({ formattedOrders });
   } catch (error) {
-    console.error(`Error in getting orders: ${error.toString()}`);
+    console.error(`Error in getting orders: ${error}`);
     res.status(500).send({ message: error.toString() });
   }
 };
