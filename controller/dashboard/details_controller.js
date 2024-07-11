@@ -334,6 +334,11 @@ exports.getOrders = async (req, res) => {
     });
 
     const totals = await db.payment.findAll({
+      where: {
+        createdAt: {
+          [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+      },
       attributes: [
         [
           Sequelize.fn(
@@ -470,6 +475,11 @@ exports.getOrdersUsd = async (req, res) => {
     });
 
     const totals = await db.payment.findAll({
+      where: {
+        createdAt: {
+          [db.Sequelize.Op.lt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+      },
       attributes: [
         [
           Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),

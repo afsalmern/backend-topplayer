@@ -185,6 +185,11 @@ exports.getAllRevenues = async (req, res) => {
           attributes: ["id", "username", "email"],
         },
       ],
+      where: {
+        createdAt: {
+          [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+      },
       order: [["createdAt", "DESC"]],
     });
 
@@ -200,7 +205,69 @@ exports.getAllRevenues = async (req, res) => {
       user_id: order.users.id,
       user_username: order.users.username,
       user_email: order.users.email,
-    }))
+    }));
+
+    res.status(200).json({ formattedOrders });
+  } catch (error) {
+    console.error(`Error in getting orders: ${error.toString()}`);
+    res.status(500).send({ message: error.toString() });
+  }
+};
+
+exports.getAllRevenuesOld = async (req, res) => {
+  try {
+    const courseWhereClause = {
+      id: { [db.Sequelize.Op.ne]: null }, // Ensures courseId is not null
+    };
+
+    let orders = await db.payment.findAll({
+      include: [
+        {
+          model: db.course,
+          as: "course",
+          attributes: [
+            "id",
+            "name",
+            "amount",
+            "offerAmount",
+            "duration",
+            "isDeleted",
+          ], // Include 'duration' attribute
+          include: [
+            {
+              model: db.category,
+              attributes: ["id", "name", "iscamp"],
+            },
+          ],
+          where: courseWhereClause,
+        },
+        {
+          model: db.user,
+          as: "users",
+          attributes: ["id", "username", "email"],
+        },
+      ],
+      where: {
+        createdAt: {
+          [db.Sequelize.Op.lt]: new Date("2024-06-15"), // Filter by createdAt date
+        },
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const formattedOrders = orders.map((order) => ({
+      amount: order.amount,
+      net_amount: order.net_amount,
+      stripe_fee: order.stripe_fee,
+      stripeId: order.stripeId,
+      course_name: order.course.name,
+      course_amount: order.course.offerAmount,
+      course_duration: order.course.duration,
+      course_category: order.course.category.name,
+      user_id: order.users.id,
+      user_username: order.users.username,
+      user_email: order.users.email,
+    }));
 
     res.status(200).json({ formattedOrders });
   } catch (error) {
