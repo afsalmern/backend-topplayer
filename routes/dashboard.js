@@ -25,6 +25,7 @@ const {
   getAllorders,
   updateOrderSubscription,
   getAllOrders,
+  getAllRevenues,
 } = require("../controller/dashboard/order_controller");
 const {
   addMainBanner,
@@ -525,6 +526,8 @@ router.get(
   [authMiddleware.checkUserAuth],
   getOrdersUsd
 );
+
+router.get("/orders_revenue",[authMiddleware.checkUserAuth],getAllRevenues)
 
 router.post(
   "/uploadVideo",

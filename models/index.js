@@ -103,6 +103,12 @@ db.registeredCourse.belongsTo(db.user, {
 });
 db.user.hasMany(db.registeredCourse, { foreignKey: "userId" });
 
+db.payment.belongsTo(db.user, {
+  foreignKey: "userId",
+  as: "users", // Alias for the association
+});
+db.user.hasMany(db.payment, { foreignKey: "userId" });
+
 const WatchedVideo = sequelize.define("watched_videos", {
   id: {
     type: Sequelize.INTEGER,
