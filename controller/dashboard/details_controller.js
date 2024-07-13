@@ -233,11 +233,6 @@ exports.getOrders = async (req, res) => {
       };
     }
 
-    console.log("DATES >>>>>>>>>>>>", from, to);
-    console.log("DATES >>>>>>>>>>>>", maxFromDate, to);
-
-    console.log("WHERE >>>>>>>>>>>>", where);
-
     if (to !== undefined) {
       console.log("HERE");
       where.createdAt = {
@@ -257,6 +252,29 @@ exports.getOrders = async (req, res) => {
     } else if (filter == "course") {
       whereClause = { iscamp: false, isDeleted: false };
     }
+
+    const orders = await db.payment.findAll({
+      where: where,
+      attributes: ["stripe_fee", "net_amount", "createdAt"],
+      include: [
+        {
+          model: db.course,
+          attributes: ["name", "offerAmount"],
+          include: {
+            model: db.category,
+            where: whereClause,
+            attributes: ["name"],
+          },
+          required: false, // Allow courses that have no associated category
+        },
+        {
+          model: db.user,
+          as: "users",
+          attributes: ["username", "email", "mobile"],
+          required: false, // Allow payments that have no associated user
+        },
+      ],
+    });
 
     const payments = await db.payment.findAll({
       where: where,
@@ -334,11 +352,7 @@ exports.getOrders = async (req, res) => {
     });
 
     const totals = await db.payment.findAll({
-      where: {
-        createdAt: {
-          [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
-        },
-      },
+      where: where,
       attributes: [
         [
           Sequelize.fn(
@@ -359,10 +373,33 @@ exports.getOrders = async (req, res) => {
       ],
     });
 
+    const formattedItems = payments.map((payment) => ({
+      program: payment.course ? payment.course.name : "Unknown",
+      total_income: payment.getDataValue("totalIncome") || 0,
+      total_revenue: payment.getDataValue("totalRevenue") || 0,
+      number_of_orders: payment.getDataValue("numberOfOrders") || 0,
+    }));
+
+    const formattedOrders = orders.map((order) => ({
+      stripe_fee: order.stripe_fee || 0,
+      net_amount: order.net_amount || 0,
+      createdAt: order.createdAt,
+      course: order.course ? order.course.name : "Unknown",
+      offerAmount: order.course ? order.course.offerAmount : 0,
+      category:
+        order.course && order.course.category
+          ? order.course.category.name
+          : "Unknown",
+      user_name: order.user ? order.user.name : "Unknown",
+      email: order.user ? order.user.email : "Unknown",
+      mobile: order.user ? order.user.mobile : "Unknown",
+    }));
+
     res.status(200).json({
-      payments,
+      payments: formattedItems,
       enrolledUsersPerCourse,
       totals,
+      formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
