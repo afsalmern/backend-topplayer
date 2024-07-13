@@ -358,7 +358,6 @@ exports.getOrders = async (req, res) => {
       number_of_orders: payment.getDataValue("numberOfOrders"),
     }));
 
-    const numberOfOrders = formattedItems.length;
     const totalIncome = payments.reduce((acc, payment) => {
       return acc + (payment.getDataValue("totalIncome") || 0);
     }, 0);
@@ -379,6 +378,7 @@ exports.getOrders = async (req, res) => {
       email: order?.users?.email,
       mobile: order?.users?.mobile,
     }));
+    const numberOfOrders = formattedOrders.length;
 
     res.status(200).json({
       payments: formattedItems,
@@ -552,7 +552,7 @@ exports.getOrdersUsd = async (req, res) => {
       number_of_orders: payment.getDataValue("numberOfOrders"),
     }));
 
-    const numberOfOrders = formattedItems.length;
+    const numberOfOrders = formattedOrders.length;
     const totalIncome = payments.reduce((acc, payment) => {
       return acc + (payment.getDataValue("totalIncome") || 0);
     }, 0);
