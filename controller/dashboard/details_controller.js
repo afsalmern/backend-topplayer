@@ -255,7 +255,7 @@ exports.getOrders = async (req, res) => {
 
     const orders = await db.payment.findAll({
       where: where,
-      attributes: ["stripe_fee", "net_amount", "createdAt"],
+      attributes: ["stripe_fee", "net_amount", "createdAt", "amount"],
       include: [
         {
           model: db.course,
@@ -265,13 +265,13 @@ exports.getOrders = async (req, res) => {
             where: whereClause,
             attributes: ["name"],
           },
-          required: false, // Allow courses that have no associated category
+          required: true, // Allow courses that have no associated category
         },
         {
           model: db.user,
           as: "users",
           attributes: ["username", "email", "mobile"],
-          required: false, // Allow payments that have no associated user
+          required: true, // Allow payments that have no associated user
         },
       ],
     });
@@ -351,54 +351,43 @@ exports.getOrders = async (req, res) => {
       group: ["courseId"],
     });
 
-    const totals = await db.payment.findAll({
-      where: where,
-      attributes: [
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.literal("SUM(payment.net_amount)"),
-            2
-          ),
-          "totalIncome",
-        ],
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalRevenue",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
-          "numberOfOrders",
-        ],
-      ],
-    });
-
     const formattedItems = payments.map((payment) => ({
-      program: payment.course ? payment.course.name : "Unknown",
-      total_income: payment.getDataValue("totalIncome") || 0,
-      total_revenue: payment.getDataValue("totalRevenue") || 0,
-      number_of_orders: payment.getDataValue("numberOfOrders") || 0,
+      program: payment.course.name,
+      total_income: payment.getDataValue("totalIncome"),
+      total_revenue: payment.getDataValue("totalRevenue"),
+      number_of_orders: payment.getDataValue("numberOfOrders"),
     }));
 
+    const numberOfOrders = formattedItems.length;
+    const totalIncome = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalIncome") || 0);
+    }, 0);
+
+    const totalRevenue = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalRevenue") || 0);
+    }, 0);
+
     const formattedOrders = orders.map((order) => ({
-      stripe_fee: order.stripe_fee || 0,
-      net_amount: order.net_amount || 0,
-      createdAt: order.createdAt,
-      course: order.course ? order.course.name : "Unknown",
-      offerAmount: order.course ? order.course.offerAmount : 0,
-      category:
-        order.course && order.course.category
-          ? order.course.category.name
-          : "Unknown",
-      user_name: order.user ? order.user.name : "Unknown",
-      email: order.user ? order.user.email : "Unknown",
-      mobile: order.user ? order.user.mobile : "Unknown",
+      stripe_fee: order?.stripe_fee,
+      net_amount: order?.net_amount,
+      createdAt: order?.createdAt,
+      course: order?.course?.name,
+      amount: order?.course?.offerAmount,
+      amount_paid: order?.course?.amount,
+      category: order?.course?.category.name,
+      user_name: order?.users?.username,
+      email: order?.users?.email,
+      mobile: order?.users?.mobile,
     }));
 
     res.status(200).json({
       payments: formattedItems,
       enrolledUsersPerCourse,
-      totals,
+      totals: {
+        totalIncome,
+        totalRevenue,
+        numberOfOrders,
+      },
       formattedOrders,
     });
   } catch (error) {
@@ -511,28 +500,71 @@ exports.getOrdersUsd = async (req, res) => {
       group: ["courseId"],
     });
 
-    const totals = await db.payment.findAll({
-      where: {
-        createdAt: {
-          [db.Sequelize.Op.lt]: new Date("2024-06-15"), // Filter by createdAt date
+    let orders = await db.payment.findAll({
+      where: where,
+      include: [
+        {
+          model: db.course,
+          as: "course",
+          attributes: [
+            "id",
+            "name",
+            "amount",
+            "offerAmount",
+            "duration",
+            "isDeleted",
+          ], // Include 'duration' attribute
+          include: {
+            model: db.category,
+            attributes: ["id", "name", "iscamp"],
+            where: whereClause,
+          },
+          required: true,
         },
-      },
-      attributes: [
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalIncome",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
-          "numberOfOrders",
-        ],
+        {
+          model: db.user,
+          as: "users",
+          attributes: ["id", "username", "email"],
+          required: true,
+        },
       ],
+      order: [["createdAt", "DESC"]],
     });
 
+    const formattedOrders = orders.map((order) => ({
+      amount: order.amount,
+      net_amount: order.net_amount,
+      stripe_fee: order.stripe_fee,
+      stripeId: order.stripeId,
+      createdAt: order.createdAt,
+      course_name: order.course.name,
+      course_amount: order.course.offerAmount,
+      course_duration: order.course.duration,
+      course_category: order.course.category.name,
+      user_username: order.users.username,
+      user_email: order.users.email,
+    }));
+
+    const formattedItems = payments.map((payment) => ({
+      program: payment.course.name,
+      total_income: payment.getDataValue("totalIncome"),
+      total_revenue: payment.getDataValue("totalRevenue"),
+      number_of_orders: payment.getDataValue("numberOfOrders"),
+    }));
+
+    const numberOfOrders = formattedItems.length;
+    const totalIncome = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalIncome") || 0);
+    }, 0);
+
     res.status(200).json({
-      payments,
+      payments: formattedItems,
       enrolledUsersPerCourse,
-      totals,
+      totals: {
+        totalIncome,
+        numberOfOrders,
+      },
+      formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
