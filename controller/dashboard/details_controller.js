@@ -537,12 +537,12 @@ exports.getOrdersUsd = async (req, res) => {
       stripe_fee: order.stripe_fee,
       stripeId: order.stripeId,
       createdAt: order.createdAt,
-      course_name: order.course.name,
-      course_amount: order.course.offerAmount,
-      course_duration: order.course.duration,
-      course_category: order.course.category.name,
-      user_username: order.users.username,
-      user_email: order.users.email,
+      course: order.course.name,
+      amount_paid: order.course.offerAmount,
+      category: order.course.category.name,
+      user_name: order.users.username,
+      email: order.users.email,
+      mobile: order?.users?.mobile,
     }));
 
     const formattedItems = payments.map((payment) => ({
