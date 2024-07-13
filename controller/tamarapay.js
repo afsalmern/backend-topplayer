@@ -150,24 +150,26 @@ exports.tamaraWebHook = async (req, res) => {
         const userDB = await db.user.findByPk(userId);
 
         console.log("userDB===>", userDB);
-
-        const subject = "TheTopPlayer Payment";
-        const text = "payment successful"; // plain text body
-        const html = paymentSuccessMail(
-          userDB.username,
-          amount,
-          orderDetails.referenceId
-        );
-
-        const isMailsend = await sendMail(userDB.email, subject, text, html);
-
-        if (isMailsend) {
-          console.log("Email sent:");
-        } else {
-          console.error("Error sending email in payment:", error);
-        }
-
         console.log("Order created: ==>", referenceOrderId);
+        console.log("EVETYTHING FINE NOW NO ISSUES ");
+
+
+        // const subject = "TheTopPlayer Payment";
+        // const text = "payment successful"; // plain text body
+        // const html = paymentSuccessMail(
+        //   userDB.username,
+        //   amount,
+        //   orderDetails.referenceId
+        // );
+
+        // const isMailsend = await sendMail(userDB.email, subject, text, html);
+
+        // if (isMailsend) {
+        //   console.log("Email sent:");
+        // } else {
+        //   console.error("Error sending email in payment:", error);
+        // }
+
         // Update your application data (e.g., mark order as created)
         break;
       case "ORDER_CONFIRMED":
