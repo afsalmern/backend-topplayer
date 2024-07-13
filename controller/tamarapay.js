@@ -128,6 +128,8 @@ exports.tamaraWebHook = async (req, res) => {
 
     const courseId = orderDetails.courseId;
     const userId = orderDetails.userId;
+    const amount = orderDetails.amount;
+
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
@@ -154,21 +156,21 @@ exports.tamaraWebHook = async (req, res) => {
         console.log("EVETYTHING FINE NOW NO ISSUES ");
 
 
-        // const subject = "TheTopPlayer Payment";
-        // const text = "payment successful"; // plain text body
-        // const html = paymentSuccessMail(
-        //   userDB.username,
-        //   amount,
-        //   orderDetails.referenceId
-        // );
+        const subject = "TheTopPlayer Payment";
+        const text = "payment successful"; // plain text body
+        const html = paymentSuccessMail(
+          userDB.username,
+          amount,
+          orderDetails.referenceId
+        );
 
-        // const isMailsend = await sendMail(userDB.email, subject, text, html);
+        const isMailsend = await sendMail(userDB.email, subject, text, html);
 
-        // if (isMailsend) {
-        //   console.log("Email sent:");
-        // } else {
-        //   console.error("Error sending email in payment:", error);
-        // }
+        if (isMailsend) {
+          console.log("Email sent:");
+        } else {
+          console.error("Error sending email in payment:", error);
+        }
 
         // Update your application data (e.g., mark order as created)
         break;
