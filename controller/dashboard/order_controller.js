@@ -154,9 +154,52 @@ exports.getAllOrders = async (req, res) => {
 
 exports.getAllRevenues = async (req, res) => {
   try {
-    const courseWhereClause = {
-      id: { [db.Sequelize.Op.ne]: null }, // Ensures courseId is not null
+    console.log("THIS");
+    const { filter, from, to } = req.params;
+    let maxFromDate = "2024-06-15";
+    const where = {
+      userId: {
+        [db.Sequelize.Op.ne]: null, // Ensures userId is not null
+      },
     };
+
+    if (from !== undefined) {
+      if (from < maxFromDate) {
+        return res.status(500).json({ message: "Invalid date provided" });
+      }
+    }
+
+    if (from === undefined) {
+      where.createdAt = {
+        [Sequelize.Op.gte]: new Date(maxFromDate).toISOString(),
+      };
+    } else if (from >= maxFromDate) {
+      where.createdAt = {
+        [Sequelize.Op.gte]: new Date(from).toISOString(),
+      };
+    }
+
+    if (to !== undefined) {
+      console.log("HERE");
+      where.createdAt = {
+        [Sequelize.Op.between]: [
+          new Date(from).toISOString(),
+          new Date(
+            new Date(to).setDate(new Date(to).getDate() + 1)
+          ).toISOString(),
+        ],
+      };
+    }
+
+    let whereClause = {
+      isDeleted: false,
+    };
+
+    if (filter == "camp") {
+      whereClause = { isCamp: true, isDeleted: false };
+    } else if (filter == "course") {
+      whereClause = { isCamp: false, isDeleted: false };
+    }
 
     let orders = await db.payment.findAll({
       include: [
@@ -174,10 +217,13 @@ exports.getAllRevenues = async (req, res) => {
           include: [
             {
               model: db.category,
-              attributes: ["id", "name", "iscamp"],
+              attributes: ["id", "name", "isCamp"],
+              where: whereClause,
             },
           ],
-          where: courseWhereClause,
+          where: {
+            id: { [Sequelize.Op.not]: null },
+          },
         },
         {
           model: db.user,
@@ -185,20 +231,18 @@ exports.getAllRevenues = async (req, res) => {
           attributes: ["id", "username", "email"],
         },
       ],
-      where: {
-        createdAt: {
-          [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
-        },
-        userId: {
-          [db.Sequelize.Op.ne]: null, // Ensures userId is not null
-        },
-      },
+      where: where,
+
       order: [["createdAt", "DESC"]],
     });
+
+    console.log(where);
+    console.log(whereClause);
 
     const formattedOrders = orders.map((order) => ({
       amount: order.amount,
       net_amount: order.net_amount,
+      created_at: order.createdAt,
       stripe_fee: order.stripe_fee,
       stripeId: order.stripeId,
       course_name: order.course.name,

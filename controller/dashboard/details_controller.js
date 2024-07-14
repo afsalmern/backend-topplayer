@@ -233,11 +233,6 @@ exports.getOrders = async (req, res) => {
       };
     }
 
-    console.log("DATES >>>>>>>>>>>>", from, to);
-    console.log("DATES >>>>>>>>>>>>", maxFromDate, to);
-
-    console.log("WHERE >>>>>>>>>>>>", where);
-
     if (to !== undefined) {
       console.log("HERE");
       where.createdAt = {
@@ -257,6 +252,29 @@ exports.getOrders = async (req, res) => {
     } else if (filter == "course") {
       whereClause = { iscamp: false, isDeleted: false };
     }
+
+    const orders = await db.payment.findAll({
+      where: where,
+      attributes: ["stripe_fee", "net_amount", "createdAt", "amount"],
+      include: [
+        {
+          model: db.course,
+          attributes: ["name", "offerAmount"],
+          include: {
+            model: db.category,
+            where: whereClause,
+            attributes: ["name"],
+          },
+          required: true, // Allow courses that have no associated category
+        },
+        {
+          model: db.user,
+          as: "users",
+          attributes: ["username", "email", "mobile"],
+          required: true, // Allow payments that have no associated user
+        },
+      ],
+    });
 
     const payments = await db.payment.findAll({
       where: where,
@@ -333,36 +351,44 @@ exports.getOrders = async (req, res) => {
       group: ["courseId"],
     });
 
-    const totals = await db.payment.findAll({
-      where: {
-        createdAt: {
-          [db.Sequelize.Op.gt]: new Date("2024-06-15"), // Filter by createdAt date
-        },
-      },
-      attributes: [
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.literal("SUM(payment.net_amount)"),
-            2
-          ),
-          "totalIncome",
-        ],
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalRevenue",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
-          "numberOfOrders",
-        ],
-      ],
-    });
+    const formattedItems = payments.map((payment) => ({
+      program: payment.course.name,
+      total_income: payment.getDataValue("totalIncome"),
+      total_revenue: payment.getDataValue("totalRevenue"),
+      number_of_orders: payment.getDataValue("numberOfOrders"),
+    }));
+
+    const totalIncome = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalIncome") || 0);
+    }, 0);
+
+    const totalRevenue = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalRevenue") || 0);
+    }, 0);
+
+    const formattedOrders = orders.map((order) => ({
+      stripe_fee: order?.stripe_fee,
+      net_amount: order?.net_amount,
+      createdAt: order?.createdAt,
+      course: order?.course?.name,
+      amount: order?.course?.offerAmount,
+      amount_paid: order?.course?.amount,
+      category: order?.course?.category.name,
+      user_name: order?.users?.username,
+      email: order?.users?.email,
+      mobile: order?.users?.mobile,
+    }));
+    const numberOfOrders = formattedOrders.length;
 
     res.status(200).json({
-      payments,
+      payments: formattedItems,
       enrolledUsersPerCourse,
-      totals,
+      totals: {
+        totalIncome,
+        totalRevenue,
+        numberOfOrders,
+      },
+      formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
@@ -474,28 +500,71 @@ exports.getOrdersUsd = async (req, res) => {
       group: ["courseId"],
     });
 
-    const totals = await db.payment.findAll({
-      where: {
-        createdAt: {
-          [db.Sequelize.Op.lt]: new Date("2024-06-15"), // Filter by createdAt date
+    let orders = await db.payment.findAll({
+      where: where,
+      include: [
+        {
+          model: db.course,
+          as: "course",
+          attributes: [
+            "id",
+            "name",
+            "amount",
+            "offerAmount",
+            "duration",
+            "isDeleted",
+          ], // Include 'duration' attribute
+          include: {
+            model: db.category,
+            attributes: ["id", "name", "iscamp"],
+            where: whereClause,
+          },
+          required: true,
         },
-      },
-      attributes: [
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalIncome",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.literal("payment.id")),
-          "numberOfOrders",
-        ],
+        {
+          model: db.user,
+          as: "users",
+          attributes: ["id", "username", "email"],
+          required: true,
+        },
       ],
+      order: [["createdAt", "DESC"]],
     });
 
+    const formattedOrders = orders.map((order) => ({
+      amount: order.amount,
+      net_amount: order.net_amount,
+      stripe_fee: order.stripe_fee,
+      stripeId: order.stripeId,
+      createdAt: order.createdAt,
+      course: order.course.name,
+      amount_paid: order.course.offerAmount,
+      category: order.course.category.name,
+      user_name: order.users.username,
+      email: order.users.email,
+      mobile: order?.users?.mobile,
+    }));
+
+    const formattedItems = payments.map((payment) => ({
+      program: payment.course.name,
+      total_income: payment.getDataValue("totalIncome"),
+      total_revenue: payment.getDataValue("totalRevenue"),
+      number_of_orders: payment.getDataValue("numberOfOrders"),
+    }));
+
+    const numberOfOrders = formattedOrders.length;
+    const totalIncome = payments.reduce((acc, payment) => {
+      return acc + (payment.getDataValue("totalIncome") || 0);
+    }, 0);
+
     res.status(200).json({
-      payments,
+      payments: formattedItems,
       enrolledUsersPerCourse,
-      totals,
+      totals: {
+        totalIncome,
+        numberOfOrders,
+      },
+      formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);

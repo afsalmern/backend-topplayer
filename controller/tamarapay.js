@@ -5,6 +5,14 @@ const sendMail = require("../utils/mailer");
 const { paymentSuccessMail } = require("../utils/mail_content");
 
 const config = {
+
+  //test
+
+  // baseUrl: "https://api-sandbox.tamara.co",
+  // apiToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiI0ZmUxNDU1MC1jZTUzLTRhNmYtYWIyMi05MDkxOThkNmUxNmEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiODcxZjY3OGM0MjAwYzg4YWQxZTM0YTIxMTExN2IyYjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1OTc3NCwiaXNzIjoiVGFtYXJhIn0.xDxkOqZsPt65OGuy0rDfrrjKL6hWLP2EL4ynnxQynK5lr6kMQn2dUlvLACIZc1Bx4wo5vlCcqn5L4h1zQWkFTZXDkVjaiuRh6lyLZmVkGi6KfCdZLjMmve6n3tQhuJT6c4BYcS_7Y1BS4HMCOPpwPu5ZiaYNlGYVmrhM2rdtIq9gd3yWD_8oAFO9qoF0CmdA48LNHVoAXutxR-kNlVk62MQfOD4rf2yxNuzvSj9xywiaXGrleoayEJxF9uw3ANYNVE1fGBjR_uL_dR5EJI6p16oa5NBdZtX29Tn05bx4dsjH_13xSq58hGVpEHIRjZF8NLcwSxvdBeK1zuu7DDU1CA"  ,
+  
+  //live
+
   baseUrl: "https://api.tamara.co",
   apiToken:
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiIwYmY3MDNiZi04ZTFhLTRhYzEtOWRkNi1hNDE4ODFjOTRkMGEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiNjQ5YzcyMzY4OTFmYzZjNDVjYTczZDAzNTBlMjM5ZjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1MzgwMCwiaXNzIjoiVGFtYXJhIFBQIn0.a9tojPzHIzqvWU1qfntezLkkpRaDuQnXIDGSuhwRZp9_pbIBBqmfqzDRw5VjwbLG1L1LuKLjFjXcVn3b2_idYyQ2bR-ZgKo-J0XI7YenzporatYyEkJY6kMW9dR2d_58mMBebMWv87Mq3IHSrmqpFFlGk0UZMFMRRXr77mzoDowsVq8x4ODasbTlEw23S1uMeB7WuA5c-qJlBcEsHZ4Jdaz8q_dscjBzKu-abbdLrnF-Q39s24wHTevPcFm4fsdk5xzPXXf-LVizaibObUXn0RPCFQDMH2QIiQYhlrTR5CxfqjVd_gFldMOSTq6zutAR5UE1rPjS1AcxesCdEB7fIQ",
@@ -120,6 +128,8 @@ exports.tamaraWebHook = async (req, res) => {
 
     const courseId = orderDetails.courseId;
     const userId = orderDetails.userId;
+    const amount = orderDetails.amount;
+
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
@@ -142,6 +152,9 @@ exports.tamaraWebHook = async (req, res) => {
         const userDB = await db.user.findByPk(userId);
 
         console.log("userDB===>", userDB);
+        console.log("Order created: ==>", referenceOrderId);
+        console.log("EVETYTHING FINE NOW NO ISSUES ");
+
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
@@ -159,7 +172,6 @@ exports.tamaraWebHook = async (req, res) => {
           console.error("Error sending email in payment:", error);
         }
 
-        console.log("Order created: ==>", referenceOrderId);
         // Update your application data (e.g., mark order as created)
         break;
       case "ORDER_CONFIRMED":
