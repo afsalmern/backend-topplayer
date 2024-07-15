@@ -43,6 +43,7 @@ db.visitors = require("./visitors")(sequelize, Sequelize);
 db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize);
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 db.currency = require("./currency")(sequelize, Sequelize);
+db.footer = require("./footer")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
@@ -136,6 +137,18 @@ db.payment.belongsTo(db.course, {
   onDelete: "cascade",
   onUpdate: "cascade",
 });
+
+db.course.hasMany(db.tamaraPayment, {
+  foreignKey: "courseId",
+  as: "tamara_payments",
+});
+
+db.tamaraPayment.belongsTo(db.course, {
+  foreignKey: "courseId",
+});
+
+db.user.hasMany(db.tamaraPayment, { foreignKey: "userId", as: "users" });
+db.tamaraPayment.belongsTo(db.user, { foreignKey: "userId" });
 
 db.banner.hasMany(db.bannerImages, {
   foreignKey: "bannerId",

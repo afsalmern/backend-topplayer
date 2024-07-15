@@ -55,6 +55,8 @@ const {
   deleteCurrency,
 } = require("../controller/dashboard/currency_controller");
 
+const { addFooter, getAllFooters, updateFooter, deleteFooter } = require("../controller/dashboard/footer_controller");
+
 const router = express.Router();
 
 const multerStorageStt = multer.diskStorage({
@@ -272,6 +274,17 @@ router.delete(
   [authMiddleware.checkUserAuth],
   categoryController.deleteCategory
 );
+
+router
+  .route("/footer")
+  .post(authMiddleware.checkUserAuth, addFooter)
+  .get(authMiddleware.checkUserAuth, getAllFooters);
+
+router
+  .route("/footer/:id")
+  .put(authMiddleware.checkUserAuth, updateFooter)
+  .patch(authMiddleware.checkUserAuth, updateFooter)
+  .delete(authMiddleware.checkUserAuth, deleteFooter);
 
 router.post("/currency", [authMiddleware.checkUserAuth], addCurrency);
 router.get("/currency", [authMiddleware.checkUserAuth], getAllCurrencies);

@@ -1,5 +1,12 @@
 const { Sequelize, where } = require("sequelize");
 const db = require("../../models");
+const {
+  getOrders,
+  getPayments,
+  getEnrolledUsersPerCourse,
+  combinePaymentData,
+  getTamaraOrders,
+} = require("../../utils/Revenue_helpers");
 
 exports.getDashboardDetails = async (req, res) => {
   try {
@@ -253,30 +260,15 @@ exports.getOrders = async (req, res) => {
       whereClause = { iscamp: false, isDeleted: false };
     }
 
-    const orders = await db.payment.findAll({
-      where: where,
-      attributes: ["stripe_fee", "net_amount", "createdAt", "amount"],
-      include: [
-        {
-          model: db.course,
-          attributes: ["name", "offerAmount"],
-          include: {
-            model: db.category,
-            where: whereClause,
-            attributes: ["name"],
-          },
-          required: true, // Allow courses that have no associated category
-        },
-        {
-          model: db.user,
-          as: "users",
-          attributes: ["username", "email", "mobile"],
-          required: true, // Allow payments that have no associated user
-        },
-      ],
-    });
+    const orders = await getOrders(where, whereClause);
+    const payments = await getPayments(where, whereClause);
 
-    const payments = await db.payment.findAll({
+    const enrolledUsersPerCourse = await getEnrolledUsersPerCourse(
+      where,
+      whereClause
+    );
+
+    const paymentsTamara = await db.tamaraPayment.findAll({
       where: where,
       include: [
         {
@@ -301,84 +293,68 @@ exports.getOrders = async (req, res) => {
         [
           Sequelize.fn(
             "ROUND",
-            Sequelize.literal("SUM(payment.net_amount)"),
+            Sequelize.literal("SUM(tamara_payment.amount)"),
+            2
+          ),
+          "totalRevenue",
+        ],
+        [
+          Sequelize.fn(
+            "ROUND",
+            Sequelize.literal("SUM(tamara_payment.amount)"),
             2
           ),
           "totalIncome",
         ],
         [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalRevenue",
+          Sequelize.fn("COUNT", Sequelize.col("tamara_payment.id")),
+          "numberOfOrders",
         ],
-        [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
       ],
       group: ["courseId"],
     });
 
-    const enrolledUsersPerCourse = await db.payment.findAll({
-      where: where,
-      attributes: [
-        "courseId",
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.literal("SUM(payment.net_amount)"),
-            2
-          ),
-          "revenue",
-        ],
-        [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
-      ],
-      include: [
-        {
-          model: db.course,
-          attributes: ["name"],
-          as: "course",
-          include: [
-            {
-              model: db.category,
-              where: whereClause,
-              attributes: [],
-            },
-          ],
-          where: {
-            id: { [Sequelize.Op.not]: null },
-            isDeleted: false, // Ensure the course is not null
-          },
-          required: true, // This ensures that only payments with a course are included
-        },
-      ],
-      group: ["courseId"],
-    });
+    const formattedItems = await combinePaymentData(payments, paymentsTamara);
 
-    const formattedItems = payments.map((payment) => ({
-      program: payment.course.name,
-      total_income: payment.getDataValue("totalIncome"),
-      total_revenue: payment.getDataValue("totalRevenue"),
-      number_of_orders: payment.getDataValue("numberOfOrders"),
-    }));
+    const tamraOrders = await getTamaraOrders(where, whereClause);
 
-    const totalIncome = payments.reduce((acc, payment) => {
-      return acc + (payment.getDataValue("totalIncome") || 0);
+    const totalIncome = formattedItems.reduce((acc, payment) => {
+      return acc + (payment.totalIncome || 0);
     }, 0);
 
-    const totalRevenue = payments.reduce((acc, payment) => {
-      return acc + (payment.getDataValue("totalRevenue") || 0);
+    const totalRevenue = formattedItems.reduce((acc, payment) => {
+      return acc + (payment.totalRevenue || 0);
     }, 0);
 
     const formattedOrders = orders.map((order) => ({
+      isTamra: false,
       stripe_fee: order?.stripe_fee,
       net_amount: order?.net_amount,
       createdAt: order?.createdAt,
       course: order?.course?.name,
       amount: order?.course?.offerAmount,
-      amount_paid: order?.course?.amount,
+      amount_paid: order?.amount,
       category: order?.course?.category.name,
       user_name: order?.users?.username,
       email: order?.users?.email,
       mobile: order?.users?.mobile,
     }));
-    const numberOfOrders = formattedOrders.length;
+
+    const formattedTamaraOrders = tamraOrders.map((tmaraOrder) => ({
+      isTamra: true,
+      course: tmaraOrder.course?.name,
+      amount: tmaraOrder?.course?.offerAmount,
+      amount_paid: tmaraOrder?.amount,
+      user_name: tmaraOrder?.user?.username,
+      email: tmaraOrder?.user?.email,
+      mobile: tmaraOrder?.user?.mobile,
+      category: tmaraOrder?.course?.category.name,
+      stripe_fee: tmaraOrder?.stripe_fee,
+      net_amount: tmaraOrder?.net_amount,
+      createdAt: tmaraOrder?.createdAt,
+    }));
+    const numberOfOrders =
+      formattedOrders.length + formattedTamaraOrders.length;
 
     res.status(200).json({
       payments: formattedItems,
@@ -388,7 +364,7 @@ exports.getOrders = async (req, res) => {
         totalRevenue,
         numberOfOrders,
       },
-      formattedOrders,
+      allorders: [...formattedOrders, ...formattedTamaraOrders],
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);

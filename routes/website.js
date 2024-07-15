@@ -10,6 +10,7 @@ const {
   createTamaraPayment,
   tamaraWebHook,
 } = require("../controller/tamarapay");
+const { getAllFooters } = require("../controller/dashboard/footer_controller");
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.get("/banner", websiteController.getAllBanners);
 router.get("/main_banner", getAllMainBanner);
 router.get("/terms", websiteController.getTermsAndConditions);
 router.get("/currency", websiteController.getCurrencies);
+router.get("/footer", getAllFooters);
 
 router.get(
   "/subscribedCourse",
