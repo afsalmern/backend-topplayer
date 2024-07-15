@@ -219,7 +219,7 @@ function paymentSuccessMail(username, amount, paymentIntentId) {
                             style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
                             <strong>Payment Details:</strong></p>
                         <ul style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 10px 0; padding-left: 20px;">
-                            <li>Amount: ${amount}$</li>
+                            <li>Amount: ${amount}AED</li>
                             <li>Reference Number: ${paymentIntentId}</li>
                         </ul>
                         <p
