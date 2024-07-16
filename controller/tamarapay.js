@@ -138,7 +138,7 @@ exports.tamaraWebHook = async (req, res) => {
 
     console.log("ORDER ID ==========>", order_id);
 
-    const course = await db.course.findByPk({ where: { id: courseId } });
+    const course = await db.course.findByPk(courseId);
 
     // Process notification data based on notification type
     switch (req.body.event_type) {
