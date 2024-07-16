@@ -106,6 +106,7 @@ exports.createTamaraPayment = async (req, res) => {
       referenceOrderId: referenceOrderId,
       referenceId: referenceId,
       userId: userDB?.id,
+      orderId: checkout?.data?.orderId,
     });
 
     res.status(200).send({ status: true, data: checkout.data });
@@ -133,10 +134,18 @@ exports.tamaraWebHook = async (req, res) => {
     const courseId = orderDetails.courseId;
     const userId = orderDetails.userId;
     const amount = orderDetails.amount;
+    const orderId = orderDetails.orderId;
+
+    console.log("ORDER ID ==========>", orderId);
 
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
+        docsTam
+          .authoriseOrder({ orderId })
+          .then(({ data }) => console.log("AUTHORIZED=====>", data))
+          .catch((err) => console.error("Authorized error=====>", err));
+
         // Handle order creation notification
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
