@@ -20,13 +20,12 @@ const config = {
   apiToken: process.env.TAMARA_KEY,
   notificationPrivateKey: "280fd426-2efc-4a21-948d-37ea3690d56d",
 };
+const tamara = TamaraClientFactory.createApiClient(config);
 
 exports.createTamaraPayment = async (req, res) => {
   const { shippingAddress, courseId, lang, amount, type } = req.body;
 
   try {
-    const tamara = TamaraClientFactory.createApiClient(config);
-
     console.log("req.userDecodeId====>", req.userDecodeId);
     const userDB = await db.user.findByPk(req.userDecodeId);
     const courseDB = await db.course.findByPk(courseId);
@@ -142,8 +141,8 @@ exports.tamaraWebHook = async (req, res) => {
     switch (req.body.event_type) {
       case "order_approved":
         const authorised_data = await tamara.authoriseOrder({ orderId });
-  
-        console.log("AUTHORISED DATA ============= >",authorised_data);
+
+        console.log("AUTHORISED DATA ============= >", authorised_data);
         // Handle order creation notification
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
