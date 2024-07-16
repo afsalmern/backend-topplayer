@@ -141,11 +141,9 @@ exports.tamaraWebHook = async (req, res) => {
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
-        docsTam
-          .authoriseOrder({ orderId })
-          .then(({ data }) => console.log("AUTHORIZED=====>", data))
-          .catch((err) => console.error("Authorized error=====>", err));
-
+        const authorised_data = await tamara.authoriseOrder({ orderId });
+  
+        console.log("AUTHORISED DATA ============= >",authorised_data);
         // Handle order creation notification
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
