@@ -148,7 +148,7 @@ exports.tamaraWebHook = async (req, res) => {
 
         console.log("AUTHORISED DATA ============= >", authorised_data);
 
-        const captured_data = await tamara.captureOrder({
+        const captured_data = await tamara.capture({
           items: [
             {
               name: course?.name,
