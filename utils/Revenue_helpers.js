@@ -1,48 +1,9 @@
-const { Sequelize } = require("../models");
-
-const combinePaymentData = async (payments, paymentsTamara) => {
-  const combined = {};
-
-  // Combine payments data
-  payments.forEach((payment) => {
-    const { name } = payment.course;
-    if (!combined[name]) {
-      combined[name] = {
-        courseName: name,
-        totalIncome: 0,
-        totalRevenue: 0,
-        numberOfOrders: 0,
-      };
-    }
-    combined[name].totalIncome += payment.getDataValue("totalIncome");
-    combined[name].totalRevenue += payment.getDataValue("totalRevenue");
-    combined[name].numberOfOrders += payment.getDataValue("numberOfOrders");
-  });
-
-  // Combine paymentsTamara data
-  paymentsTamara.forEach((payment) => {
-    const { name } = payment.course;
-    if (!combined[name]) {
-      combined[name] = {
-        courseName: name,
-        totalIncome: 0,
-        totalRevenue: 0,
-        numberOfOrders: 0,
-      };
-    }
-    combined[name].totalIncome += payment.getDataValue("totalIncome");
-    combined[name].totalRevenue += payment.getDataValue("totalRevenue");
-    combined[name].numberOfOrders += payment.getDataValue("numberOfOrders");
-  });
-
-  // Convert the combined object to an array
-  return Object.values(combined);
-};
+const { Sequelize, course } = require("../models");
 
 const getOrders = async (where, whereClause) => {
   const orders = await db.payment.findAll({
     where: where,
-    attributes: ["stripe_fee", "net_amount", "createdAt", "amount"],
+    attributes: ["stripe_fee", "net_amount", "createdAt", "amount","fromTamara"],
     include: [
       {
         model: db.course,
@@ -62,7 +23,23 @@ const getOrders = async (where, whereClause) => {
       },
     ],
   });
-  return orders;
+
+  const formattedOrders = orders.map((order) => ({
+    amount_paid: order.amount,
+    net_amount: order.net_amount,
+    stripe_fee: order.stripe_fee,
+    stripeId: order.stripeId,
+    createdAt: order.createdAt,
+    isTamara: order.fromTamara,
+    course: order.course.name,
+    amount: order.course.offerAmount,
+    category: order.course.category.name,
+    user_name: order.users.username,
+    email: order.users.email,
+    mobile: order?.users?.mobile,
+  }));
+
+  return formattedOrders;
 };
 
 const getPayments = async (where, whereClause) => {
@@ -101,7 +78,14 @@ const getPayments = async (where, whereClause) => {
     group: ["courseId"],
   });
 
-  return payments;
+  const formattedItems = payments.map((payment) => ({
+    courseName: payment.course.name,
+    totalIncome: payment.getDataValue("totalIncome"),
+    totalRevenue: payment.getDataValue("totalRevenue"),
+    numberOfOrders: payment.getDataValue("numberOfOrders"),
+  }));
+
+  return formattedItems;
 };
 
 const getEnrolledUsersPerCourse = async (where, whereClause) => {
@@ -140,90 +124,8 @@ const getEnrolledUsersPerCourse = async (where, whereClause) => {
   return enrolledUsersPerCourse;
 };
 
-const getTamaraPayments = async (where, whereClause) => {
-  const paymentsTamara = await db.tamaraPayment.findAll({
-    where: where,
-    include: [
-      {
-        model: db.course,
-        attributes: ["name"],
-        include: [
-          {
-            model: db.category,
-            where: whereClause,
-            attributes: [],
-          },
-        ],
-        where: {
-          id: { [Sequelize.Op.not]: null },
-          isDeleted: false, // Ensure the course is not null
-        },
-        required: true, // This ensures that only payments with a course are included
-      },
-    ],
-    attributes: [
-      "courseId",
-      [
-        Sequelize.fn(
-          "ROUND",
-          Sequelize.literal("SUM(tamara_payment.amount)"),
-          2
-        ),
-        "totalRevenue",
-      ],
-      [
-        Sequelize.fn(
-          "ROUND",
-          Sequelize.literal("SUM(tamara_payment.amount)"),
-          2
-        ),
-        "totalIncome",
-      ],
-      [
-        Sequelize.fn("COUNT", Sequelize.col("tamara_payment.id")),
-        "numberOfOrders",
-      ],
-    ],
-    group: ["courseId"],
-  });
-
-  return paymentsTamara;
-};
-
-const getTamaraOrders = async (where, whereClause) => {
-  const tamraOrders = await db.tamaraPayment.findAll({
-    where: where,
-    include: [
-      {
-        model: db.course,
-        attributes: ["name", "offerAmount"],
-        include: {
-          model: db.category,
-          where: whereClause,
-          attributes: ["name"],
-        },
-        where: {
-          id: { [Sequelize.Op.not]: null },
-          isDeleted: false, // Ensure the course is not null
-        },
-        required: true, // This ensures that only payments with a course are included
-      },
-      {
-        model: db.user,
-        attributes: ["username", "email", "mobile"],
-        required: true, // Allow payments that have no associated user
-      },
-    ],
-  });
-
-  return tamraOrders;
-};
-
 module.exports = {
-  combinePaymentData,
   getOrders,
   getPayments,
   getEnrolledUsersPerCourse,
-  getTamaraPayments,
-  getTamaraOrders,
 };

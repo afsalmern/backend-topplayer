@@ -5,7 +5,6 @@ const sendMail = require("../utils/mailer");
 const { paymentSuccessMail } = require("../utils/mail_content");
 
 const config = {
-
   //test
 
   // baseUrl: "https://api-sandbox.tamara.co",
@@ -19,7 +18,7 @@ const config = {
 
   baseUrl: process.env.TAMARA_URL,
   apiToken: process.env.TAMARA_KEY,
-  notificationPrivateKey: "280fd426-2efc-4a21-948d-37ea3690d56d"
+  notificationPrivateKey: "280fd426-2efc-4a21-948d-37ea3690d56d",
 };
 
 exports.createTamaraPayment = async (req, res) => {
@@ -152,12 +151,20 @@ exports.tamaraWebHook = async (req, res) => {
           await regCourseDB.update({ createdDate: new Date() });
         }
 
+        await db.payment.create({
+          courseId: courseId,
+          userId: userId,
+          amount: amount,
+          net_amount: amount,
+          stipe_fee: 0,
+          fromTamara: true,
+        });
+
         const userDB = await db.user.findByPk(userId);
 
         console.log("userDB===>", userDB);
         console.log("Order created: ==>", referenceOrderId);
         console.log("EVETYTHING FINE NOW NO ISSUES ");
-
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body

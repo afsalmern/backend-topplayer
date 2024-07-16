@@ -268,103 +268,25 @@ exports.getOrders = async (req, res) => {
       whereClause
     );
 
-    const paymentsTamara = await db.tamaraPayment.findAll({
-      where: where,
-      include: [
-        {
-          model: db.course,
-          attributes: ["name"],
-          include: [
-            {
-              model: db.category,
-              where: whereClause,
-              attributes: [],
-            },
-          ],
-          where: {
-            id: { [Sequelize.Op.not]: null },
-            isDeleted: false, // Ensure the course is not null
-          },
-          required: true, // This ensures that only payments with a course are included
-        },
-      ],
-      attributes: [
-        "courseId",
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.literal("SUM(tamara_payment.amount)"),
-            2
-          ),
-          "totalRevenue",
-        ],
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.literal("SUM(tamara_payment.amount)"),
-            2
-          ),
-          "totalIncome",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.col("tamara_payment.id")),
-          "numberOfOrders",
-        ],
-      ],
-      group: ["courseId"],
-    });
-
-    const formattedItems = await combinePaymentData(payments, paymentsTamara);
-
-    const tamraOrders = await getTamaraOrders(where, whereClause);
-
-    const totalIncome = formattedItems.reduce((acc, payment) => {
+    const totalIncome = payments.reduce((acc, payment) => {
       return acc + (payment.totalIncome || 0);
     }, 0);
 
-    const totalRevenue = formattedItems.reduce((acc, payment) => {
+    const totalRevenue = payments.reduce((acc, payment) => {
       return acc + (payment.totalRevenue || 0);
     }, 0);
 
-    const formattedOrders = orders.map((order) => ({
-      isTamra: false,
-      stripe_fee: order?.stripe_fee,
-      net_amount: order?.net_amount,
-      createdAt: order?.createdAt,
-      course: order?.course?.name,
-      amount: order?.course?.offerAmount,
-      amount_paid: order?.amount,
-      category: order?.course?.category.name,
-      user_name: order?.users?.username,
-      email: order?.users?.email,
-      mobile: order?.users?.mobile,
-    }));
-
-    const formattedTamaraOrders = tamraOrders.map((tmaraOrder) => ({
-      isTamra: true,
-      course: tmaraOrder.course?.name,
-      amount: tmaraOrder?.course?.offerAmount,
-      amount_paid: tmaraOrder?.amount,
-      user_name: tmaraOrder?.user?.username,
-      email: tmaraOrder?.user?.email,
-      mobile: tmaraOrder?.user?.mobile,
-      category: tmaraOrder?.course?.category.name,
-      stripe_fee: tmaraOrder?.stripe_fee,
-      net_amount: tmaraOrder?.net_amount,
-      createdAt: tmaraOrder?.createdAt,
-    }));
-    const numberOfOrders =
-      formattedOrders.length + formattedTamaraOrders.length;
+    const numberOfOrders = orders.length;
 
     res.status(200).json({
-      payments: formattedItems,
+      payments,
       enrolledUsersPerCourse,
       totals: {
         totalIncome,
         totalRevenue,
         numberOfOrders,
       },
-      allorders: [...formattedOrders, ...formattedTamaraOrders],
+      orders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);
@@ -540,7 +462,7 @@ exports.getOrdersUsd = async (req, res) => {
         totalIncome,
         numberOfOrders,
       },
-      formattedOrders,
+      orders:formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);

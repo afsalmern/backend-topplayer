@@ -21,6 +21,11 @@ module.exports = (sequelize, Sequelize) => {
     stripeId: {
       type: Sequelize.STRING,
     },
+    fromTamara: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
   });
 
   return Payment;

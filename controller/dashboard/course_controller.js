@@ -171,6 +171,7 @@ exports.updateCampEnrollments = async (req, res) => {
     }
 
     if (course.isFull && getUserCountInCamp < course.enr_count) {
+      console.log("HERE");
       course.isFull = checked;
       await course.save();
 
