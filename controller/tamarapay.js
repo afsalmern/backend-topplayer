@@ -98,6 +98,8 @@ exports.createTamaraPayment = async (req, res) => {
       merchantUrl: merchant_url,
     });
 
+    console.log("CHECKOUT==================>", checkout);
+
     await db.tamaraPayment.create({
       amount: total_amount.amount,
       courseId: courseId,
@@ -164,7 +166,6 @@ exports.tamaraWebHook = async (req, res) => {
 
         console.log("userDB===>", userDB);
         console.log("Order created: ==>", referenceOrderId);
-        console.log("EVETYTHING FINE NOW NO ISSUES ");
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
