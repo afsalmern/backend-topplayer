@@ -136,11 +136,12 @@ exports.tamaraWebHook = async (req, res) => {
     const order_id = orderDetails.orderId;
 
     console.log("ORDER ID ==========>", order_id);
-
+    
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
-        const authorised_data = await tamara.authoriseOrder({ order_id });
+        console.log("ORDER ID ==========>", order_id);
+        const authorised_data = await tamara.authoriseOrder(order_id);
 
         console.log("AUTHORISED DATA ============= >", authorised_data);
         // Handle order creation notification
