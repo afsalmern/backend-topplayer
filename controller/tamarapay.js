@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require("uuid"); // Import the UUID package
 const db = require("../models");
 const sendMail = require("../utils/mailer");
 const { paymentSuccessMail } = require("../utils/mail_content");
+const { where } = require("sequelize");
 
 const config = {
   //test
@@ -136,7 +137,9 @@ exports.tamaraWebHook = async (req, res) => {
     const order_id = orderDetails.orderId;
 
     console.log("ORDER ID ==========>", order_id);
-    
+
+    const course = await db.course.findByPk({ where: { id: courseId } });
+
     // Process notification data based on notification type
     switch (req.body.event_type) {
       case "order_approved":
@@ -144,6 +147,27 @@ exports.tamaraWebHook = async (req, res) => {
         const authorised_data = await tamara.authoriseOrder(order_id);
 
         console.log("AUTHORISED DATA ============= >", authorised_data);
+
+        const captured_data = await tamara.captureOrder({
+          items: [
+            {
+              name: course?.name,
+              type: "Digital",
+              reference_id: course?.id,
+              sku: "SA-12436",
+              quantity: 1,
+              total_amount: { amount, currency: "AED" },
+            },
+          ],
+          order_id: order_id,
+          shipping_info: {
+            shipped_at: new Date().toISOString(),
+            shipping_company: "DHL",
+          },
+          total_amount: { amount, currency: "AED" },
+        });
+
+        console.log("CAPTURED DATA ===========>", captured_data);
         // Handle order creation notification
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
           where: {
