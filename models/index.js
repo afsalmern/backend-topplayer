@@ -44,6 +44,7 @@ db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize);
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 db.currency = require("./currency")(sequelize, Sequelize);
 db.footer = require("./footer")(sequelize, Sequelize);
+db.influencer = require("./influncer")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });

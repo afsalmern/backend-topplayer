@@ -55,7 +55,13 @@ const {
   deleteCurrency,
 } = require("../controller/dashboard/currency_controller");
 
-const { addFooter, getAllFooters, updateFooter, deleteFooter } = require("../controller/dashboard/footer_controller");
+const {
+  addFooter,
+  getAllFooters,
+  updateFooter,
+  deleteFooter,
+} = require("../controller/dashboard/footer_controller");
+const { addInfluencer, getInfluencers, updateInfluencer, deleteInfluencer } = require("../controller/dashboard/influencer_controller");
 
 const router = express.Router();
 
@@ -498,6 +504,11 @@ router.delete(
   [authMiddleware.checkUserAuth],
   termsController.deleteTermsAndConditions
 );
+
+router.post("/influencer", addInfluencer);
+router.get("/influencer", getInfluencers);
+router.put("/influencer/:id", updateInfluencer);
+router.delete("/influencer/:id", deleteInfluencer);
 
 router.post(
   "/video",

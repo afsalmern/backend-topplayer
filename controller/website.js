@@ -16,6 +16,7 @@ const {
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
+const isCouponExpired = require("../utils/coupon_helper");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -1150,6 +1151,36 @@ exports.getCurrencies = async (req, res, next) => {
     res.status(200).json({ data: currencies });
   } catch (error) {
     console.error("Error saving ip:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.applyCoupon = async (req, res) => {
+  const { coupon_code, courseAmount } = req.body;
+  try {
+    const couponExist = await db.influencer.findOne({
+      where: { coupon_code: coupon_code },
+    });
+
+    if (!couponExist) {
+      return res.status(400).send({ error: "Coupon code not found" });
+    }
+
+    const expiry_date = couponExist.expire_in;
+
+    const couponExpired = isCouponExpired(expiry_date);
+
+    if (couponExpired) {
+      return res.status(400).send({ error: "Coupon has expired" });
+    }
+
+    const discountpercentage = couponExist.coupon_percentage;
+
+    const discountAmount = (courseAmount * discountpercentage) / 100;
+
+    res.status(200).send({discountAmount});
+  } catch (error) {
+    console.error("Error applying coupon", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
