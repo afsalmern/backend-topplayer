@@ -862,6 +862,9 @@ exports.postStripePayment = async (req, res) => {
 
 exports.stripeWebhook = async (req, res) => {
   console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+  console.log("strip hook called >>>>>>>>>>>>>>>>>>>>>>>>>>>");
   const endpointSecret = process.env.STRIPE_ENDPOINT_SEC;
 
   console.log(endpointSecret);
