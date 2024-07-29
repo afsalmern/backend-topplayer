@@ -808,15 +808,35 @@ exports.watchVideo = (req, res, next) => {
 
 exports.postStripePayment = async (req, res) => {
   try {
-    const { courseId, currency_code, currency_rate } = req.body;
+    const { courseId, currency_code, currency_rate, coupon_code } = req.body;
+
+    let convertedAmount;
 
     const courseDB = await db.course.findByPk(courseId);
+    const coupon = await db.influencer.findOne({
+      where: { coupon_code: coupon_code },
+    });
 
-    const convertedAmount = Math.ceil(
-      (courseDB.offerAmount * currency_rate).toFixed(2)
-    );
+    if (coupon_code) {
+      const discountpercentage = coupon.coupon_percentage;
+
+      const discountAmount = (courseDB?.offerAmount * discountpercentage) / 100;
+
+      convertedAmount = Math.ceil(
+        (
+          courseDB?.offerAmount * currency_rate -
+          discountAmount * currency_rate
+        ).toFixed(0)
+      );
+    } else {
+      convertedAmount = Math.ceil(
+        (courseDB.offerAmount * currency_rate).toFixed(2)
+      );
+    }
 
     const amount = convertedAmount * 100;
+
+    console.log("AMOUNT", amount);
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
@@ -829,6 +849,7 @@ exports.postStripePayment = async (req, res) => {
         courseId: courseId,
         amount: amount,
         userId: userDB.id,
+        coupon: coupon_code || null,
       },
     });
 
@@ -915,6 +936,8 @@ exports.stripeWebhook = async (req, res) => {
         const amount = Number(amountInBaseCurrency.toFixed(2));
         const userId = paymentIntentData.metadata?.userId;
 
+        const coupon_code = paymentIntentData.coupon_code;
+
         console.log("NET AMOUNT", netAmount);
         console.log("AMOUNT", amount);
 
@@ -934,7 +957,7 @@ exports.stripeWebhook = async (req, res) => {
           await regCourseDB.update({ createdDate: new Date() });
         }
 
-        await db.payment.create({
+        const paymentData = await db.payment.create({
           userId: userId,
           courseId: courseId,
           amount: amount,
@@ -942,6 +965,21 @@ exports.stripeWebhook = async (req, res) => {
           stripe_fee: fee,
           stripeId: paymentIntentData.id,
         });
+
+        if (coupon_code) {
+          console.log("COUPON FOUND", coupon_code);
+          const coupon = await db.influencer.findOne({
+            where: { coupon_code: coupon_code },
+          });
+
+          if (coupon) {
+            console.log("COUPON FOUND AND SAVED", coupon_code);
+            await db.paymentWithCoupon.create({
+              paymentId: paymentData.id,
+              influencerId: coupon.id,
+            });
+          }
+        }
 
         const courseCamp = await db.course.findOne({
           where: {
@@ -1178,7 +1216,9 @@ exports.applyCoupon = async (req, res) => {
 
     const discountAmount = (courseAmount * discountpercentage) / 100;
 
-    res.status(200).send({discountAmount});
+    res
+      .status(200)
+      .send({ discountAmount, couponExist: couponExist.coupon_code });
   } catch (error) {
     console.error("Error applying coupon", error);
     res.status(500).json({ error: "Internal Server Error" });

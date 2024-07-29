@@ -45,6 +45,7 @@ db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 db.currency = require("./currency")(sequelize, Sequelize);
 db.footer = require("./footer")(sequelize, Sequelize);
 db.influencer = require("./influncer")(sequelize, Sequelize);
+db.paymentWithCoupon = require("./paymentWithCoupon")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
@@ -156,5 +157,8 @@ db.banner.hasMany(db.bannerImages, {
   onDelete: "cascade",
 });
 db.bannerImages.belongsTo(db.banner, { foreignKey: "bannerId" });
+
+db.influencer.belongsToMany(db.payment, { through: db.paymentWithCoupon });
+db.payment.belongsToMany(db.influencer, { through: db.paymentWithCoupon });
 
 module.exports = db;
