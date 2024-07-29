@@ -940,7 +940,7 @@ exports.stripeWebhook = async (req, res) => {
         const amount = Number(amountInBaseCurrency.toFixed(2));
         const userId = paymentIntentData.metadata?.userId;
 
-        const coupon_code = paymentIntentData.metadata?.coupon_code;
+        const coupon_code = paymentIntentData.metadata?.coupon;
 
         console.log("META DATA", paymentIntentData.metadata);
 
