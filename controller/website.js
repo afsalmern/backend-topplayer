@@ -817,6 +817,9 @@ exports.postStripePayment = async (req, res) => {
       where: { coupon_code: coupon_code },
     });
 
+    console.log("COUPON", coupon);
+    console.log("COUPON CODE", coupon_code);
+
     if (coupon_code) {
       const discountpercentage = coupon.coupon_percentage;
 
@@ -923,8 +926,6 @@ exports.stripeWebhook = async (req, res) => {
           payment_intent
         );
 
-        console.log(charge, "CHARGE");
-
         const balanceTransaction = await stripe.balanceTransactions.retrieve(
           balance_transaction
         );
@@ -939,10 +940,9 @@ exports.stripeWebhook = async (req, res) => {
         const amount = Number(amountInBaseCurrency.toFixed(2));
         const userId = paymentIntentData.metadata?.userId;
 
-        const coupon_code = paymentIntentData.coupon_code;
+        const coupon_code = paymentIntentData.metadata?.coupon_code;
 
-        console.log("NET AMOUNT", netAmount);
-        console.log("AMOUNT", amount);
+        console.log("META DATA", paymentIntentData.metadata);
 
         // Your logic to handle successful payment for a specific customer
         const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
