@@ -1200,7 +1200,10 @@ exports.applyCoupon = async (req, res) => {
   const { coupon_code, courseAmount } = req.body;
   try {
     const couponExist = await db.influencer.findOne({
-      where: { coupon_code: coupon_code },
+      where: db.Sequelize.where(
+        db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")),
+        coupon_code
+      ),
     });
 
     if (!couponExist) {
