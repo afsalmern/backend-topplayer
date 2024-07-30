@@ -127,8 +127,6 @@ exports.getOrdersInflucencers = async function (req, res) {
   try {
     const { from, to, influencer } = req.params;
 
-    console.log(from, to);
-
     const addOneDay = (date) => {
       const result = new Date(date);
       result.setDate(result.getDate() + 1);
@@ -164,8 +162,6 @@ exports.getOrdersInflucencers = async function (req, res) {
       };
     }
 
-    console.log("PAYMENT WHERE", paymentWhere);
-
     const paymentWithCoupons = await db.payment.findAll({
       include: [
         {
@@ -180,10 +176,8 @@ exports.getOrdersInflucencers = async function (req, res) {
       ],
       where: paymentWhere,
       attributes: [
-        [
-          db.Sequelize.fn("SUM", db.Sequelize.col("net_amount")),
-          "totalPayment",
-        ],
+        [db.Sequelize.literal("FORMAT(SUM(net_amount), 2)"), "totalRevenue"],
+        [db.Sequelize.literal("FORMAT(SUM(amount), 2)"), "totalPayment"],
         [
           db.Sequelize.fn("COUNT", db.Sequelize.col("net_amount")),
           "totalOrders",
