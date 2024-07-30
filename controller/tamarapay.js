@@ -24,7 +24,15 @@ const config = {
 const tamara = TamaraClientFactory.createApiClient(config);
 
 exports.createTamaraPayment = async (req, res) => {
-  const { shippingAddress, courseId, lang, amount, type } = req.body;
+  const {
+    shippingAddress,
+    courseId,
+    lang,
+    amount,
+    type,
+    coupon,
+    coupon_details,
+  } = req.body;
 
   try {
     console.log("req.userDecodeId====>", req.userDecodeId);
@@ -107,6 +115,7 @@ exports.createTamaraPayment = async (req, res) => {
       referenceId: referenceId,
       userId: userDB?.id,
       orderId: checkout?.data?.orderId,
+      coupon_code: coupon_code || null,
     });
 
     res.status(200).send({ status: true, data: checkout.data });
@@ -135,6 +144,7 @@ exports.tamaraWebHook = async (req, res) => {
     const userId = orderDetails.userId;
     const amount = orderDetails.amount;
     const order_id = orderDetails.orderId;
+    const coupon_code = orderDetails.coupon_code;
 
     console.log("ORDER ID ==========>", order_id);
 
@@ -184,14 +194,32 @@ exports.tamaraWebHook = async (req, res) => {
           await regCourseDB.update({ createdDate: new Date() });
         }
 
-        await db.payment.create({
+        const paymentData = await db.payment.create({
           courseId: courseId,
           userId: userId,
           amount: amount,
           net_amount: amount,
-          stipe_fee: 0,
+          stripe_fee: 0,
           fromTamara: true,
         });
+
+        if (coupon_code) {
+          console.log("COUPON FOUND IN TAMARA", coupon_code);
+
+          const coupon = await db.influencer.findOne({
+            where: {
+              coupon_code: coupon_code,
+            },
+          });
+
+          if (coupon) {
+            await db.paymentWithCoupon.create({
+              paymentId: paymentData?.id,
+              influencerId: coupon?.id,
+            });
+            console.log("COUPON FOUND IN TAMARA AND SAVED", coupon_code);
+          }
+        }
 
         const userDB = await db.user.findByPk(userId);
 
