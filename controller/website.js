@@ -1218,6 +1218,12 @@ exports.applyCoupon = async (req, res) => {
       return res.status(400).send({ error: "Coupon has expired" });
     }
 
+    const isCouponActive = couponExist.is_active;
+
+    if (!isCouponActive) {
+      return res.status(400).send({ error: "Coupon is not valid anymore" });
+    }
+
     const discountpercentage = couponExist.coupon_percentage;
 
     const discountAmount = (courseAmount * discountpercentage) / 100;

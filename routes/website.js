@@ -81,7 +81,11 @@ router.post(
 router.post("/subscribe", websiteController.subscribe);
 router.post("/contact", websiteController.contactUS);
 
-router.post("/apply_coupon", websiteController.applyCoupon);
+router.post(
+  "/apply_coupon",
+  [authMiddleware.checkUserAuth],
+  websiteController.applyCoupon
+);
 
 router.get(
   "/payments",

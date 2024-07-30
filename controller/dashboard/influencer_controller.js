@@ -49,9 +49,7 @@ exports.addInfluencer = async function (req, res) {
 // Get all influencers
 exports.getInfluencers = async function (req, res) {
   try {
-    const influencers = await db.influencer.findAll({
-      where: { is_active: true },
-    });
+    const influencers = await db.influencer.findAll();
     res.status(200).send(influencers);
   } catch (error) {
     console.error("Error fetching influencers:", error);
