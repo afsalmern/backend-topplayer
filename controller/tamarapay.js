@@ -67,7 +67,7 @@ exports.createTamaraPayment = async (req, res) => {
         sku: "1",
         quantity: 1,
         total_amount: {
-          amount: amount,
+          amount: amountToPass,
           currency: "AED", //AED
         },
       },
@@ -79,7 +79,7 @@ exports.createTamaraPayment = async (req, res) => {
     };
 
     const total_amount = {
-      amount: amount,
+      amount: amountToPass,
       currency: "AED", //AED
     };
 
