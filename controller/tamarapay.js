@@ -24,20 +24,33 @@ const config = {
 const tamara = TamaraClientFactory.createApiClient(config);
 
 exports.createTamaraPayment = async (req, res) => {
-  const {
-    shippingAddress,
-    courseId,
-    lang,
-    amount,
-    type,
-    coupon,
-    coupon_details,
-  } = req.body;
+  const { shippingAddress, courseId, lang, amount, type, coupon, coupon_code } =
+    req.body;
 
   try {
     console.log("req.userDecodeId====>", req.userDecodeId);
     const userDB = await db.user.findByPk(req.userDecodeId);
     const courseDB = await db.course.findByPk(courseId);
+    let amountToPass;
+
+    const coupon = await db.influencer.findOne({
+      where: { coupon_code: coupon_code },
+    });
+
+    console.log("COUPON", coupon);
+    console.log("COUPON CODE", coupon_code);
+
+    if (coupon_code) {
+      const discountpercentage = coupon.coupon_percentage;
+
+      const discountAmount = (amount * discountpercentage) / 100;
+
+      amountToPass = Math.ceil((amount - discountAmount).toFixed(0));
+    } else {
+      amountToPass = amount;
+    }
+
+    console.log("AMOUNT TO PASS", amountToPass);
 
     const customerData = {
       email: userDB?.email,
