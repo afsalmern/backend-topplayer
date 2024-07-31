@@ -8,8 +8,9 @@ const { where } = require("sequelize");
 const config = {
   //test
 
-  // baseUrl: "https://api-sandbox.tamara.co",
-  // apiToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiI0ZmUxNDU1MC1jZTUzLTRhNmYtYWIyMi05MDkxOThkNmUxNmEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiODcxZjY3OGM0MjAwYzg4YWQxZTM0YTIxMTExN2IyYjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1OTc3NCwiaXNzIjoiVGFtYXJhIn0.xDxkOqZsPt65OGuy0rDfrrjKL6hWLP2EL4ynnxQynK5lr6kMQn2dUlvLACIZc1Bx4wo5vlCcqn5L4h1zQWkFTZXDkVjaiuRh6lyLZmVkGi6KfCdZLjMmve6n3tQhuJT6c4BYcS_7Y1BS4HMCOPpwPu5ZiaYNlGYVmrhM2rdtIq9gd3yWD_8oAFO9qoF0CmdA48LNHVoAXutxR-kNlVk62MQfOD4rf2yxNuzvSj9xywiaXGrleoayEJxF9uw3ANYNVE1fGBjR_uL_dR5EJI6p16oa5NBdZtX29Tn05bx4dsjH_13xSq58hGVpEHIRjZF8NLcwSxvdBeK1zuu7DDU1CA"  ,
+  baseUrl: "https://api-sandbox.tamara.co",
+  apiToken:
+    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiI0ZmUxNDU1MC1jZTUzLTRhNmYtYWIyMi05MDkxOThkNmUxNmEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiODcxZjY3OGM0MjAwYzg4YWQxZTM0YTIxMTExN2IyYjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1OTc3NCwiaXNzIjoiVGFtYXJhIn0.xDxkOqZsPt65OGuy0rDfrrjKL6hWLP2EL4ynnxQynK5lr6kMQn2dUlvLACIZc1Bx4wo5vlCcqn5L4h1zQWkFTZXDkVjaiuRh6lyLZmVkGi6KfCdZLjMmve6n3tQhuJT6c4BYcS_7Y1BS4HMCOPpwPu5ZiaYNlGYVmrhM2rdtIq9gd3yWD_8oAFO9qoF0CmdA48LNHVoAXutxR-kNlVk62MQfOD4rf2yxNuzvSj9xywiaXGrleoayEJxF9uw3ANYNVE1fGBjR_uL_dR5EJI6p16oa5NBdZtX29Tn05bx4dsjH_13xSq58hGVpEHIRjZF8NLcwSxvdBeK1zuu7DDU1CA",
 
   //live
 
@@ -17,18 +18,29 @@ const config = {
   // apiToken:
   // "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiIwYmY3MDNiZi04ZTFhLTRhYzEtOWRkNi1hNDE4ODFjOTRkMGEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiNjQ5YzcyMzY4OTFmYzZjNDVjYTczZDAzNTBlMjM5ZjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1MzgwMCwiaXNzIjoiVGFtYXJhIFBQIn0.a9tojPzHIzqvWU1qfntezLkkpRaDuQnXIDGSuhwRZp9_pbIBBqmfqzDRw5VjwbLG1L1LuKLjFjXcVn3b2_idYyQ2bR-ZgKo-J0XI7YenzporatYyEkJY6kMW9dR2d_58mMBebMWv87Mq3IHSrmqpFFlGk0UZMFMRRXr77mzoDowsVq8x4ODasbTlEw23S1uMeB7WuA5c-qJlBcEsHZ4Jdaz8q_dscjBzKu-abbdLrnF-Q39s24wHTevPcFm4fsdk5xzPXXf-LVizaibObUXn0RPCFQDMH2QIiQYhlrTR5CxfqjVd_gFldMOSTq6zutAR5UE1rPjS1AcxesCdEB7fIQ",
 
-  baseUrl: process.env.TAMARA_URL,
-  apiToken: process.env.TAMARA_KEY,
-  notificationPrivateKey: "280fd426-2efc-4a21-948d-37ea3690d56d",
+  // baseUrl: process.env.TAMARA_URL,
+  // apiToken: process.env.TAMARA_KEY,
+  // notificationPrivateKey: "280fd426-2efc-4a21-948d-37ea3690d56d",
 };
 const tamara = TamaraClientFactory.createApiClient(config);
 
 exports.createTamaraPayment = async (req, res) => {
-  const { shippingAddress, courseId, lang, amount, type, coupon, coupon_code } =
-    req.body;
+  const {
+    shippingAddress,
+    courseId,
+    lang,
+    amount,
+    type,
+    coupon,
+    coupon_code,
+    currentcurrency,
+  } = req.body;
 
   try {
     console.log("req.userDecodeId====>", req.userDecodeId);
+
+    const { currency_flag, currency_code, currency_rate } = currentcurrency;
+
     const userDB = await db.user.findByPk(req.userDecodeId);
     const courseDB = await db.course.findByPk(courseId);
     let amountToPass;
@@ -37,6 +49,8 @@ exports.createTamaraPayment = async (req, res) => {
       where: { coupon_code: coupon_code },
     });
 
+    console.log(currency_flag, currency_code, currency_rate);
+
     console.log("COUPON", coupon);
     console.log("COUPON CODE", coupon_code);
 
@@ -44,10 +58,14 @@ exports.createTamaraPayment = async (req, res) => {
       const discountpercentage = coupon.coupon_percentage;
 
       const discountAmount = (amount * discountpercentage) / 100;
+      const finalisedDiscountAmount = Math.trunc(
+        discountAmount * currency_rate
+      );
 
-      amountToPass = Math.ceil((amount - discountAmount).toFixed(0));
+      amountToPass =
+        Math.ceil(amount * currency_rate) - finalisedDiscountAmount;
     } else {
-      amountToPass = amount;
+      amountToPass = Math.ceil(amount * currency_rate);
     }
 
     console.log("AMOUNT TO PASS", amountToPass);
@@ -68,24 +86,24 @@ exports.createTamaraPayment = async (req, res) => {
         quantity: 1,
         total_amount: {
           amount: amountToPass,
-          currency: "AED", //AED
+          currency: currency_code, //AED
         },
       },
     ];
 
     const shipping_amount = {
       amount: 0,
-      currency: "AED", //AED
+      currency: currency_code, //AED
     };
 
     const total_amount = {
       amount: amountToPass,
-      currency: "AED", //AED
+      currency: currency_code, //AED
     };
 
     const shipping_address = {
       city: "Riyadh",
-      country_code: "AE",
+      country_code: currency_flag,
       first_name: userDB?.username.split(" ")[0],
       last_name: userDB?.username.split(" ")[1],
       line1: "3764 Al Urubah Rd",
@@ -111,7 +129,7 @@ exports.createTamaraPayment = async (req, res) => {
       referenceId: referenceId,
       items: items,
       consumer: customerData,
-      countryCode: "AE",
+      countryCode: currency_flag,
       description: courseDB?.description,
       paymentType: "PAY_BY_INSTALMENTS",
       instalments: 4,

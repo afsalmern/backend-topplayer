@@ -840,12 +840,11 @@ exports.postStripePayment = async (req, res) => {
 
       const discountAmount = (courseDB?.offerAmount * discountpercentage) / 100;
 
-      convertedAmount = Math.ceil(
-        (
-          courseDB?.offerAmount * currency_rate -
-          discountAmount * currency_rate
-        ).toFixed(0)
+      const finalisedDiscountAmount = Math.trunc(
+        discountAmount * currency_rate
       );
+
+      convertedAmount =  Math.ceil(courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
     } else {
       convertedAmount = Math.ceil(
         (courseDB.offerAmount * currency_rate).toFixed(2)

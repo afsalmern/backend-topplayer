@@ -39,7 +39,7 @@ exports.addInfluencer = async function (req, res) {
       is_active: true,
     });
 
-    res.status(201).json(newInfluencer);
+    res.status(201).send({ message: "Influencer added successfully" });
   } catch (error) {
     console.error("Error adding influencer:", error);
     res.status(500).send({ message: "Error adding influencer" });
@@ -93,7 +93,7 @@ exports.updateInfluencer = async function (req, res) {
     });
 
     // Send the updated influencer data as response
-    res.status(200).json(influencer);
+    res.status(200).send({ message: "Influencer updated successfully" });
   } catch (error) {
     console.error("Error updating influencer:", error);
     res.status(500).json({ error: "Failed to update influencer" });
