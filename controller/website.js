@@ -26,6 +26,21 @@ const messages_en = {
   news_deleted_successfully: "News deleted successfully",
 };
 
+const errorMessages = {
+  notActive: {
+    error_en: "Promo Code is not valid anymore",
+    error_ar: "رمز العرض لم يعد صالحًا",
+  },
+  expired: {
+    error_en: "Promo Code has expired",
+    error_ar: "رمز العرض منتهي الصلاحية",
+  },
+  notFound: {
+    error_en: "Promo code not found",
+    error_ar: "رمز العرض غير موجود",
+  },
+};
+
 const FAQ = db.faq;
 const Testimonial = db.testimonial;
 
@@ -1197,7 +1212,8 @@ exports.getCurrencies = async (req, res, next) => {
 };
 
 exports.applyCoupon = async (req, res) => {
-  const { coupon_code, courseAmount } = req.body;
+  const { coupon_code, courseAmount, currentCurrency } = req.body;
+
   try {
     const couponExist = await db.influencer.findOne({
       where: db.Sequelize.where(
@@ -1207,7 +1223,7 @@ exports.applyCoupon = async (req, res) => {
     });
 
     if (!couponExist) {
-      return res.status(400).send({ error: "Coupon code not found" });
+      return res.status(400).send({ error: errorMessages.notFound });
     }
 
     const expiry_date = couponExist.expire_in;
@@ -1215,22 +1231,28 @@ exports.applyCoupon = async (req, res) => {
     const couponExpired = isCouponExpired(expiry_date);
 
     if (couponExpired) {
-      return res.status(400).send({ error: "Coupon has expired" });
+      return res.status(400).send({ error: errorMessages.expired });
     }
 
     const isCouponActive = couponExist.is_active;
 
     if (!isCouponActive) {
-      return res.status(400).send({ error: "Coupon is not valid anymore" });
+      return res.status(400).send({ error: errorMessages.notActive });
     }
 
     const discountpercentage = couponExist.coupon_percentage;
 
     const discountAmount = (courseAmount * discountpercentage) / 100;
+    const finalisedDiscountAmount = Math.trunc(
+      discountAmount * currentCurrency.currency_rate
+    );
 
     res
       .status(200)
-      .send({ discountAmount, couponExist: couponExist.coupon_code });
+      .send({
+        discountAmount: finalisedDiscountAmount,
+        couponExist: couponExist.coupon_code,
+      });
   } catch (error) {
     console.error("Error applying coupon", error);
     res.status(500).json({ error: "Internal Server Error" });
