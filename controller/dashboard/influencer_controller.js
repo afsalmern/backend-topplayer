@@ -14,6 +14,16 @@ exports.addInfluencer = async function (req, res) {
   } = req.body;
 
   try {
+    const existingCouponCode = await db.influencer.findOne({
+      where: { coupon_code },
+    });
+
+    if (existingCouponCode) {
+      return res.status(400).json({
+        message: "Coupon code already exists. Please choose a different one.",
+      });
+    }
+
     const existingEmail = await db.influencer.findOne({ where: { email } });
     if (existingEmail) {
       return res
@@ -43,7 +53,7 @@ exports.addInfluencer = async function (req, res) {
       name,
       phone,
       email,
-      coupon_code,
+      coupon_code: coupon_code.trim(),
       expire_in,
       start_in,
       max_apply_limit,
@@ -119,12 +129,49 @@ exports.updateInfluencer = async function (req, res) {
       return res.status(404).json({ error: "Influencer not found" });
     }
 
+    // Check if the email is already in use by another influencer
+    const existingEmail = await db.influencer.findOne({
+      where: {
+        email,
+        id: { [db.Sequelize.Op.ne]: id }, // Exclude the current influencer
+      },
+    });
+
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
+
+    // Check if the phone number is already in use by another influencer
+    const existingPhone = await db.influencer.findOne({
+      where: {
+        phone,
+        id: { [db.Sequelize.Op.ne]: id }, // Exclude the current influencer
+      },
+    });
+
+    if (existingPhone) {
+      return res.status(400).json({ message: "Phone number already in use" });
+    }
+
+    // Check if the coupon code is already in use by another influencer
+
+    const existingCouponCode = await db.influencer.findOne({
+      where: {
+        coupon_code,
+        id: { [db.Sequelize.Op.ne]: id }, // Exclude the current influencer
+      },
+    });
+
+    if (existingCouponCode) {
+      return res.status(400).json({ message: "Coupon code already exists" });
+    }
+
     // Update the influencer with new data
     await influencer.update({
       name: name || influencer.name,
       phone: phone || influencer.phone,
       email: email || influencer.email,
-      coupon_code: coupon_code || influencer.coupon_code,
+      coupon_code: coupon_code.trim() || influencer.coupon_code,
       expire_in: expire_in || influencer.expire_in,
       start_in: start_in || influencer.start_in,
       max_apply_limit: max_apply_limit || influencer.max_apply_limit,
