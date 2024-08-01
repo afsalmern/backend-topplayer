@@ -8,6 +8,7 @@ exports.addInfluencer = async function (req, res) {
     email,
     coupon_code,
     expire_in,
+    start_in,
     max_apply_limit,
     coupon_percentage,
   } = req.body;
@@ -28,12 +29,23 @@ exports.addInfluencer = async function (req, res) {
         .json({ message: "Influencer with this phone number already exists" });
     }
 
+    const startDate = new Date(start_in);
+    const expiryDate = new Date(expire_in);
+
+    // Check if start date is not less than expiry date
+    if (startDate >= expiryDate) {
+      return res.status(400).json({
+        message: "The start date must be earlier than the expiry date.",
+      });
+    }
+
     const newInfluencer = await db.influencer.create({
       name,
       phone,
       email,
       coupon_code,
       expire_in,
+      start_in,
       max_apply_limit,
       coupon_percentage,
       is_active: true,
@@ -50,7 +62,33 @@ exports.addInfluencer = async function (req, res) {
 exports.getInfluencers = async function (req, res) {
   try {
     const influencers = await db.influencer.findAll();
-    res.status(200).send(influencers);
+
+    const updatedInfluencers = influencers.map((influencer) => {
+      const currentDate = new Date();
+      const startDate = new Date(influencer.start_in);
+      const expiryDate = new Date(influencer.expire_in);
+
+      let status;
+      let isActive = influencer.is_active;
+
+      if (currentDate > expiryDate) {
+        status = "expired";
+        isActive = false;
+      } else if (currentDate < startDate) {
+        status = "to be active";
+      } else if (currentDate >= startDate && currentDate <= expiryDate) {
+        status = "active";
+        isActive = true;
+      }
+
+      return {
+        ...influencer.toJSON(), // Convert the Sequelize instance to a plain object
+        status,
+        is_active: isActive,
+      };
+    });
+
+    res.status(200).send(updatedInfluencers);
   } catch (error) {
     console.error("Error fetching influencers:", error);
     res.status(500).json({ error: "Failed to fetch influencers" });
@@ -66,6 +104,7 @@ exports.updateInfluencer = async function (req, res) {
     email,
     coupon_code,
     expire_in,
+    start_in,
     max_apply_limit,
     coupon_percentage,
     is_active,
@@ -87,6 +126,7 @@ exports.updateInfluencer = async function (req, res) {
       email: email || influencer.email,
       coupon_code: coupon_code || influencer.coupon_code,
       expire_in: expire_in || influencer.expire_in,
+      start_in: start_in || influencer.start_in,
       max_apply_limit: max_apply_limit || influencer.max_apply_limit,
       coupon_percentage: coupon_percentage || influencer.coupon_percentage,
       is_active: is_active || influencer.is_active,

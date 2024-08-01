@@ -30,6 +30,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.DATE,
       allowNull: false,
     },
+    start_in: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
     is_active: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
