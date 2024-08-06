@@ -4,13 +4,14 @@ const db = require("../models");
 const sendMail = require("../utils/mailer");
 const { paymentSuccessMail } = require("../utils/mail_content");
 const { where } = require("sequelize");
+const calculatePaymentDetails = require("../utils/tamraBreakDown_helper");
 
 const config = {
   //test
 
   // baseUrl: "https://api-sandbox.tamara.co",
   // apiToken:
-    // "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiI0ZmUxNDU1MC1jZTUzLTRhNmYtYWIyMi05MDkxOThkNmUxNmEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiODcxZjY3OGM0MjAwYzg4YWQxZTM0YTIxMTExN2IyYjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1OTc3NCwiaXNzIjoiVGFtYXJhIn0.xDxkOqZsPt65OGuy0rDfrrjKL6hWLP2EL4ynnxQynK5lr6kMQn2dUlvLACIZc1Bx4wo5vlCcqn5L4h1zQWkFTZXDkVjaiuRh6lyLZmVkGi6KfCdZLjMmve6n3tQhuJT6c4BYcS_7Y1BS4HMCOPpwPu5ZiaYNlGYVmrhM2rdtIq9gd3yWD_8oAFO9qoF0CmdA48LNHVoAXutxR-kNlVk62MQfOD4rf2yxNuzvSj9xywiaXGrleoayEJxF9uw3ANYNVE1fGBjR_uL_dR5EJI6p16oa5NBdZtX29Tn05bx4dsjH_13xSq58hGVpEHIRjZF8NLcwSxvdBeK1zuu7DDU1CA",
+  // "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhY2NvdW50SWQiOiI0ZmUxNDU1MC1jZTUzLTRhNmYtYWIyMi05MDkxOThkNmUxNmEiLCJ0eXBlIjoibWVyY2hhbnQiLCJzYWx0IjoiODcxZjY3OGM0MjAwYzg4YWQxZTM0YTIxMTExN2IyYjYiLCJyb2xlcyI6WyJST0xFX01FUkNIQU5UIl0sImlhdCI6MTcxNzY1OTc3NCwiaXNzIjoiVGFtYXJhIn0.xDxkOqZsPt65OGuy0rDfrrjKL6hWLP2EL4ynnxQynK5lr6kMQn2dUlvLACIZc1Bx4wo5vlCcqn5L4h1zQWkFTZXDkVjaiuRh6lyLZmVkGi6KfCdZLjMmve6n3tQhuJT6c4BYcS_7Y1BS4HMCOPpwPu5ZiaYNlGYVmrhM2rdtIq9gd3yWD_8oAFO9qoF0CmdA48LNHVoAXutxR-kNlVk62MQfOD4rf2yxNuzvSj9xywiaXGrleoayEJxF9uw3ANYNVE1fGBjR_uL_dR5EJI6p16oa5NBdZtX29Tn05bx4dsjH_13xSq58hGVpEHIRjZF8NLcwSxvdBeK1zuu7DDU1CA",
 
   //live
 
@@ -139,8 +140,9 @@ exports.createTamaraPayment = async (req, res) => {
 
     console.log("CHECKOUT==================>", checkout);
 
-    await db.tamaraPayment.create({
+    const paymentItem = await db.tamaraPayment.create({
       amount: total_amount.amount,
+      currency_code,
       courseId: courseId,
       referenceOrderId: referenceOrderId,
       referenceId: referenceId,
@@ -176,6 +178,7 @@ exports.tamaraWebHook = async (req, res) => {
     const amount = orderDetails.amount;
     const order_id = orderDetails.orderId;
     const coupon_code = orderDetails.coupon_code;
+    const currency_code = orderDetails.currency_code || null;
 
     console.log("ORDER ID ==========>", order_id);
 
@@ -197,7 +200,7 @@ exports.tamaraWebHook = async (req, res) => {
               reference_id: course?.id,
               sku: "SA-12436",
               quantity: 1,
-              total_amount: { amount, currency: "AED" },
+              total_amount: { amount, currency: currency_code },
             },
           ],
           order_id: order_id,
@@ -205,7 +208,7 @@ exports.tamaraWebHook = async (req, res) => {
             shipped_at: new Date().toISOString(),
             shipping_company: "DHL",
           },
-          total_amount: { amount, currency: "AED" },
+          total_amount: { amount, currency: currency_code },
         });
 
         console.log("CAPTURED DATA ===========>", captured_data);
@@ -225,12 +228,16 @@ exports.tamaraWebHook = async (req, res) => {
           await regCourseDB.update({ createdDate: new Date() });
         }
 
+        const amounts = calculatePaymentDetails(amount, currency_code);
+
+        const { totalAmountAfterDeductions, totalDeductedAmount } = amounts;
+
         const paymentData = await db.payment.create({
           courseId: courseId,
           userId: userId,
           amount: amount,
-          net_amount: amount,
-          stripe_fee: 0,
+          net_amount: totalAmountAfterDeductions || amount,
+          stripe_fee: totalDeductedAmount || 0,
           fromTamara: true,
         });
 

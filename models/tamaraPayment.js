@@ -27,6 +27,9 @@ module.exports = (sequelize, Sequelize) => {
     coupon_code: {
       type: Sequelize.STRING,
     },
+    currency_code: {
+      type: Sequelize.STRING,
+    },
   });
 
   return TamaraPayment;
