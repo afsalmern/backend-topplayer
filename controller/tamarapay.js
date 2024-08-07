@@ -213,19 +213,32 @@ exports.tamaraWebHook = async (req, res) => {
 
         console.log("CAPTURED DATA ===========>", captured_data);
         // Handle order creation notification
-        const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
+        const existingData = await db.registeredCourse.findOne({
           where: {
-            courseId: courseId,
-            userId: userId,
-          },
-          defaults: {
-            courseId: courseId,
-            userId: userId,
+            userId,
+            courseId,
           },
         });
 
-        if (!created) {
-          await regCourseDB.update({ createdDate: new Date() });
+        if (existingData) {
+          console.log("EXISTING DATA");
+          await db.registeredCourse.update(
+            {
+              createdAt: new Date(), // Set the createdAt field to the current time
+            },
+            {
+              where: {
+                userId, // Match the userId from the request
+                courseId, // Match the provided courseId
+              },
+            }
+          );
+        } else {
+          console.log("NEW DATA");
+          await db.registeredCourse.create({
+            userId,
+            courseId,
+          });
         }
 
         const amounts = calculatePaymentDetails(amount, currency_code);

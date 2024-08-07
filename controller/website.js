@@ -844,7 +844,9 @@ exports.postStripePayment = async (req, res) => {
         discountAmount * currency_rate
       );
 
-      convertedAmount =  Math.ceil(courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
+      convertedAmount =
+        Math.ceil(courseDB?.offerAmount * currency_rate) -
+        finalisedDiscountAmount;
     } else {
       convertedAmount = Math.ceil(
         (courseDB.offerAmount * currency_rate).toFixed(2)
@@ -959,19 +961,32 @@ exports.stripeWebhook = async (req, res) => {
         console.log("META DATA", paymentIntentData.metadata);
 
         // Your logic to handle successful payment for a specific customer
-        const [regCourseDB, created] = await db.registeredCourse.findOrCreate({
+        const existingData = await db.registeredCourse.findOne({
           where: {
-            courseId: courseId,
-            userId: userId,
-          },
-          defaults: {
-            courseId: courseId,
-            userId: userId,
+            userId,
+            courseId,
           },
         });
 
-        if (!created) {
-          await regCourseDB.update({ createdDate: new Date() });
+        if (existingData) {
+          console.log("EXISTING DATA");
+          await db.registeredCourse.update(
+            {
+              createdAt: new Date(), // Set the createdAt field to the current time
+            },
+            {
+              where: {
+                userId, // Match the userId from the request
+                courseId, // Match the provided courseId
+              },
+            }
+          );
+        } else {
+          console.log("NEW DATA");
+          await db.registeredCourse.create({
+            userId,
+            courseId,
+          });
         }
 
         const paymentData = await db.payment.create({
@@ -1246,12 +1261,10 @@ exports.applyCoupon = async (req, res) => {
       discountAmount * currentCurrency.currency_rate
     );
 
-    res
-      .status(200)
-      .send({
-        discountAmount: finalisedDiscountAmount,
-        couponExist: couponExist.coupon_code,
-      });
+    res.status(200).send({
+      discountAmount: finalisedDiscountAmount,
+      couponExist: couponExist.coupon_code,
+    });
   } catch (error) {
     console.error("Error applying coupon", error);
     res.status(500).json({ error: "Internal Server Error" });
