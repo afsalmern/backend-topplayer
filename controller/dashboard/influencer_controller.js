@@ -78,23 +78,28 @@ exports.getInfluencers = async function (req, res) {
       const startDate = new Date(influencer.start_in);
       const expiryDate = new Date(influencer.expire_in);
 
-      let status;
-      let isActive = influencer.is_active;
+      const formatDate = (date) => date.toISOString().split("T")[0];
 
-      if (currentDate > expiryDate) {
+      const currentFormatted = formatDate(currentDate);
+      const startFormatted = formatDate(startDate);
+      const expiryFormatted = formatDate(expiryDate);
+
+      let status;
+
+      if (currentFormatted > expiryFormatted) {
         status = "expired";
-        isActive = false;
-      } else if (currentDate < startDate) {
+      } else if (currentFormatted < startFormatted) {
         status = "to be active";
-      } else if (currentDate >= startDate && currentDate <= expiryDate) {
+      } else if (
+        currentFormatted >= startFormatted &&
+        currentFormatted <= expiryFormatted
+      ) {
         status = "active";
-        isActive = true;
       }
 
       return {
         ...influencer.toJSON(), // Convert the Sequelize instance to a plain object
         status,
-        is_active: isActive,
       };
     });
 
@@ -177,6 +182,32 @@ exports.updateInfluencer = async function (req, res) {
       max_apply_limit: max_apply_limit || influencer.max_apply_limit,
       coupon_percentage: coupon_percentage || influencer.coupon_percentage,
       is_active: is_active || influencer.is_active,
+    });
+
+    // Send the updated influencer data as response
+    res.status(200).send({ message: "Influencer updated successfully" });
+  } catch (error) {
+    console.error("Error updating influencer:", error);
+    res.status(500).json({ error: "Failed to update influencer" });
+  }
+};
+
+exports.updateInfluencerStatus = async function (req, res) {
+  const { id } = req.params;
+  const { is_active } = req.body;
+
+  try {
+    // Find the influencer by primary key
+    const influencer = await db.influencer.findByPk(id);
+
+    // If influencer not found, return a 404 error
+    if (!influencer) {
+      return res.status(404).json({ error: "Influencer not found" });
+    }
+
+    // Update the influencer with new data
+    await influencer.update({
+      is_active: is_active,
     });
 
     // Send the updated influencer data as response

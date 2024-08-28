@@ -1227,6 +1227,8 @@ exports.getCurrencies = async (req, res, next) => {
 
 exports.applyCoupon = async (req, res) => {
   const { coupon_code, courseAmount, currentCurrency } = req.body;
+  const currentDate = new Date();
+  const formatDate = (date) => date.toISOString().split("T")[0];
 
   try {
     const couponExist = await db.influencer.findOne({
@@ -1240,11 +1242,18 @@ exports.applyCoupon = async (req, res) => {
       return res.status(400).send({ error: errorMessages.notFound });
     }
 
-    const expiry_date = couponExist.expire_in;
+    const startDate = new Date(couponExist.start_in);
+    const expiryDate = new Date(couponExist.expire_in);
 
-    const couponExpired = isCouponExpired(expiry_date);
+    const currentFormatted = formatDate(currentDate);
+    const startFormatted = formatDate(startDate);
+    const expiryFormatted = formatDate(expiryDate);
 
-    if (couponExpired) {
+    if (currentFormatted < startFormatted) {
+      return res.status(400).send({ error: errorMessages.notFound });
+    }
+
+    if (currentFormatted > expiryFormatted) {
       return res.status(400).send({ error: errorMessages.expired });
     }
 

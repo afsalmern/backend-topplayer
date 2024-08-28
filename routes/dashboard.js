@@ -61,7 +61,7 @@ const {
   updateFooter,
   deleteFooter,
 } = require("../controller/dashboard/footer_controller");
-const { addInfluencer, getInfluencers, updateInfluencer, deleteInfluencer, getOrdersInflucencers } = require("../controller/dashboard/influencer_controller");
+const { addInfluencer, getInfluencers, updateInfluencer, deleteInfluencer, getOrdersInflucencers, updateInfluencerStatus } = require("../controller/dashboard/influencer_controller");
 
 const router = express.Router();
 
@@ -508,6 +508,7 @@ router.delete(
 router.post("/influencer", addInfluencer);
 router.get("/influencer", getInfluencers);
 router.put("/influencer/:id", updateInfluencer);
+router.patch("/influencer/:id", updateInfluencerStatus);
 router.delete("/influencer/:id", deleteInfluencer);
 router.get("/influencer_orders/:influencer?/:from?/:to?",getOrdersInflucencers)
  
