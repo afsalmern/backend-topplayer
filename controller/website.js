@@ -863,6 +863,9 @@ exports.postStripePayment = async (req, res) => {
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
 
+    const exchangeRates = await stripe.exchangeRates.retrieve("aed");
+    console.log(exchangeRates.rates);
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: currency_code.toLowerCase(),
