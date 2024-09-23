@@ -17,6 +17,7 @@ const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
 const isCouponExpired = require("../utils/coupon_helper");
+const convertAmountForStripe = require("../utils/stripeConversion");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -853,9 +854,16 @@ exports.postStripePayment = async (req, res) => {
       );
     }
 
-    const amount = convertedAmount * 100;
+    const amount  = await convertAmountForStripe(
+      convertedAmount,
+      currency_code
+    );
+
+    // const amount = convertedAmount * 100;
 
     console.log("AMOUNT", amount);
+
+    return;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
