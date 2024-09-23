@@ -854,16 +854,11 @@ exports.postStripePayment = async (req, res) => {
       );
     }
 
-    const amount  = await convertAmountForStripe(
-      convertedAmount,
-      currency_code
-    );
+    const amount = await convertAmountForStripe(convertedAmount, currency_code);
 
     // const amount = convertedAmount * 100;
 
     console.log("AMOUNT", amount);
-
-    return;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
