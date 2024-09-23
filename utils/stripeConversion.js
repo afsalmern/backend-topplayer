@@ -19,6 +19,7 @@ const convertAmountForStripe = async (baseAmount, currencyCode) => {
     case "BHD": // Bahraini Dinar
     case "OMR": // Omani Rial
     case "JOD": // Jordanian Dinar
+    case "TND": 
       decimalPlaces = 3; // These currencies have 3 decimal places
       break;
     default:
