@@ -128,7 +128,6 @@ const multerStorageNews = multer.diskStorage({
     const folder = {
       images: "public/newsImages",
       coverimage: "public/newsCoverImages",
-      mobileimages: "public/newsMobileImages",
     };
     const uploadFolder = folder[file.fieldname]; // Get folder based on field name
     cb(null, uploadFolder);
@@ -149,7 +148,6 @@ const uploadNewsFiles = multer({
 
 const newsFileUpload = uploadNewsFiles.fields([
   { name: "images", maxCount: 15 },
-  { name: "mobileimages", maxCount: 15 },
   { name: "coverimage", maxCount: 1 },
 ]);
 
@@ -512,9 +510,6 @@ router.patch("/influencer/:id", updateInfluencerStatus);
 router.delete("/influencer/:id", deleteInfluencer);
 router.get("/influencer_orders/:influencer?/:from?/:to?",getOrdersInflucencers)
  
-
-
-
 router.post(
   "/video",
   [authMiddleware.checkUserAuth],
@@ -587,4 +582,13 @@ router.post(
   dashController.signup
 );
 
+router.get(
+  "/send_not_purchase_mail",
+  dashController.checkUsersWhoDontHavePurchase
+);
+
+
+router.post("/send_mail", dashController.sendMail);
+
 module.exports = router;
+

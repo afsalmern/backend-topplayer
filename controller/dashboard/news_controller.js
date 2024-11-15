@@ -1,6 +1,10 @@
 const db = require("../../models");
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
+const sendMail = require("../../utils/mailer");
+const { TrendingNewsMail } = require("../../utils/mail_content");
+const { sendEmails } = require("../../services/emailService");
 // Define messages in English
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -12,56 +16,37 @@ const messages_en = {
 
 exports.addNews = async (req, res, next) => {
   const { title_en, title_ar, description_en, description_ar } = req.body;
-  console.log("files==============>", req.files);
 
-  const imageUrls = [];
-  const mobileImageUrls = [];
-
-  // Check if files are uploaded
-  if (!req.files) {
-    return res
-      .status(400)
-      .send({ message: "Please upload at least one image." });
+  if (!req.files || (!req.files.images && !req.files.coverimage)) {
+    return res.status(400).send({ message: "Please upload at least one image." });
   }
 
-  for (const image of req.files.images) {
-    const imageUrl = `${image.filename}`;
-    imageUrls.push(imageUrl);
-  }
+  const imageUrls = req.files.images ? req.files.images.map((image) => image.filename) : [];
+  const coverimage = req.files.coverimage ? req.files.coverimage[0].filename : null;
 
-  for (const image of req.files.mobileimages) {
-    const imageUrl = `${image.filename}`;
-    mobileImageUrls.push(imageUrl);
-  }
+  console.log(req.files.images);
 
-  const coverimage = req.files.coverimage
-    ? req.files.coverimage[0].filename
-    : null;
+  let createdMobileImages = [];
+  let createdImages = [];
 
+  const transaction = await db.sequelize.transaction();
   try {
-    // First, create the news
-    const createdNews = await db.news.create({
-      title_en,
-      title_ar,
-      description_en,
-      description_ar,
-      coverimage,
-    });
+    const createdNews = await db.news.create({ title_en, title_ar, description_en, description_ar, coverimage }, { transaction });
 
-    // If news creation is successful, create the images
-    const createdImages = await Promise.all(
-      imageUrls.map((imageUrl) => db.newsImage.create({ imageUrl }))
-    );
+    if (imageUrls.length > 0) {
+      const mobileImageUrls = await createMobileImages(imageUrls); // Assuming it returns an array of file paths
 
-    const createdMobileImages = await Promise.all(
-      mobileImageUrls.map((imageUrl) => db.newsMobileImage.create({ imageUrl }))
-    );
+      createdMobileImages = await Promise.all(
+        mobileImageUrls.map((imageUrl) => db.newsMobileImage.create({ imageUrl, newsId: createdNews.id }, { transaction }))
+      );
+    }
 
-    // Associate the created images with the created news
-    await createdNews.addImages(createdImages);
-    await createdNews.addMobile(createdMobileImages);
+    createdImages = await Promise.all(imageUrls.map((imageUrl) => db.newsImage.create({ imageUrl, newsId: createdNews.id }, { transaction })));
 
-    console.log(`A news with images added successfully`);
+    await transaction.commit();
+
+    sendEmails(title_en, description_en, coverimage);
+
     return res.status(200).send({
       message: messages_en.news_added_successfully,
       news: createdNews,
@@ -69,14 +54,16 @@ exports.addNews = async (req, res, next) => {
       mobileImages: createdMobileImages,
     });
   } catch (err) {
+    // Roll back transaction if any error occurs
+    await transaction.rollback();
     console.error(`Error: ${err.toString()}`);
     return res.status(500).send({ message: messages_en.server_error });
   }
 };
 
-exports.getAllNews = (req, res, next) => {
-  db.news
-    .findAll({
+exports.getAllNews = async (req, res, next) => {
+  try {
+    const news = await db.news.findAll({
       include: [
         {
           model: db.newsImage,
@@ -88,15 +75,14 @@ exports.getAllNews = (req, res, next) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-    })
-    .then((news) => {
-      console.log(`Retrieved all news successfully`);
-      res.status(200).send({ news });
-    })
-    .catch((err) => {
-      console.error(`Error in retrieving news: ${err.toString()}`);
-      res.status(500).send({ message: messages_en.server_error });
     });
+    console.log(`Retrieved all news successfully`);
+
+    res.status(200).send({ news });
+  } catch (err) {
+    console.error(`Error in retrieving news: ${err.toString()}`);
+    res.status(500).send({ message: messages_en.server_error });
+  }
 };
 
 // Retrieve a single news by ID
@@ -119,83 +105,67 @@ exports.getNewsById = (req, res, next) => {
 
 // Update a news
 exports.updateNews = async (req, res, next) => {
+  const newsId = req.params.id;
+  const { title_en, title_ar, description_en, description_ar } = req.body;
+
+  const transaction = await db.sequelize.transaction();
+
   try {
-    const newsId = req.params.id;
-    const { title_en, title_ar, description_en, description_ar } = req.body;
     let imageUrls = [];
-    let imageUrlsMobile = [];
 
     if (req.files.images) {
       for (const image of req.files.images) {
-        const imageUrl = `${image.filename}`; // Adjust this based on your file storage setup
+        const imageUrl = `${image.filename}`;
         imageUrls.push(imageUrl);
       }
     }
 
-    if (req.files.mobileimages) {
-      for (const image of req.files.mobileimages) {
-        const imageUrl = `${image.filename}`; // Adjust this based on your file storage setup
-        imageUrlsMobile.push(imageUrl);
-      }
-    }
-
-    console.log("FILES-------------", req.files);
-
     const news = await db.news.findByPk(newsId, {
-      include: [
-        { model: db.newsImage, as: "images" },
-        { model: db.newsMobileImage, as: "mobile" },
-      ], // Include associated images
+      include: [{ model: db.newsImage, as: "images" }],
+      transaction, // Use transaction here
     });
-
-    const coverImageFile =
-      req.files && req.files.coverimage
-        ? req.files.coverimage[0].filename
-        : news.coverimage;
 
     if (!news) {
       return res.status(404).send({ message: messages_en.news_not_found });
     }
 
-    // Update news article details
-    await news.update({
-      title_en: title_en || news.title_en,
-      title_ar: title_ar || news.title_ar,
-      description_en: description_en || news.description_en,
-      description_ar: description_ar || news.description_ar,
-      coverimage: coverImageFile,
-    });
+    const coverImageFile = req.files && req.files.coverimage ? req.files.coverimage[0].filename : news.coverimage;
+
+    await news.update(
+      {
+        title_en: title_en || news.title_en,
+        title_ar: title_ar || news.title_ar,
+        description_en: description_en || news.description_en,
+        description_ar: description_ar || news.description_ar,
+        coverimage: coverImageFile,
+      },
+      { transaction }
+    );
 
     if (imageUrls.length > 0) {
-      const existingImageUrls = news.images.map((image) => image.imageUrl);
-      const newImageUrls = imageUrls.filter(
-        (url) => !existingImageUrls.includes(url)
-      );
+      const existingImageUrls = new Set(news.images.map((image) => image.imageUrl));
+      const newImageUrls = imageUrls.filter((url) => !existingImageUrls.has(url));
+
+      const newMobileImageUrls = await createMobileImages(imageUrls);
+
       const newImages = await db.newsImage.bulkCreate(
-        newImageUrls.map((url) => ({ imageUrl: url }))
+        newImageUrls.map((url) => ({ imageUrl: url })),
+        { transaction }
       );
-      await news.addImages(newImages);
+      const newMobileImages = await db.newsMobileImage.bulkCreate(
+        newMobileImageUrls.map((url) => ({ imageUrl: url })),
+        { transaction }
+      );
+
+      await news.addImages(newImages, { transaction });
+      await news.addMobile(newMobileImages, { transaction });
     }
 
-    if (imageUrlsMobile.length > 0) {
-      const existingImageUrlsMobile = news.mobile.map(
-        (image) => image.imageUrl
-      );
-
-      const newImageUrlsMobile = imageUrlsMobile.filter(
-        (url) => !existingImageUrlsMobile.includes(url)
-      );
-
-      const newImagesMobile = await db.newsMobileImage.bulkCreate(
-        newImageUrlsMobile.map((url) => ({ imageUrl: url }))
-      );
-      await news.addMobile(newImagesMobile);
-    }
+    await transaction.commit();
     console.log(`News with ID ${newsId} updated successfully`);
-    res.status(200).send({
-      message: messages_en.news_updated_successfully,
-    });
+    res.status(200).send({ message: messages_en.news_updated_successfully });
   } catch (err) {
+    await transaction.rollback();
     console.error(`Error in updating news: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
   }
@@ -231,22 +201,13 @@ exports.deleteNews = async (req, res, next) => {
     // Delete all associated news images from the file system
     if (newsImages && newsImages.length > 0) {
       for (const newsImage of newsImages) {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "public",
-          "newsImages",
-          newsImage.imageUrl
-        );
+        const filePath = path.join(__dirname, "..", "..", "public", "newsImages", newsImage.imageUrl);
 
         fs.unlink(filePath, (err) => {
           if (err) {
             console.log(`Error in deleting news image ${newsImage.imageUrl}`);
           } else {
-            console.log(
-              `Deleted news image ${newsImage.imageUrl} from folder successfully`
-            );
+            console.log(`Deleted news image ${newsImage.imageUrl} from folder successfully`);
           }
         });
       }
@@ -254,24 +215,13 @@ exports.deleteNews = async (req, res, next) => {
 
     if (newsImagesMobile && newsImagesMobile.length > 0) {
       for (const newsImageMobile of newsImagesMobile) {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "public",
-          "newsMobileImages",
-          newsImageMobile.imageUrl
-        );
+        const filePath = path.join(__dirname, "..", "..", "public", "newsMobileImages", newsImageMobile.imageUrl);
 
         fs.unlink(filePath, (err) => {
           if (err) {
-            console.log(
-              `Error in deleting news image ${newsImageMobile.imageUrl}`
-            );
+            console.log(`Error in deleting news image ${newsImageMobile.imageUrl}`);
           } else {
-            console.log(
-              `Deleted news image ${newsImageMobile.imageUrl} from folder successfully`
-            );
+            console.log(`Deleted news image ${newsImageMobile.imageUrl} from folder successfully`);
           }
         });
       }
@@ -279,21 +229,12 @@ exports.deleteNews = async (req, res, next) => {
 
     // Delete the cover image from the file system
     if (newsCoverImage) {
-      const filePath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "newsCoverImages",
-        newsCoverImage
-      );
+      const filePath = path.join(__dirname, "..", "..", "public", "newsCoverImages", newsCoverImage);
       fs.unlink(filePath, (err) => {
         if (err) {
           console.log(`Error in deleting news image ${newsCoverImage}`);
         } else {
-          console.log(
-            `Deleted news image ${newsCoverImage} from folder successfully`
-          );
+          console.log(`Deleted news image ${newsCoverImage} from folder successfully`);
         }
       });
     }
@@ -306,86 +247,65 @@ exports.deleteNews = async (req, res, next) => {
 };
 
 exports.deleteNewsImage = async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || ids.length === 0) {
+    return res.status(400).send({ message: "Please provide image ids" });
+  }
+
+  const transaction = await db.sequelize.transaction();
+
   try {
-    const { ids, idsMobileImgs } = req.body;
+    const newsImages = await db.newsImage.findAll({
+      where: { id: { [db.Op.in]: ids } },
+      transaction,
+    });
 
-    console.log(ids);
-    console.log(idsMobileImgs);
-
-    if (ids && ids.length > 0) {
-      const newsImages = await db.newsImage.findAll({
-        where: {
-          id: {
-            [db.Op.in]: ids,
-          },
-        },
-      });
-
-      await db.newsImage.destroy({
-        where: {
-          id: {
-            [db.Op.in]: ids,
-          },
-        },
-      });
-
-      for (const newsImage of newsImages) {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "public",
-          "newsImages",
-          newsImage.imageUrl
-        );
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.error(`Error deleting file ${filePath}: ${err.toString()}`);
-          } else {
-            console.log(`Deleted file ${filePath} successfully`);
-          }
-        });
-      }
+    if (!newsImages || newsImages.length === 0) {
+      return res.status(404).send({ message: "No matching images found." });
     }
-    if (idsMobileImgs && idsMobileImgs.length > 0) {
-      const newsMobileImages = await db.newsMobileImage.findAll({
-        where: {
-          id: {
-            [db.Op.in]: idsMobileImgs,
-          },
-        },
-      });
 
-      await db.newsMobileImage.destroy({
-        where: {
-          id: {
-            [db.Op.in]: idsMobileImgs,
-          },
-        },
-      });
+    const imageUrls = newsImages.map((image) => image.imageUrl);
 
-      for (const newsImage of newsMobileImages) {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "public",
-          "newsMobileImages",
-          newsImage.imageUrl
-        );
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.error(`Error deleting file ${filePath}: ${err.toString()}`);
-          } else {
-            console.log(`Deleted file ${filePath} successfully`);
-          }
-        });
-      }
-    }
+    // Fetch associated mobile images from the database
+    const newsMobileImages = await db.newsMobileImage.findAll({
+      where: { imageUrl: { [db.Op.in]: imageUrls } },
+      transaction,
+    });
+
+    const mobileImageUrls = newsMobileImages.map((image) => image.imageUrl);
+
+    // Delete records from the database (news images and mobile images)
+    await db.newsImage.destroy({
+      where: { id: { [db.Op.in]: ids } },
+      transaction,
+    });
+
+    await db.newsMobileImage.destroy({
+      where: { imageUrl: { [db.Op.in]: mobileImageUrls } },
+      transaction,
+    });
+
+    // Delete the physical files for news images
+    const newsImagePaths = imageUrls.map((imageUrl) => path.join(__dirname, "..", "..", "public", "newsImages", imageUrl));
+
+    // Delete the physical files for mobile images
+    const newsMobileImagePaths = newsMobileImages.map((mobileImage) =>
+      path.join(__dirname, "..", "..", "public", "newsMobileImages", mobileImage.imageUrl)
+    );
+
+    // Delete all image files concurrently
+    await Promise.all([
+      ...newsImagePaths.map((filePath) => unlinkHelper(filePath)),
+      ...newsMobileImagePaths.map((filePath) => unlinkHelper(filePath)),
+    ]);
+
+    // Commit transaction after successful database and file deletions
+    await transaction.commit();
 
     res.status(200).send({ message: "News image deleted successfully" });
   } catch (err) {
     console.error(`Error in deleting news image: ${err.toString()}`);
+    await transaction.rollback();
     res.status(500).send({ message: "Error deleting news image" });
   }
 };
@@ -428,7 +348,6 @@ exports.getNewsCvrImage = async (req, res) => {
 
 exports.updateNewsCvrImage = async (req, res) => {
   try {
-
     console.log("HEREEE");
 
     const id = req.params.id;
@@ -436,13 +355,7 @@ exports.updateNewsCvrImage = async (req, res) => {
 
     if (req.file && req.file.filename) {
       const newFile = req.file.filename;
-      const filePath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "news-banner-images"
-      );
+      const filePath = path.join(__dirname, "..", "..", "public", "news-banner-images");
 
       fs.readdir(filePath, (err, files) => {
         if (err) {
@@ -495,22 +408,13 @@ exports.deleteNewsCvrImage = async (req, res) => {
     const imgPath = newsBanner.imageUrl;
 
     if (imgPath) {
-      const filePath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "news-banner-images",
-        imgPath
-      );
+      const filePath = path.join(__dirname, "..", "..", "public", "news-banner-images", imgPath);
       fs.unlink(filePath, async (err) => {
         if (err) {
           console.log(`Banner image ${imgPath} removing failed`);
         } else {
           await newsBanner.destroy();
-          console.log(
-            `Banner image ${imgPath} removed from folder successfully`
-          );
+          console.log(`Banner image ${imgPath} removed from folder successfully`);
         }
       });
     }
@@ -521,4 +425,50 @@ exports.deleteNewsCvrImage = async (req, res) => {
     console.error(`Error in deleting newsBanner: ${err.toString()}`);
     res.status(500).send({ message: "Internal server error" });
   }
+};
+
+const createMobileImages = async (imagePaths) => {
+  const pathToMobileImages = path.join(__dirname, "..", "..", "public", "newsMobileImages");
+  const mobileImageUrls = [];
+
+  for (const imagePath of imagePaths) {
+    try {
+      const filename = path.basename(imagePath);
+      const uniqueFilename = `${filename}`;
+      const mobileImagePath = path.join(pathToMobileImages, uniqueFilename);
+      const originalImagePath = path.join(__dirname, "..", "..", "public", "newsImages", imagePath);
+
+      // Check if the file exists and read it
+      if (fs.existsSync(originalImagePath)) {
+        const imageBufferData = fs.readFileSync(originalImagePath);
+
+        // Resize the image for mobile and save it
+        await sharp(imageBufferData)
+          .resize({ width: 376, height: 420, fit: "inside" }) // Mobile resolution
+          .toFile(mobileImagePath);
+
+        // Store the path or URL for the resized image
+        mobileImageUrls.push(uniqueFilename);
+      } else {
+        console.error(`Original image not found: ${originalImagePath}`);
+      }
+    } catch (error) {
+      console.error("Error resizing image:", error);
+    }
+  }
+
+  // Return the paths of all resized images
+  return mobileImageUrls;
+};
+
+const unlinkHelper = async (filePath) => {
+  return new Promise((resolve, reject) => {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        reject(`Error deleting file ${filePath}: ${err.toString()}`);
+      } else {
+        resolve(`Deleted file ${filePath} successfully`);
+      }
+    });
+  });
 };

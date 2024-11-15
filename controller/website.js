@@ -8,11 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const sgMail = require("@sendgrid/mail");
 
 const db = require("../models");
-const {
-  passwordResetMail,
-  EnquiryMail,
-  paymentSuccessMail,
-} = require("../utils/mail_content");
+const { passwordResetMail, EnquiryMail, paymentSuccessMail } = require("../utils/mail_content");
 const { count } = require("console");
 const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
@@ -55,7 +51,6 @@ exports.getAllBanners = async (req, res, next) => {
         },
       ],
     });
-    console.log(`Retrieved all banners successfully`);
     const transformedBanners = banners.map((banner) => ({
       heading: banner.heading,
       heading_ar: banner.heading_ar,
@@ -84,6 +79,10 @@ exports.getAllCourses = (req, res, next) => {
           attributes: ["name", "isCamp", "isDeleted"],
           where: { active: true },
         },
+        {
+          model: db.subcourse,
+          attributes: ["id", "name"],
+        },
       ],
     })
     .then((courses) => {
@@ -99,17 +98,11 @@ exports.getAllCourses = (req, res, next) => {
           const checklistItems = course?.description?.split("\n");
           const checklistItemsAr = course?.description_ar?.split("\n");
           // Generating HTML markup for the checklist
-          const checklistHTML = checklistItems
-            ?.map((item) => `<li><p>${item}</p></li>`)
-            .join("");
-          const checklistHTMLAr = checklistItemsAr
-            ?.map((item) => `<li><p>${item}</p></li>`)
-            .join("");
+          const checklistHTML = checklistItems?.map((item) => `<li><p>${item}</p></li>`).join("");
+          const checklistHTMLAr = checklistItemsAr?.map((item) => `<li><p>${item}</p></li>`).join("");
 
           const difference = course?.amount - course?.offerAmount;
-          const offerPercentage = Math.round(
-            (difference / course?.amount) * 100
-          );
+          const offerPercentage = Math.round((difference / course?.amount) * 100);
 
           const modifiedCourse = {
             ...course.toJSON(),
@@ -139,7 +132,6 @@ exports.getAllCourses = (req, res, next) => {
       // Convert the groupedCourses object to an array of objects
       const groupedCoursesArray = Object.values(groupedCourses);
 
-      console.log(`Retrieved all courses successfully`);
       res.status(200).json({ courses: groupedCoursesArray });
     })
     .catch((err) => {
@@ -168,20 +160,12 @@ exports.getCourseById = async (req, res, next) => {
       const categoryName = course.category ? course.category.name : null;
 
       // Splitting the description into checklist items
-      const checklistItems = course.description
-        ? course.description.split("\n")
-        : [];
-      const checklistItemsAr = course.description_ar
-        ? course.description_ar.split("\n")
-        : [];
+      const checklistItems = course.description ? course.description.split("\n") : [];
+      const checklistItemsAr = course.description_ar ? course.description_ar.split("\n") : [];
 
       // Generating HTML markup for the checklist
-      const checklistHTML = checklistItems
-        .map((item) => `<li><p>${item}</p></li>`)
-        .join("");
-      const checklistHTMLAr = checklistItemsAr
-        .map((item) => `<li><p>${item}</p></li>`)
-        .join("");
+      const checklistHTML = checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+      const checklistHTMLAr = checklistItemsAr.map((item) => `<li><p>${item}</p></li>`).join("");
 
       const difference = course.amount - course.offerAmount;
       const offerPercentage = Math.round((difference / course.amount) * 100);
@@ -197,13 +181,10 @@ exports.getCourseById = async (req, res, next) => {
         enroll_text_ar: course.enroll_text_ar || null,
       };
 
-      console.log(`Retrieved course ${courseId} successfully`);
       res.status(200).json({ course: modifiedCourse });
     })
     .catch((err) => {
-      console.error(
-        `Error in retrieving course ${courseId}: ${err.toString()}`
-      );
+      console.error(`Error in retrieving course ${courseId}: ${err.toString()}`);
       res.status(500).send({ message: err.toString() });
     });
 };
@@ -212,9 +193,7 @@ exports.getCourseById = async (req, res, next) => {
 exports.getNewsBanner = async (req, res, next) => {
   try {
     const newsBanner = await db.newsBannerImages.findAll();
-    return res
-      .status(200)
-      .send({ message: "Data retrieved successfully", data: newsBanner });
+    return res.status(200).send({ message: "Data retrieved successfully", data: newsBanner });
   } catch (err) {
     console.error(`Error in retrieving news: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
@@ -234,7 +213,6 @@ exports.getAllNews = async (req, res, next) => {
       ],
     })
     .then((news) => {
-      console.log(`Retrieved all news successfully`);
       res.status(200).json({ news });
     })
     .catch((err) => {
@@ -247,7 +225,6 @@ exports.getAllNews = async (req, res, next) => {
 exports.getAllNewsCount = async (req, res, next) => {
   try {
     const count = await db.news.count();
-    console.log(`Retrieved all news successfully`);
     res.status(200).json({ count });
   } catch (err) {
     console.error(`Error in retrieving news: ${err.toString()}`);
@@ -257,7 +234,6 @@ exports.getAllNewsCount = async (req, res, next) => {
 
 //get single news
 exports.getNewsById = (req, res, next) => {
-  console.log(req.params, "ID");
   const newsId = req.params.id;
   db.news
     .findByPk(newsId, {
@@ -276,7 +252,6 @@ exports.getNewsById = (req, res, next) => {
       if (!news) {
         return res.status(404).send({ message: messages_en.news_not_found });
       }
-      console.log(`Retrieved news with ID ${newsId} successfulllllly`);
       res.status(200).json({ news });
     })
     .catch((err) => {
@@ -321,9 +296,7 @@ exports.getAllTestimonialsById = async (req, res, next) => {
     });
 
     if (!testimonials || testimonials.length === 0) {
-      return res
-        .status(404)
-        .json({ message: `No testimonials found for course ${courseId}` });
+      return res.status(404).json({ message: `No testimonials found for course ${courseId}` });
     }
 
     // Manipulate the course name for each testimonial and set the role in the JSON response
@@ -337,14 +310,10 @@ exports.getAllTestimonialsById = async (req, res, next) => {
       };
     });
 
-    console.log(
-      `Retrieved all testimonials for course ${courseId} successfully`
-    );
+    console.log(`Retrieved all testimonials for course ${courseId} successfully`);
     res.status(200).json({ testimonials: testimonialsWithRole });
   } catch (err) {
-    console.error(
-      `Error in retrieving testimonials for course ${courseId}: ${err}`
-    );
+    console.error(`Error in retrieving testimonials for course ${courseId}: ${err}`);
     const statusCode = err.status || 500;
     res.status(statusCode).json({
       error: `Error in retrieving testimonials for course ${courseId}`,
@@ -376,10 +345,7 @@ exports.getCourseMaterial = async (req, res, next) => {
       },
     });
 
-    console.log("registeredCourse=======>", registeredCourse);
-
     if (registeredCourse) {
-      console.log("Course found:", registeredCourse.courseId);
       const courseDB = await db.course.findByPk(registeredCourse.courseId, {
         include: {
           model: db.subcourse,
@@ -409,6 +375,7 @@ exports.getCourseMaterial = async (req, res, next) => {
       final_course.id = courseDB.id;
       final_course.name = courseDB.name;
       final_course.endDate = endDate;
+      final_course.isPurchased = true;
       final_course.subCourses = [];
 
       const week1 = [1, 2, 3, 4, 5];
@@ -426,27 +393,17 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day <= 20; day++) {
           let course_videos = subCourse.videos;
 
-          let videos_day_id = course_videos
-            .filter((video) => video.day === day)
-            .map((item) => item.id);
+          let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-          if (
-            videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-            videos_day_id.length > 0
-          )
-            finished_days.push(day);
+          if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
         }
 
         const finished_weeks = [];
 
-        if (week1.every((item) => finished_days.includes(item)))
-          finished_weeks.push(1);
-        if (week2.every((item) => finished_days.includes(item)))
-          finished_weeks.push(2);
-        if (week3.every((item) => finished_days.includes(item)))
-          finished_weeks.push(3);
-        if (week4.every((item) => finished_days.includes(item)))
-          finished_weeks.push(4);
+        if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+        if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+        if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+        if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
         final_course.subCourses.push({
           id: subCourse.id,
@@ -460,10 +417,48 @@ exports.getCourseMaterial = async (req, res, next) => {
 
       res.status(200).send(final_course);
     } else {
-      console.log("The subscription is not valid -----> registeredCourse");
-      res.status(500).send({ message: "The subscription is not valid" });
+      const courseDB = await db.course.findByPk(courseId, {
+        include: {
+          model: db.subcourse,
+          attributes: ["id", "name"],
+        },
+      });
+      const final_course = {};
+      final_course.id = courseDB.id;
+      final_course.name = courseDB.name;
+      final_course.isPurchased = false;
+      final_course.subCourses = [];
+
+      const subCoursesDB = courseDB.sub_courses;
+      const subCourseLength = subCoursesDB.length;
+      for (let index = 0; index < subCourseLength; index++) {
+        const subCourse = subCoursesDB[index];
+
+        const finished_days = [];
+        const finished_weeks = [];
+
+        final_course.subCourses.push({
+          id: subCourse.id,
+          name: subCourse.name,
+          finished_days: finished_days,
+          finished_weeks: finished_weeks,
+        });
+      }
+
+      console.log("FINAL =====<<<<<<>>>>>>>>", final_course);
+
+      if (courseId == process.env.FREE_COURSE_ID) {
+        console.log("FREE COURSE");
+
+        res.status(200).send(final_course);
+      } else {
+        console.log("NOT VALID");
+        res.status(500).send({ message: "The subscription is not valid" });
+      }
     }
   } catch (error) {
+    console.log(error);
+
     res.status(500).send({ message: error.toString() });
   }
 };
@@ -494,7 +489,6 @@ exports.getSubCourseMaterial = async (req, res, next) => {
     });
 
     if (registeredCourse) {
-      console.log("Course found:", registeredCourse.courseId);
       const subCourseDB = await db.subcourse.findByPk(subCourseId, {
         attributes: ["id", "name"],
         include: {
@@ -523,27 +517,17 @@ exports.getSubCourseMaterial = async (req, res, next) => {
       for (let day = 1; day <= 20; day++) {
         let course_videos = subCourseDB.videos;
 
-        let videos_day_id = course_videos
-          .filter((video) => video.day === day)
-          .map((item) => item.id);
+        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
 
-        if (
-          videos_day_id.every((item) => watched_videos_id.includes(item)) &&
-          videos_day_id.length > 0
-        )
-          finished_days.push(day);
+        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
       }
 
       const finished_weeks = [];
 
-      if (week1.every((item) => finished_days.includes(item)))
-        finished_weeks.push(1);
-      if (week2.every((item) => finished_days.includes(item)))
-        finished_weeks.push(2);
-      if (week3.every((item) => finished_days.includes(item)))
-        finished_weeks.push(3);
-      if (week4.every((item) => finished_days.includes(item)))
-        finished_weeks.push(4);
+      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
 
       final_sub_course.id = subCourseDB.id;
       (final_sub_course.name = subCourseDB.name),
@@ -554,8 +538,61 @@ exports.getSubCourseMaterial = async (req, res, next) => {
 
       res.status(200).send(final_sub_course);
     } else {
-      console.log("The subscription is not valid");
-      res.status(500).send({ message: "The subscription is not valid" });
+      const subCourseDB = await db.subcourse.findByPk(subCourseId, {
+        attributes: ["id", "name"],
+        include: {
+          model: db.video,
+          attributes: ["id", "name", "day"],
+        },
+      });
+
+      const watchedVideo = await db.watchedVideo.findAll({
+        where: {
+          userId: userId,
+        },
+      });
+
+      const watched_videos_id = watchedVideo.map((item) => item.videoId);
+
+      const final_sub_course = {};
+
+      const week1 = [1, 2, 3, 4, 5];
+      const week2 = [6, 7, 8, 9, 10];
+      const week3 = [11, 12, 13, 14, 15];
+      const week4 = [16, 17, 18, 19, 20];
+
+      const finished_days = [];
+
+      for (let day = 1; day <= 20; day++) {
+        let course_videos = subCourseDB.videos;
+
+        let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+
+        if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
+      }
+
+      const finished_weeks = [];
+
+      if (week1.every((item) => finished_days.includes(item))) finished_weeks.push(1);
+      if (week2.every((item) => finished_days.includes(item))) finished_weeks.push(2);
+      if (week3.every((item) => finished_days.includes(item))) finished_weeks.push(3);
+      if (week4.every((item) => finished_days.includes(item))) finished_weeks.push(4);
+
+      final_sub_course.id = subCourseDB.id;
+      (final_sub_course.name = subCourseDB.name),
+        (final_sub_course.finished_days = finished_days),
+        (final_sub_course.finished_weeks = finished_weeks);
+
+      console.log("final_sub_course====>", final_sub_course);
+
+      if (courseId == process.env.FREE_COURSE_ID) {
+        console.log("FREE COURSE");
+
+        res.status(200).send(final_sub_course);
+      } else {
+        console.log("NOT VALID");
+        res.status(500).send({ message: "The subscription is not valid" });
+      }
     }
   } catch (error) {
     res.status(500).send({ message: error.toString() });
@@ -563,6 +600,8 @@ exports.getSubCourseMaterial = async (req, res, next) => {
 };
 
 exports.getVideos = async (req, res, next) => {
+  console.log("THJIS CALLLED =============>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
   try {
     const courseId = req.params.courseId;
     const userId = req.userDecodeId;
@@ -578,9 +617,6 @@ exports.getVideos = async (req, res, next) => {
     const monthsAgo = new Date();
     monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
 
-    console.log(`userid ${userId} course id ${courseId}`);
-    console.log(monthsAgo);
-
     const registeredCourse = await db.registeredCourse.findOne({
       where: {
         courseId: courseId,
@@ -591,52 +627,48 @@ exports.getVideos = async (req, res, next) => {
       },
     });
 
-    if (registeredCourse) {
-      console.log("Course found:", registeredCourse.courseId);
-      const courseDB = await db.course.findByPk(registeredCourse.courseId, {
-        include: {
-          model: db.subcourse,
-          where: {
-            id: subcourseId,
-          },
-          attributes: ["id", "name"],
-          include: {
-            model: db.video,
-            attributes: ["id", "name", "day", "frameURL"],
-            where: {
-              day: day,
-            },
-          },
-        },
-      });
+    const coursePid = registeredCourse ? registeredCourse.courseId : courseId;
 
-      const watchedVideo = await db.watchedVideo.findAll({
+    const courseDB = await db.course.findByPk(coursePid, {
+      include: {
+        model: db.subcourse,
         where: {
-          userId: userId,
+          id: subcourseId,
         },
+        attributes: ["id", "name"],
+        include: {
+          model: db.video,
+          attributes: ["id", "name", "day", "frameURL"],
+          where: {
+            day: day,
+          },
+        },
+      },
+    });
+
+    const watchedVideo = await db.watchedVideo.findAll({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const watched_videos_id = watchedVideo.map((item) => item.videoId);
+
+    const final_videos = [];
+
+    let course_videos = courseDB?.sub_courses[0]?.videos;
+
+    course_videos?.forEach((video) => {
+      final_videos.push({
+        id: video.id,
+        name: video.name,
+        watched: watched_videos_id.includes(video.id),
+        videoURL: process.env.HOST + "/images/" + video.frameURL,
       });
+    });
 
-      const watched_videos_id = watchedVideo.map((item) => item.videoId);
-
-      const final_videos = [];
-
-      let course_videos = courseDB.sub_courses[0].videos;
-
-      course_videos.forEach((video) => {
-        final_videos.push({
-          id: video.id,
-          name: video.name,
-          watched: watched_videos_id.includes(video.id),
-          videoURL: process.env.HOST + "/images/" + video.frameURL,
-        });
-      });
-
-      console.log("final_videos====>", final_videos);
-      res.status(200).send(final_videos);
-    } else {
-      console.log("The subscription is not valid");
-      res.status(500).send({ message: "The subscription is not valid" });
-    }
+    console.log("final_videos====>", final_videos);
+    res.status(200).send(final_videos);
   } catch (error) {
     res.status(500).send({ message: error.toString() });
   }
@@ -646,6 +678,8 @@ exports.getVideo = async (req, res, next) => {
   try {
     let token = req.params.token;
     const secret = process.env.SECRET;
+
+    console.log("params===========>", req.params);
 
     if (!token) {
       return res.status(401).send({
@@ -696,15 +730,11 @@ exports.getVideo = async (req, res, next) => {
 
       if (registeredCourse) {
         let video = await db.video.findByPk(videoId);
-        const videoPath = path.join(
-          __dirname,
-          "..",
-          "assets",
-          "trojanTTt",
-          "videos",
-          "new",
-          video.url
-        );
+
+        console.log("video====>", video);
+        console.log("videoId====>", videoId);
+
+        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video?.url);
 
         const stat = fs.statSync(videoPath);
         const fileSize = stat.size;
@@ -762,9 +792,7 @@ exports.getSubscribedCourse = (req, res, next) => {
                 {
                   // courseId: 2,
                   createdAt: {
-                    [db.Sequelize.Op.gt]: db.Sequelize.literal(
-                      "DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"
-                    ),
+                    [db.Sequelize.Op.gt]: db.Sequelize.literal("DATE_SUB(NOW(), INTERVAL (courses.duration) MONTH)"),
                   },
                 },
               ],
@@ -841,17 +869,11 @@ exports.postStripePayment = async (req, res) => {
 
       const discountAmount = (courseDB?.offerAmount * discountpercentage) / 100;
 
-      const finalisedDiscountAmount = Math.trunc(
-        discountAmount * currency_rate
-      );
+      const finalisedDiscountAmount = Math.trunc(discountAmount * currency_rate);
 
-      convertedAmount =
-        Math.ceil(courseDB?.offerAmount * currency_rate) -
-        finalisedDiscountAmount;
+      convertedAmount = Math.ceil(courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
     } else {
-      convertedAmount = Math.ceil(
-        (courseDB.offerAmount * currency_rate).toFixed(2)
-      );
+      convertedAmount = Math.ceil((courseDB.offerAmount * currency_rate).toFixed(2));
     }
 
     const amount = await convertAmountForStripe(convertedAmount, currency_code);
@@ -901,11 +923,7 @@ exports.stripeWebhook = async (req, res) => {
       const signature = req.headers["stripe-signature"];
       console.log(signature, "SIGNATURE");
       try {
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          signature,
-          endpointSecret
-        );
+        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
       } catch (err) {
         console.log(`⚠️  Webhook signature verification failed.`, err.message);
         return res.sendStatus(400);
@@ -920,10 +938,7 @@ exports.stripeWebhook = async (req, res) => {
         const { id, customer, metadata } = paymentIntent;
 
         // Log the successful payment intent
-        console.log(
-          `PaymentIntent was successful for customer ${customer}:`,
-          paymentIntent.id
-        );
+        console.log(`PaymentIntent was successful for customer ${customer}:`, paymentIntent.id);
 
         // Additional logic for successful payment can be added here if needed
 
@@ -935,19 +950,13 @@ exports.stripeWebhook = async (req, res) => {
         const { balance_transaction, payment_intent } = charge;
 
         if (!balance_transaction || !payment_intent) {
-          console.log(
-            "Missing balance transaction or payment intent information."
-          );
+          console.log("Missing balance transaction or payment intent information.");
           break;
         }
 
-        const paymentIntentData = await stripe.paymentIntents.retrieve(
-          payment_intent
-        );
+        const paymentIntentData = await stripe.paymentIntents.retrieve(payment_intent);
 
-        const balanceTransaction = await stripe.balanceTransactions.retrieve(
-          balance_transaction
-        );
+        const balanceTransaction = await stripe.balanceTransactions.retrieve(balance_transaction);
         const netAmount = balanceTransaction.net / 100;
         const fee = balanceTransaction.fee / 100;
 
@@ -1047,11 +1056,7 @@ exports.stripeWebhook = async (req, res) => {
 
         const subject = "TheTopPlayer Payment";
         const text = "payment successful"; // plain text body
-        const html = paymentSuccessMail(
-          userDB.username,
-          amount,
-          paymentIntentData.id
-        );
+        const html = paymentSuccessMail(userDB.username, amount, paymentIntentData.id);
 
         const isMailsend = await sendMail(userDB.email, subject, text, html);
 
@@ -1066,10 +1071,7 @@ exports.stripeWebhook = async (req, res) => {
       case "payment_intent.payment_failed":
         const failedPaymentIntent = event.data.object;
         const failedCustomerId = failedPaymentIntent.customer;
-        console.log(
-          `PaymentIntent failed for customer ${failedCustomerId}:`,
-          failedPaymentIntent.id
-        );
+        console.log(`PaymentIntent failed for customer ${failedCustomerId}:`, failedPaymentIntent.id);
         break;
 
       // Add more cases for other events as needed
@@ -1095,9 +1097,7 @@ exports.subscribe = async (req, res, next) => {
     })
     .catch((error) => {
       console.log(`error in adding subscriber ${error.toString()}`);
-      res
-        .status(500)
-        .send({ message: `error in adding subscriber ${error.toString()}` });
+      res.status(500).send({ message: `error in adding subscriber ${error.toString()}` });
     });
 };
 
@@ -1117,9 +1117,7 @@ exports.contactUS = async (req, res, next) => {
     });
     if (isMailsend) {
       console.log("Contact us message saved successfully and mail send");
-      res
-        .status(200)
-        .send({ message: "Message submitted successfully and mail is sent" });
+      res.status(200).send({ message: "Message submitted successfully and mail is sent" });
     } else {
       console.log("Contact us message saved successfully and mail not send");
       res.status(200).send({
@@ -1235,10 +1233,7 @@ exports.applyCoupon = async (req, res) => {
 
   try {
     const couponExist = await db.influencer.findOne({
-      where: db.Sequelize.where(
-        db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")),
-        coupon_code
-      ),
+      where: db.Sequelize.where(db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")), coupon_code),
     });
 
     if (!couponExist) {
@@ -1269,9 +1264,7 @@ exports.applyCoupon = async (req, res) => {
     const discountpercentage = couponExist.coupon_percentage;
 
     const discountAmount = (courseAmount * discountpercentage) / 100;
-    const finalisedDiscountAmount = Math.trunc(
-      discountAmount * currentCurrency.currency_rate
-    );
+    const finalisedDiscountAmount = Math.trunc(discountAmount * currentCurrency.currency_rate);
 
     res.status(200).send({
       discountAmount: finalisedDiscountAmount,

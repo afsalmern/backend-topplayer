@@ -66,6 +66,11 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
+    course_type: {
+      type: Sequelize.ENUM,
+      values: ['nutrition', 'camps', 'match'],
+      allowNull: true,
+    },
   });
 
   return Course;

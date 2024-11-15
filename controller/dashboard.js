@@ -3,6 +3,9 @@ const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const { SendNotPurchaseMails } = require("../services/emailService");
+const { ReminderMail } = require("../utils/mail_content");
+const sendMail = require("../utils/mailer");
 
 exports.addCategory = (req, res, next) => {
   db.category
@@ -132,9 +135,7 @@ exports.login = async (req, res, next) => {
   } catch (error) {
     console.error(`Error in login: ${error.toString()}`);
     const statusCode = error.code || 500;
-    res
-      .status(statusCode)
-      .send({ message: error.message, status_code: error.code, status: false });
+    res.status(statusCode).send({ message: error.message, status_code: error.code, status: false });
   }
 };
 
@@ -172,8 +173,50 @@ exports.signup = async (req, res, next) => {
   } catch (error) {
     console.error(`Error in admin user signup: ${error.toString()}`);
     const statusCode = error.code || 500;
-    res
-      .status(statusCode)
-      .json({ message: "Failed to create admin user.", error: error.message });
+    res.status(statusCode).json({ message: "Failed to create admin user.", error: error.message });
+  }
+};
+
+exports.checkUsersWhoDontHavePurchase = async (req, res) => {
+  try {
+    const today = new Date();
+    const previous7Days = new Date(today.setDate(today.getDate() - 7)); // 7 days ago from today
+
+    const startDate = previous7Days.toISOString().split("T")[0]; // Start date in ISO format (YYYY-MM-DD)
+    const endDate = today.toISOString().split("T")[0]; // End date in ISO format (YYYY-MM-DD)
+
+    const users = await db.user.findAll({
+      include: [
+        {
+          model: db.payment,
+          required: false,
+          where: { userId: null, createdAt: { [db.Op.between]: [startDate, endDate] } },
+        },
+      ],
+    });
+
+    SendNotPurchaseMails("Not Purchase", "Not Purchase", "Not Purchase");
+
+    res.status(200).json({
+      message: "Users who don't have a purchase in the last 7 days:",
+      users: users,
+    });
+  } catch (err) {
+    console.error(`Error in fetching users: ${err.toString()}`);
+    res.status(500).json({ message: "Failed to fetch users." });
+  }
+};
+
+exports.sendMail = async (req, res) => {
+  try {
+    const subject = "TheTopPlayer Reminder Mail";
+    const text = "reminder mail"; // plain text body
+    const html = ReminderMail("Test User");
+
+    const result = await sendMail("joshua@intersmart.in", subject, text, html);
+    res.status(200).json({ message: "Email sent successfully", result });
+  } catch (err) {
+    console.error(`Error in sending email: ${err.toString()}`);
+    res.status(500).json({ message: "Failed to send email." });
   }
 };
