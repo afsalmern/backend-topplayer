@@ -11,6 +11,7 @@ const {
   tamaraWebHook,
 } = require("../controller/tamarapay");
 const { getAllFooters } = require("../controller/dashboard/footer_controller");
+const { checkIsPurchased } = require("../middleware/verifyCoursePurchase");
 
 const router = express.Router();
 
@@ -66,8 +67,9 @@ router.post(
 );
 router.get("/video/:videoId/:courseId/:token", websiteController.getVideo);
 router.get(
-  "/videos/:courseId/:subCourseId/:day",
+  "/videos/:courseId/:subCourseId/:day/:week",
   [authMiddleware.checkUserAuth],
+  checkIsPurchased,
   websiteController.getVideos
 );
 

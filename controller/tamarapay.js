@@ -40,6 +40,10 @@ exports.createTamaraPayment = async (req, res) => {
   try {
     console.log("req.userDecodeId====>", req.userDecodeId);
 
+
+    console.log("type ====>", type);
+
+
     const { currency_flag, currency_code, currency_rate } = currentcurrency;
 
     const userDB = await db.user.findByPk(req.userDecodeId);
@@ -119,6 +123,7 @@ exports.createTamaraPayment = async (req, res) => {
       cancel: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
       failure: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
       success: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
+      success: `${process.env.CLIENT_HOST}/${lang}/user/payment/confirm/${courseId}`,
       notification: "https://store-demo.com/payments/tamarapay",
     };
 

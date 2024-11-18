@@ -431,7 +431,6 @@ router.delete(
   [authMiddleware.checkUserAuth],
   faqController.deleteFAQ
 );
-
 router.post(
   "/testimonial",
   [authMiddleware.checkUserAuth],
