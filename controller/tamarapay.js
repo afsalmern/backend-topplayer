@@ -123,7 +123,7 @@ exports.createTamaraPayment = async (req, res) => {
       cancel: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
       failure: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
       success: `${process.env.CLIENT_HOST}/${lang}/user/${type}/details/${courseId}`,
-      success: `${process.env.CLIENT_HOST}/${lang}/user/payment/confirm/${courseId}`,
+      success: `${process.env.CLIENT_HOST}/${lang}/user/payment/confirm/${type}/${courseId}`,
       notification: "https://store-demo.com/payments/tamarapay",
     };
 
