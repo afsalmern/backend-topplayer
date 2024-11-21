@@ -298,116 +298,115 @@ function EnquiryMail(user, message, mail) {
 
 function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
   return `
-  <!DOCTYPE html>
-  <html>
+<!DOCTYPE html>
+<html>
   <head>
-    <title>New Trending News on The Top Player</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Top Player</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
-      body {
-        font-family: Arial, Helvetica, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
-        background-color: #ffffff;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .header {
-        background-color: #3a3f44;
-        color: #ffffff;
-        text-align: center;
-        padding: 20px 0;
-      }
-      .header img {
-        width: 150px;
-      }
-      .content {
-        padding: 20px 40px;
-      }
-      .content h1 {
-        font-size: 24px;
-        color: #333333;
-        margin-bottom: 10px;
-      }
-      .content h2 {
-        font-size: 20px;
-        color: #9E6439;
-        margin-bottom: 20px;
-      }
-      .content p {
-        font-size: 15px;
-        color: #555555;
-        line-height: 1.6;
-        margin-bottom: 20px;
-      }
-      .news-image {
-        text-align: center;
-        margin: 20px 0;
-      }
-      .news-image img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-      }
-      .button {
-        display: inline-block;
-        background-color: #9E6439;
-        color: #ffffff;
-        padding: 12px 25px;
-        font-size: 16px;
-        font-weight: bold;
-        text-decoration: none;
-        border-radius: 4px;
-        margin: 20px 0;
-        text-align: center;
-      }
-      .footer {
-        text-align: center;
-        font-size: 13px;
-        color: #777777;
-        padding: 20px;
-        background-color: #f4f4f4;
-        border-top: 1px solid #eeeeee;
-      }
-      .footer a {
-        color: #9E6439;
-        text-decoration: none;
+      a[href] {
+        color: #9e6439;
       }
     </style>
   </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <a href="#!">
-          <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" alt="The Top Player Logo">
-        </a>
-      </div>
-      <div class="content">
-        <h1>Trending News Alert!</h1>
-        <h2>${newsTitle}</h2>
-        <p>A new trending article has just been added to The Top Player! Check out the latest updates below.</p>
-        <div class="news-image">
-          <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" alt="Trending News Image">
-        </div>
-        <p>${newsContent}</p>
-        <a href="#!" class="button" target="_blank">Read More on Our Site</a>
-      </div>
-      <div class="footer">
-        <p>Best regards,<br>The Top Player Team</p>
-        <p>If you have any questions, feel free to <a href="mailto:${process.env.SUPPORT_EMAILID}">contact us</a>.</p>
-      </div>
+
+  <body
+    bgcolor="#FFFFFF"
+    leftmargin="0"
+    topmargin="0"
+    marginwidth="0"
+    marginheight="0"
+  >
+    <div style="width: 700px; margin: auto; background: #fff">
+      <table
+        id="Table_01"
+        width="700"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        align="center"
+        style="
+          background-color: #f8f2ed;
+          background-image: url(https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png);
+          background-position: top center;
+          background-size: 440px 360px;
+          background-repeat: no-repeat;
+          padding: 60px 20px;
+        "
+      >
+        <tbody>
+          <tr>
+            <td style="padding: 30px 60px" align="center">
+                <p style="text-align: center">
+              <a href="#!" style="display: block; width: 200px; margin: auto;">
+                <img
+                  src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png"
+                  width="200"
+                  height="60"
+                  alt="logo"
+                />
+              </a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 60px">
+              <h1
+                style="
+                  font-size: 24px;
+                  line-height: 1.4;
+                  font-weight: 500;
+                  text-align: center;
+                  font-family: Arial, Helvetica, sans-serif;
+                  color: #060606;
+                  margin: 10px 0 30px 0;
+                "
+              >
+                ${newsTitle}
+              </h1>
+              <p style="text-align: center">
+                <img
+                  src=${process.env.HOST}/newsMobileImages/a-1717088301150-674578850.jpg
+                  width="416"
+                  height="360"
+                  loading="lazy"
+                  alt="expiry"
+                />
+              </p>
+              <p
+                style="
+                  font-size: 15px;
+                  line-height: 1.5;
+                  font-weight: 400;
+                  font-family: Arial, Helvetica, sans-serif;
+                  color: #060606;
+                  text-align: center;
+                  margin: 30px 0;
+                "
+              >
+                ${newsContent}
+              </p>
+              <p style="text-align: center;margin: 0 0 30px 0;">
+                <a href="https://thetopplayer.com" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/expiry-btn.png"
+                    width="214"
+                    height="73"
+                    loading="lazy"
+                    alt="expiry"
+                  />
+                </a>
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </body>
-  </html>`;
+</html>`;
 }
 
-function ReminderMail(username) {
+function ReminderMail() {
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -416,9 +415,8 @@ function ReminderMail(username) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ready to play like a pro?</title>
     <style>
-      a[href] {
-        color: white !important;
-        text-decoration: none;
+     a[href] {
+        color: #9e6439;
       }
       /* Button Style */
       .button {
@@ -449,13 +447,61 @@ function ReminderMail(username) {
   </head>
   <body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
     <div style="width:700px; margin: auto; background: #fff;">
-      <table id="Table_01" width="700" border="0" cellpadding="0" cellspacing="0" align="center" style="background-color: #F8F2ED; background-image: url("https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png"); background-position: center; background-size: 440px 360px; background-repeat: no-repeat; padding: 60px 20px;">
+      <table id="Table_01"
+        width="700"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        align="center"
+        style="
+          background-color: #f8f2ed;
+          background-image: url(https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png);
+          background-position: top center;
+          background-size: 440px 360px;
+          background-repeat: no-repeat;
+          padding: 60px 20px;
+        ">
         <tbody>
           <tr>
             <td style="padding: 30px 60px;">
               <a href="#!" style="display: block; width: 200px;">
                 <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" width="200" height="60" alt="logo">
               </a>
+            </td>
+          </tr>
+           <!-- Arabic Version -->
+          <tr>
+            <td style="padding: 30px 60px;" class="rtl">
+            <h1 style="font-size: 24px; line-height: 1; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 10px 0;">The Top Player</h1>
+<h1 style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">هل أنت مستعد للعب مثل المحترفين؟</h1>
+
+              <h1 style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">هلا بالبطل!</h1>
+              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                شفنا إنك صرت جزء من عائلة The Top Player – هذي البداية القوية! الحين جاء وقت الجدّ وترفع مستواك وتوصل لأقصى طاقاتك.
+              </p>
+              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                إذا حاب تتقن مهاراتك، تزيد لياقتك، أو تلعب بثقة ما تهتز، عندنا البرنامج اللي يناسبك ويوصلك لهدفك.
+              </p>
+              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                لا تفوّت الفرصة – رحلتك للنجاح تبدأ الحين. عندك أي سؤال؟ إحنا معك في كل خطوة!
+              </p>
+              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                وش تنتظر ؟ يلا نبدأ المشوار!
+              </p>
+               <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                <a href="https://thetopplayer.com" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/expiry-btn.png"
+                    width="214"
+                    height="73"
+                    loading="lazy"
+                    alt="expiry"
+                  />
+              </p>
+              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                مع أطيب التحيات،<br>
+                فريق "The Top Player"
+              </p>
             </td>
           </tr>
           <tr>
@@ -477,7 +523,14 @@ function ReminderMail(username) {
                 Let’s kick things off!
               </p>
               <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                <a href=${process.env.HOST_CLIENT} rel="noopener noreferrer" target="_blank" class="button">Let’s Get Started!</a>
+                <a href="https://thetopplayer.com" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/expiry-btn.png"
+                    width="214"
+                    height="73"
+                    loading="lazy"
+                    alt="expiry"
+                  />
               </p>
               <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
                 Best regards,<br>
@@ -485,38 +538,37 @@ function ReminderMail(username) {
               </p>
             </td>
           </tr>
-
-          <!-- Arabic Version -->
-          <tr>
-            <td style="padding: 30px 60px;" class="rtl">
-              <h1 style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">هلا بالبطل!</h1>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                شفنا إنك صرت جزء من عائلة The Top Player – هذي البداية القوية! الحين جاء وقت الجدّ وترفع مستواك وتوصل لأقصى طاقاتك.
-              </p>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                إذا حاب تتقن مهاراتك، تزيد لياقتك، أو تلعب بثقة ما تهتز، عندنا البرنامج اللي يناسبك ويوصلك لهدفك.
-              </p>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                لا تفوّت الفرصة – رحلتك للنجاح تبدأ الحين. عندك أي سؤال؟ إحنا معك في كل خطوة!
-              </p>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                وش تنتظر ؟ يلا نبدأ المشوار!
-              </p>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                <a href=${process.env.HOST_CLIENT} rel="noopener noreferrer" target="_blank" class="button">يلا نبدأ!</a>
-              </p>
-              <p style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                مع أطيب التحيات،<br>
-                فريق "The Top Player"
-              </p>
-            </td>
-          </tr>
+           <tr>
+          <td style="background-color: #c7a27d; padding: 20px; color: white;">
+            <div style="display: flex; align-items: center; justify-content: space-between;" class="footer-content">
+              <div style="flex: 1;">
+                <a href="#!" style="display: inline-block;">
+                <img  src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png" alt="The Top Player Logo" style="width: 150px;">
+                </a>
+              </div>
+              <div style="flex: 2; text-align: right;" class="social-links">
+                <a href="https://www.instagram.com/thetop.player/?igshid=OGQ5ZDc2ODk2ZA%3D%3D" target="_blank" rel="noopener noreferrer">
+                  <img src="TopPlayer/images/instagram-icon.png" alt="Instagram">
+                  Instagram
+                </a>
+                <a href="https://www.tiktok.com/@thetop.player?_t=8i0wA2PQnHc&_r=1" target="_blank" rel="noopener noreferrer">
+                  <img src="TopPlayer/images/tiktok-icon.png" alt="TikTok">
+                  TikTok
+                </a>
+                <a href="#!" target="_blank" rel="noopener noreferrer">
+                  <img src="TopPlayer/images/whatsapp-icon.png" alt="WhatsApp">
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
   </body>
-  </html>`;
+  </html>
+  `;
 }
 
-
-module.exports = { WelcomeMail, resendMail, passwordResetMail, EnquiryMail, paymentSuccessMail, TrendingNewsMail,ReminderMail };
+module.exports = { WelcomeMail, resendMail, passwordResetMail, EnquiryMail, paymentSuccessMail, TrendingNewsMail, ReminderMail };

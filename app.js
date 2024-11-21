@@ -11,6 +11,7 @@ const db = require("./models");
 
 const websiteController = require("./controller/website");
 const { checkUsersWhoDontHavePurchase } = require("./controller/checkuser");
+const scheduleTasks = require("./scheduleTasks/reminderMail");
 
 const port = process.env.PORT;
 
@@ -32,9 +33,7 @@ app.use("/admin", adminRoute);
 app.use("/dashboard", dashRoute);
 app.use("/", websiteRoute);
 
-// schedule.scheduleJob("*/5 * * * * *", async () => {
-//   await checkUsersWhoDontHavePurchase();
-// });
+// scheduleTasks();
 
 db.sequelize
   .sync({ alter: true })

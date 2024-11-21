@@ -1,27 +1,35 @@
 const db = require("../models");
+const { SendNotPurchaseMails } = require("../services/emailService");
 
 exports.checkUsersWhoDontHavePurchase = async () => {
   try {
     const today = new Date();
-    const previous7Days = new Date(today.setDate(today.getDate() - 7)); // 7 days ago from today
-
-    const startDate = previous7Days.toISOString().split("T")[0]; // Start date in ISO format (YYYY-MM-DD)
-    const endDate = today.toISOString().split("T")[0]; // End date in ISO format (YYYY-MM-DD)
+    const previous7Days = new Date();
+    previous7Days.setDate(today.getDate() - 7); // Adjusted for clarity
 
     const users = await db.user.findAll({
+      attributes: ["username", "email"],
       include: [
         {
           model: db.payment,
           required: false,
-          where: { userId: null, createdAt: { [db.Op.between]: [startDate, endDate] } },
+          attributes: [],
+          where: {
+            createdAt: { [db.Op.between]: [previous7Days, today] },
+          },
         },
       ],
+      raw: true,
     });
 
-    console.log("Users who don't have a purchase in the last 7 days:", JSON.stringify(users, null, 2));
-    
+    if (!users || users.length === 0) {
+      console.log("No users found without purchases in the last 7 days.");
+      return;
+    }
 
+    console.log("Users who don't have a purchase in the last 7 days:", JSON.stringify(users, null, 2));
+    SendNotPurchaseMails(users);
   } catch (err) {
-    console.error(`Error in fetching users: ${err.toString()}`);
+    console.error(`Error in fetching users: ${err.message}`, err.stack);
   }
 };

@@ -19,7 +19,7 @@ const sendEmails = (title_en, description_en, coverimage) => {
   worker.postMessage({ title_en, description_en, coverimage });
 };
 
-const SendNotPurchaseMails = (title_en, description_en, coverimage) => {
+const SendNotPurchaseMails = (users) => {
   const notPurchaseWorker = new Worker(path.join(__dirname, "../workers/notPurchaseWorker.js"));
 
   notPurchaseWorker.on("message", (msg) => {
@@ -34,7 +34,7 @@ const SendNotPurchaseMails = (title_en, description_en, coverimage) => {
   });
 
   // Send task to notPurchaseWorker (newsId to send emails)
-  notPurchaseWorker.postMessage({ title_en, description_en, coverimage });
+  notPurchaseWorker.postMessage({ users });
 };
 
 module.exports = { sendEmails, SendNotPurchaseMails };

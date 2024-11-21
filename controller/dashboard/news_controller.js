@@ -5,6 +5,7 @@ const sharp = require("sharp");
 const sendMail = require("../../utils/mailer");
 const { TrendingNewsMail } = require("../../utils/mail_content");
 const { sendEmails } = require("../../services/emailService");
+const { ses } = require("../../utils/ses_mailer");
 // Define messages in English
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -45,7 +46,12 @@ exports.addNews = async (req, res, next) => {
 
     await transaction.commit();
 
-    sendEmails(title_en, description_en, coverimage);
+    const data = await ses.getSendQuota().promise();
+    const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
+
+    if (remainingQuota > 0) {
+      sendEmails(title_en, description_en, coverimage);
+    }
 
     return res.status(200).send({
       message: messages_en.news_added_successfully,

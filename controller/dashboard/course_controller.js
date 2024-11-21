@@ -228,6 +228,7 @@ exports.updateCourse = async (req, res, next) => {
 
 
     const courseType = req.body.course_type == "" ? null : req.body.course_type;
+    const enrollmentCount = req.body.enr_count == "" ? 0 : req.body.enr_count;
 
     console.log("courseType====>", courseType);
     
@@ -244,7 +245,7 @@ exports.updateCourse = async (req, res, next) => {
       enroll_text: req.body.enroll_text || course.enroll_text,
       enroll_text_ar: req.body.enroll_text_ar || course.enroll_text_ar,
       duration: req.body.duration || course.duration,
-      enr_count: req.body.enr_count === "" ? course.enr_count : req.body.enr_count, // Convert empty string to 0
+      enr_count: enrollmentCount,
       course_type: courseType,
       imageUrl: imageUrl || course.imageUrl,
       bannerUrl: bannerUrl || course.bannerUrl,

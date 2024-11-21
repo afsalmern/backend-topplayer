@@ -393,7 +393,10 @@ exports.getCourseMaterial = async (req, res, next) => {
         for (let day = 1; day <= 20; day++) {
           let course_videos = subCourse.videos;
 
+          console.log(course_videos);
+
           let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
+          console.log(videos_day_id);
 
           if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
         }
@@ -728,46 +731,41 @@ exports.getVideo = async (req, res, next) => {
         },
       });
 
-      if (registeredCourse) {
-        let video = await db.video.findByPk(videoId);
+      let video = await db.video.findByPk(videoId);
 
-        console.log("video====>", video);
-        console.log("videoId====>", videoId);
+      console.log("video====>", video);
+      console.log("videoId====>", videoId);
 
-        const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video?.url);
+      const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video?.url);
 
-        const stat = fs.statSync(videoPath);
-        const fileSize = stat.size;
-        const range = req.headers.range;
+      const stat = fs.statSync(videoPath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
 
-        if (range) {
-          const parts = range.replace(/bytes=/, "").split("-");
-          const start = parseInt(parts[0], 10);
-          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
 
-          const chunkSize = end - start + 1;
-          const file = fs.createReadStream(videoPath, { start, end });
-          const headers = {
-            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-            "Accept-Ranges": "bytes",
-            "Content-Length": chunkSize,
-            "Content-Type": "video/mp4",
-          };
+        const chunkSize = end - start + 1;
+        const file = fs.createReadStream(videoPath, { start, end });
+        const headers = {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": chunkSize,
+          "Content-Type": "video/mp4",
+        };
 
-          res.writeHead(206, headers);
-          file.pipe(res);
-        } else {
-          const headers = {
-            "Content-Length": fileSize,
-            "Content-Type": "video/mp4",
-          };
-
-          res.writeHead(200, headers);
-          fs.createReadStream(videoPath).pipe(res);
-        }
+        res.writeHead(206, headers);
+        file.pipe(res);
       } else {
-        console.log("The subscription is not valid");
-        res.status(500).send({ message: "The subscription is not valid" });
+        const headers = {
+          "Content-Length": fileSize,
+          "Content-Type": "video/mp4",
+        };
+
+        res.writeHead(200, headers);
+        fs.createReadStream(videoPath).pipe(res);
       }
     });
   } catch (error) {

@@ -3,9 +3,9 @@ const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const { SendNotPurchaseMails } = require("../services/emailService");
+const { SendNotPurchaseMails, sendEmails } = require("../services/emailService");
 const { ReminderMail } = require("../utils/mail_content");
-const sendMail = require("../utils/mailer");
+const { sendEmail, sendBulkEmail, ses } = require("../utils/ses_mailer");
 
 exports.addCategory = (req, res, next) => {
   db.category
@@ -209,11 +209,23 @@ exports.checkUsersWhoDontHavePurchase = async (req, res) => {
 
 exports.sendMail = async (req, res) => {
   try {
-    const subject = "TheTopPlayer Reminder Mail";
-    const text = "reminder mail"; // plain text body
-    const html = ReminderMail("Test User");
+    const users = await db.user.findAll({
+      attributes: ["username", "email"],
+      where: { verified: true },
+      raw: true,
+    });
 
-    const result = await sendMail("joshua@intersmart.in", subject, text, html);
+    const { type } = req.body;
+    if (type == "reminder") {
+      SendNotPurchaseMails(users);
+    } else {
+      sendEmails(
+        "New Research Finds Link Between Exercise and Brain Health	",
+        "New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health	",
+        "top-web-1731934943635-497474337.webp"
+      );
+    }
+
     res.status(200).json({ message: "Email sent successfully", result });
   } catch (err) {
     console.error(`Error in sending email: ${err.toString()}`);
