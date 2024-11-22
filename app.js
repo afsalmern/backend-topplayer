@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const schedule = require("node-schedule");
 
 const app = express();
 
@@ -10,7 +9,6 @@ const websiteRoute = require("./routes/website");
 const db = require("./models");
 
 const websiteController = require("./controller/website");
-const { checkUsersWhoDontHavePurchase } = require("./controller/checkuser");
 const scheduleTasks = require("./scheduleTasks/reminderMail");
 
 const port = process.env.PORT;

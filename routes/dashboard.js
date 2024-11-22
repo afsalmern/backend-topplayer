@@ -581,13 +581,7 @@ router.post(
   dashController.signup
 );
 
-router.get(
-  "/send_not_purchase_mail",
-  dashController.checkUsersWhoDontHavePurchase
-);
-
-
-router.post("/send_mail", dashController.sendMail);
+// router.post("/send_mail", dashController.sendMail);
 
 module.exports = router;
 
