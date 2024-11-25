@@ -41,6 +41,7 @@ db.termsAndConditions = require("./termsAndConditions")(sequelize, Sequelize);
 db.contact = require("./contact_us")(sequelize, Sequelize);
 db.visitors = require("./visitors")(sequelize, Sequelize);
 db.newsBannerImages = require("./newsBanner")(sequelize, Sequelize);
+db.congrats = require("./congrats")(sequelize, Sequelize);
 db.tamaraPayment = require("./tamaraPayment")(sequelize, Sequelize);
 db.currency = require("./currency")(sequelize, Sequelize);
 db.footer = require("./footer")(sequelize, Sequelize);

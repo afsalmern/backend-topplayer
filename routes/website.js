@@ -12,6 +12,7 @@ const {
 } = require("../controller/tamarapay");
 const { getAllFooters } = require("../controller/dashboard/footer_controller");
 const { checkIsPurchased } = require("../middleware/verifyCoursePurchase");
+const { getCongrats } = require("../controller/congrats_controller");
 
 const router = express.Router();
 
@@ -37,6 +38,9 @@ router.get("/main_banner", getAllMainBanner);
 router.get("/terms", websiteController.getTermsAndConditions);
 router.get("/currency", websiteController.getCurrencies);
 router.get("/footer", getAllFooters);
+
+
+router.get("/congrats-box", [authMiddleware.checkUserAuth], getCongrats);
 
 router.get(
   "/subscribedCourse",
@@ -78,6 +82,8 @@ router.post(
   [authMiddleware.checkUserAuth],
   websiteController.postStripePayment
 );
+
+
 //router.post('/webhook',express.raw({type: 'application/json'}), websiteController.stripeWebhook);
 
 router.post("/subscribe", websiteController.subscribe);
