@@ -538,31 +538,6 @@ function ReminderMail() {
               </p>
             </td>
           </tr>
-           <tr>
-          <td style="background-color: #c7a27d; padding: 20px; color: white;">
-            <div style="display: flex; align-items: center; justify-content: space-between;" class="footer-content">
-              <div style="flex: 1;">
-                <a href="#!" style="display: inline-block;">
-                <img  src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png" alt="The Top Player Logo" style="width: 150px;">
-                </a>
-              </div>
-              <div style="flex: 2; text-align: right;" class="social-links">
-                <a href="https://www.instagram.com/thetop.player/?igshid=OGQ5ZDc2ODk2ZA%3D%3D" target="_blank" rel="noopener noreferrer">
-                  <img src="TopPlayer/images/instagram-icon.png" alt="Instagram">
-                  Instagram
-                </a>
-                <a href="https://www.tiktok.com/@thetop.player?_t=8i0wA2PQnHc&_r=1" target="_blank" rel="noopener noreferrer">
-                  <img src="TopPlayer/images/tiktok-icon.png" alt="TikTok">
-                  TikTok
-                </a>
-                <a href="#!" target="_blank" rel="noopener noreferrer">
-                  <img src="TopPlayer/images/whatsapp-icon.png" alt="WhatsApp">
-                  WhatsApp
-                </a>
-              </div>
-            </div>
-          </td>
-        </tr>
         </tbody>
       </table>
     </div>

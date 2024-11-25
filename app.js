@@ -31,7 +31,7 @@ app.use("/admin", adminRoute);
 app.use("/dashboard", dashRoute);
 app.use("/", websiteRoute);
 
-// scheduleTasks();
+scheduleTasks();
 
 db.sequelize
   .sync({ alter: true })

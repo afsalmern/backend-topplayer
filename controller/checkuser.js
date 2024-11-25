@@ -9,16 +9,20 @@ exports.checkUsersWhoDontHavePurchase = async () => {
 
     const users = await db.user.findAll({
       attributes: ["username", "email"],
+      where: {
+        createdAt: { [db.Op.between]: [previous7Days, today] }, // Users created in the date range
+        verified: true, // Only verified users
+      },
       include: [
         {
           model: db.payment,
-          required: false,
-          attributes: [],
+          required: false, // Left join to include users even if they have no payments
           where: {
-            createdAt: { [db.Op.between]: [previous7Days, today] },
+            createdAt: { [db.Op.between]: [previous7Days, today] }, // Payments within the date range
           },
         },
       ],
+      having: db.Sequelize.literal("COUNT(`payments`.`id`) = 0"), // Filter users without any payments
       raw: true,
     });
 
