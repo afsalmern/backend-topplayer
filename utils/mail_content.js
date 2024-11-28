@@ -430,7 +430,7 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-1.png"
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/nn-ft-img-1.png"
                           loading="lazy"
                           alt="ft-img"
                           width="184"
@@ -447,7 +447,7 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-2.png"
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/nn-ft-img-2.png"
                           loading="lazy"
                           alt="ft-img"
                           width="184"
@@ -464,7 +464,7 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-3.png"
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/nn-ft-img-3.png"
                           loading="lazy"
                           alt="ft-img"
                           width="184"
