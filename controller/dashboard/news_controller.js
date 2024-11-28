@@ -34,6 +34,10 @@ exports.addNews = async (req, res, next) => {
   try {
     const createdNews = await db.news.create({ title_en, title_ar, description_en, description_ar, coverimage }, { transaction });
 
+    if (!createdNews) {
+      throw new Error("Failed to create news record");
+    }
+
     if (imageUrls.length > 0) {
       const mobileImageUrls = await createMobileImages(imageUrls); // Assuming it returns an array of file paths
 
@@ -50,7 +54,8 @@ exports.addNews = async (req, res, next) => {
     const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
 
     if (remainingQuota > 0) {
-      sendEmails(title_en, description_en, coverimage);
+      const newsId = createdNews?.id;
+      sendEmails(newsId, title_en, description_en, coverimage);
     }
 
     return res.status(200).send({

@@ -296,7 +296,7 @@ function EnquiryMail(user, message, mail) {
   </html>`;
 }
 
-function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
+function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
   return `
   <!DOCTYPE html>
 <html>
@@ -393,7 +393,7 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
                ${newsContent}
               </p>
               <p style="margin: 10px 0">
-                <a href=${process.env.CLIENT_HOST} target="_blank" rel="noopener noreferrer">
+                <a href=${process.env.CLIENT_HOST}en/news/${newsId} target="_blank" rel="noopener noreferrer">
                   <img
                     src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-btn.png"
                     width="160"
