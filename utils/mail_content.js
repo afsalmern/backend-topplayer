@@ -356,8 +356,8 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
               <p style="margin: 0">
                 <a href="http://" style="width: 300px; height: auto;display: block;" target="_blank" rel="noopener noreferrer">
                   <img
-                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-img.png"
-                    // src=${process.env.HOST}/newsCoverImages/${newsImageUrl}
+                    // src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-img.png"
+                    src=${process.env.HOST}/newsCoverImages/${newsImageUrl}
                     width="300"
                     style="width: 300px;height: auto; display: block;"
                     loading="lazy"
