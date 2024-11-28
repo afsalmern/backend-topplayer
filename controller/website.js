@@ -822,6 +822,71 @@ exports.getSubscribedCourse = (req, res, next) => {
     });
 };
 
+exports.getMyCourses = async (req, res, next) => {
+  try {
+    const courses = await db.registeredCourse.findAll({
+      where: {
+        userId: req.userDecodeId,
+      },
+      attributes: ["id", "userId", "courseId", "createdAt"],
+      include: [
+        {
+          model: db.course,
+          as: "course",
+          attributes: ["id", "name", "name_arabic", "description", "description_ar", "course_type", "imageUrl", "duration"],
+        },
+      ],
+    });
+
+    function formatChecklist(description) {
+      const checklistItems = description.split("\r\n");
+      return checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+    }
+
+    // Function to format checklist HTML from descriptions
+    function formatChecklist(description) {
+      if (!description) return ""; // Handle null/undefined descriptions
+      const checklistItems = description.split("\r\n").filter((item) => item.trim() !== ""); // Filter empty lines
+      return checklistItems.map((item) => `<li><p>${item}</p></li>`).join("");
+    }
+
+    function checkExpiryDate(duration, createdAt) {
+      if (!duration) return false; // Handle if duration is null/undefined
+
+      // Convert duration (assuming in weeks) to days; change logic if duration unit varies
+      const durationInDays = parseInt(duration) * 7; // Adjust multiplier if duration is in days
+
+      // Calculate expiry date
+      const registrationDate = new Date(createdAt);
+      const expiryDate = new Date(registrationDate);
+      expiryDate.setDate(registrationDate.getDate() + durationInDays);
+
+      // Compare expiry date with the current date
+      const currentDate = new Date();
+      return currentDate > expiryDate; // Returns true if expired
+    }
+
+    // Transform data and add HTML checklists
+    const formattedCourses = courses.map((courseItem) => {
+      const courseData = courseItem.course.get({ plain: true }); // Convert to plain object
+      courseData.checklistHTML = formatChecklist(courseData.description);
+      courseData.checklistHTMLAr = formatChecklist(courseData.description_ar);
+      courseData.isexpired = checkExpiryDate(courseData.duration, courseItem.createdAt);
+
+      // Include transformed course in the main response
+      return {
+        ...courseItem.get({ plain: true }),
+        course: courseData,
+      };
+    });
+
+    res.status(200).json({ data: formattedCourses });
+  } catch (error) {
+    console.error("Error listing my courses:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 exports.watchVideo = (req, res, next) => {
   const videoId = req.body.videoId;
   const userId = req.userDecodeId;

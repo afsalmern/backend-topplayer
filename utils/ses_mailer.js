@@ -45,7 +45,6 @@ const sendBulkEmail = async (type, emailList, data) => {
 
     // Send the email
     try {
-      await checkQuota();
       const data = await ses.sendEmail(params).promise();
       console.log("Email sent successfully to " + recipientEmail.email, data);
     } catch (error) {

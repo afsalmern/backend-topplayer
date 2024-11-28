@@ -298,7 +298,7 @@ function EnquiryMail(user, message, mail) {
 
 function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
   return `
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html>
   <head>
     <title>Top Player</title>
@@ -322,88 +322,314 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
         id="Table_01"
         width="700"
         border="0"
+        align="center"
         cellpadding="0"
         cellspacing="0"
-        align="center"
         style="
+          width: 700px;
           background-color: #f8f2ed;
           background-image: url(https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png);
           background-position: top center;
           background-size: 440px 360px;
           background-repeat: no-repeat;
-          padding: 60px 20px;
+          padding: 0;
+          display: table;
         "
       >
         <tbody>
           <tr>
-            <td style="padding: 30px 60px" align="center">
-                <p style="text-align: center">
-              <a href="#!" style="display: block; width: 200px; margin: auto;">
-                <img
-                  src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png"
-                  width="200"
-                  height="60"
-                  alt="logo"
-                />
-              </a>
+            <td style="padding: 40px 20px 30px 20px" colspan="2">
+              <p style="text-align: center">
+                <a href="#!" style="display: block; width: 200px; margin: auto">
+                  <img
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png"
+                    width="200"
+                    height="60"
+                    alt="logo"
+                  />
+                </a>
               </p>
             </td>
           </tr>
           <tr>
-            <td style="padding: 0 60px">
+            <td width="50%" style="width: 50%;padding: 0 10px 0 40px" >
+              <p style="margin: 0">
+                <a href="http://" style="width: 300px; height: auto;display: block;" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-img.png"
+                    // src=${process.env.HOST}/newsCoverImages/${newsImageUrl}
+                    width="300"
+                    style="width: 300px;height: auto; display: block;"
+                    loading="lazy"
+                    alt="news"
+                  />
+                </a>
+              </p>
+            </td>
+            <td  width="50%" style="width: 50%;padding: 0 40px 0 10px">
               <h1
                 style="
-                  font-size: 24px;
-                  line-height: 1.4;
-                  font-weight: 500;
-                  text-align: center;
+                  font-size: 18px;
+                  line-height: normal;
+                  font-weight: 700;
+                  text-align: left;
                   font-family: Arial, Helvetica, sans-serif;
-                  color: #060606;
-                  margin: 10px 0 30px 0;
+                  color: #000;
+                  margin: 0 0 15px 0;
                 "
               >
                 ${newsTitle}
               </h1>
-              <p style="text-align: center">
-                <img
-                  src=${process.env.HOST}/newsMobileImages/a-1717088301150-674578850.jpg
-                  width="416"
-                  height="360"
-                  loading="lazy"
-                  alt="expiry"
-                />
-              </p>
               <p
                 style="
-                  font-size: 15px;
-                  line-height: 1.5;
+                  font-size: 12px;
+                  line-height: 1.4;
                   font-weight: 400;
                   font-family: Arial, Helvetica, sans-serif;
-                  color: #060606;
-                  text-align: center;
-                  margin: 30px 0;
+                  color: #000;
+                  text-align: left;
+                  margin: 0 0 15px 0;
                 "
               >
-                ${newsContent}
+               ${newsContent}
               </p>
-              <p style="text-align: center;margin: 0 0 30px 0;">
-                <a href="https://thetopplayer.com" target="_blank" rel="noopener noreferrer">
+              <p style="margin: 10px 0">
+                <a href=${process.env.HOST} target="_blank" rel="noopener noreferrer">
                   <img
-                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/expiry-btn.png"
-                    width="214"
-                    height="73"
+                    src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-btn.png"
+                    width="160"
+                    height="45"
                     loading="lazy"
-                    alt="expiry"
+                    alt="enquiry"
                   />
                 </a>
               </p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 40px 40px;">
+              <p style="margin: 0">
+                <img
+                  src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-tle.png"
+                  loading="lazy"
+                  alt="tle"
+                  width="100%"
+                  style="width: 100%;height: auto;display: block;"
+                />
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 0;">
+              <table border="0" width="100%" cellpadding="0" cellspacing="0" style="width: 100%;padding: 0 ;display: table;">
+                <tr>
+                  <td style="padding: 0 10px 60px 40px;">
+                    <p style="margin: 0">
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-1.png"
+                          loading="lazy"
+                          alt="ft-img"
+                          width="184"
+                          style="width: 100%;height: auto;display: block;"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                  <td style="padding: 0 10px 60px;">
+                    <p style="margin: 0">
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-2.png"
+                          loading="lazy"
+                          alt="ft-img"
+                          width="184"
+                          style="width: 100%;height: auto;display: block;"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                  <td style="padding: 0 40px 60px 10px;">
+                    <p style="margin: 0">
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-3.png"
+                          loading="lazy"
+                          alt="ft-img"
+                          width="184"
+                          style="width: 100%;height: auto;display: block;"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <table border="0" width="100%" cellpadding="0" cellspacing="0" align="center" style="width: 100%;display: table;background-color: #262626;">
+                <tr>
+                  <td width="20%" style="width: 20%; padding: 20px 15px 20px 40px;">
+                    <p style="margin: 0">
+                      <a
+                        href="#!"
+                        style="display: block; margin: auto"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-logo-w.png"
+                          alt="logo"
+                          style="width: 160px;height: auto;display: block;"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                  <td width="50%" style="width: 50%;padding: 20px 15px;">
+                    <p
+                      style="
+                        font-size: 12px;
+                        line-height: normal;
+                        font-weight: 600;
+                        font-family: Arial, Helvetica, sans-serif;
+                        color: #fff;
+                        text-align: left;
+                        margin: 0 0 5px 0;
+                      "
+                    >
+                      Payment
+                    </p>
+                    <p>
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-pay.png"
+                          style="width: 100%;height: auto;display: block;"
+                          loading="lazy"
+                          alt="social"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                  <td  width="30%" style="width: 30%;padding: 20px 40px 20px 15px;">
+                    <p
+                      style="
+                        font-size: 12px;
+                        line-height: normal;
+                        font-weight: 600;
+                        font-family: Arial, Helvetica, sans-serif;
+                        color: #fff;
+                        text-align: left;
+                        margin: 0 0 5px 0;
+                      "
+                    >
+                      Social Media
+                    </p>
+                    <p>
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-1.png"
+                          width="13"
+                          height="13"
+                          loading="lazy"
+                          alt="social"
+                          style="display: inline-block;"
+                        />
+                      </a>
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-2.png"
+                          width="13"
+                          height="13"
+                          loading="lazy"
+                          alt="social"
+                          style="display: inline-block;"
+                        />
+                      </a>
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-3.png"
+                          width="13"
+                          height="13"
+                          loading="lazy"
+                          alt="social"
+                          style="display: inline-block;"
+                        />
+                      </a>
+                      <a
+                        href="http://"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                      >
+                        <img
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-4.png"
+                          width="13"
+                          height="13"
+                          loading="lazy"
+                          alt="social"
+                          style="display: inline-block;"
+                        />
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" style="padding: 10px 0; border-top: 1px solid #646464;">
+                    <p
+                      style="
+                        font-size: 12px;
+                        line-height: normal;
+                        font-weight: 400;
+                        font-family: Arial, Helvetica, sans-serif;
+                        color: #f0f0f0;
+                        text-align: center;
+                        margin: 0;
+                      "
+                    >
+                    Copyright © 2024 - The Top Player.   All rights reserved
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   </body>
-</html>`;
+</html>
+
+  `;
 }
 
 function ReminderMail() {

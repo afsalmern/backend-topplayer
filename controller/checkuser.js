@@ -17,11 +17,10 @@ exports.checkUsersWhoDontHavePurchase = async () => {
         {
           model: db.payment,
           required: false, // Left join to include users even if they have no payments
-          where: {
-            createdAt: { [db.Op.between]: [previous7Days, today] }, // Payments within the date range
-          },
+          attributes: [], // Do not select any fields from payments, as we only need the count
         },
       ],
+      group: ["user.id"], // Group by user.id to aggregate payments
       having: db.Sequelize.literal("COUNT(`payments`.`id`) = 0"), // Filter users without any payments
       raw: true,
     });

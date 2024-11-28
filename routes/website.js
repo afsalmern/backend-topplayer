@@ -47,6 +47,12 @@ router.get(
   [authMiddleware.checkUserAuth],
   websiteController.getSubscribedCourse
 );
+
+router.get(
+  "/my_courses",
+  [authMiddleware.checkUserAuth],
+  websiteController.getMyCourses
+);
 router.get(
   "/course/:courseId",
   [authMiddleware.checkUserAuth],
