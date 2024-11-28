@@ -430,7 +430,7 @@ function TrendingNewsMail(newsTitle, newsContent, newsImageUrl) {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-1.png"
+                          src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-img-1grdrd.png"
                           loading="lazy"
                           alt="ft-img"
                           width="184"
