@@ -1,7 +1,7 @@
 const { Worker } = require("worker_threads");
 const path = require("path");
 
-const sendEmails = (newsId,title_en, description_en, coverimage) => {
+const sendEmails = (newsId, title_en, title_ar, description_en, description_ar, coverimage) => {
   const worker = new Worker(path.join(__dirname, "../workers/emailWorker.js"));
 
   worker.on("message", (msg) => {
@@ -16,7 +16,7 @@ const sendEmails = (newsId,title_en, description_en, coverimage) => {
   });
 
   // Send task to worker (newsId to send emails)
-  worker.postMessage({ newsId,title_en, description_en, coverimage });
+  worker.postMessage({ newsId, title_en, title_ar, description_en, description_ar, coverimage });
 };
 
 const SendNotPurchaseMails = (users) => {

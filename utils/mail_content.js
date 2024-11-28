@@ -296,7 +296,7 @@ function EnquiryMail(user, message, mail) {
   </html>`;
 }
 
-function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
+function TrendingNewsMail(newsId, newsTitle, newsTitleAr, newsContent, newsContentAr, newsImageUrl) {
   return `
   <!DOCTYPE html>
 <html>
@@ -340,7 +340,7 @@ function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
           <tr>
             <td style="padding: 40px 20px 30px 20px" colspan="2">
               <p style="text-align: center">
-                <a href="#!" style="display: block; width: 200px; margin: auto">
+                <a href=${process.env.CLIENT_HOST} style="display: block; width: 200px; margin: auto">
                   <img
                     src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png"
                     width="200"
@@ -354,7 +354,7 @@ function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
           <tr>
             <td width="50%" style="width: 50%;padding: 0 10px 0 40px" >
               <p style="margin: 0">
-                <a href="http://" style="width: 300px; height: auto;display: block;" target="_blank" rel="noopener noreferrer">
+                <a href=${process.env.CLIENT_HOST} style="width: 300px; height: auto;display: block;" target="_blank" rel="noopener noreferrer">
                   <img
                     src=${process.env.HOST}/newsCoverImages/${newsImageUrl}
                     width="300"
@@ -368,31 +368,31 @@ function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
             <td  width="50%" style="width: 50%;padding: 0 40px 0 10px">
               <h1
                 style="
-                  font-size: 18px;
+                  font-size: 26px;
                   line-height: normal;
                   font-weight: 700;
-                  text-align: left;
+                  text-align: right;
                   font-family: Arial, Helvetica, sans-serif;
                   color: #000;
                   margin: 0 0 15px 0;
                 "
               >
-                ${newsTitle}
+              ${newsTitleAr}
               </h1>
               <p
                 style="
-                  font-size: 12px;
+                  font-size: 16px;
                   line-height: 1.4;
                   font-weight: 400;
                   font-family: Arial, Helvetica, sans-serif;
                   color: #000;
-                  text-align: left;
+                  text-align: right;
                   margin: 0 0 15px 0;
                 "
               >
-               ${newsContent}
-              </p>
-              <p style="margin: 10px 0">
+              ${newsContentAr}
+             </p>
+             <p style="margin: 10px 0;text-align:right;">
                 <a href=${process.env.CLIENT_HOST}en/news/${newsId} target="_blank" rel="noopener noreferrer">
                   <img
                     src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-btn.png"
@@ -402,6 +402,36 @@ function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
                     alt="enquiry"
                   />
                 </a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 40px 40px 0;">
+              <h1
+                  style="
+                    font-size: 26px;
+                    line-height: normal;
+                    font-weight: 700;
+                    text-align: center;
+                    font-family: Arial, Helvetica, sans-serif;
+                    color: #000;
+                    margin: 0 0 15px 0;
+                  "
+                >
+               ${newsTitle}
+                </h1>
+                <p
+                  style="
+                    font-size: 16px;
+                    line-height: 1.4;
+                    font-weight: 400;
+                    font-family: Arial, Helvetica, sans-serif;
+                    color: #000;
+                    text-align: center;
+                    margin: 0 0 15px 0;
+                  "
+                >
+                ${newsContent}
               </p>
             </td>
           </tr>
@@ -540,7 +570,7 @@ function TrendingNewsMail(newsId,newsTitle, newsContent, newsImageUrl) {
                     </p>
                     <p>
                       <a
-                        href="http://"
+                        href="https://www.snapchat.com/add/thetop.player"
                         target="_blank"
                         rel="noopener noreferrer"
                         style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"

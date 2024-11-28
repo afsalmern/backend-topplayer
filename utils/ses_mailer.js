@@ -19,7 +19,8 @@ const sendBulkEmail = async (type, emailList, data) => {
       htmlBody = ReminderMail();
       subject = "TheTopPlayer Reminder Mail";
     } else if (type === "trending") {
-      htmlBody = TrendingNewsMail(data.newsId,data.title_en, data.description_en, data.coverimage);
+      const { newsId, title_en, title_ar, description_en, description_ar, coverimage } = data;
+      htmlBody = TrendingNewsMail(newsId, title_en, title_ar, description_en, description_ar, coverimage);
       subject = "TheTopPlayer Trending Now";
     }
 

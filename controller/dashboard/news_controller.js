@@ -55,7 +55,7 @@ exports.addNews = async (req, res, next) => {
 
     if (remainingQuota > 0) {
       const newsId = createdNews?.id;
-      sendEmails(newsId, title_en, description_en, coverimage);
+      sendEmails(newsId, title_en, title_ar, description_en, description_ar, coverimage);
     }
 
     return res.status(200).send({
