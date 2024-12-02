@@ -341,6 +341,6 @@ router.delete("/subscriptions/:id", [authMiddleware.checkUserAuth], deleteSubscr
 router.post("/login", dashController.login);
 router.post("/signup", [authMiddleware.checkAuthDasboard], dashController.signup);
 
-// router.post("/send_mail", dashController.sendMail);
+router.post("/send_mail", dashController.sendMail);
 
 module.exports = router;

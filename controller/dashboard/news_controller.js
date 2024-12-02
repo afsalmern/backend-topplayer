@@ -6,6 +6,7 @@ const sendMail = require("../../utils/mailer");
 const { TrendingNewsMail } = require("../../utils/mail_content");
 const { sendEmails } = require("../../services/emailService");
 const { ses } = require("../../utils/ses_mailer");
+const { GetSendQuotaCommand } = require("@aws-sdk/client-ses");
 // Define messages in English
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -50,7 +51,8 @@ exports.addNews = async (req, res, next) => {
 
     await transaction.commit();
 
-    const data = await ses.getSendQuota().promise();
+    const command = new GetSendQuotaCommand({});
+    const data = await ses.send(command);
     const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
 
     if (remainingQuota > 0) {

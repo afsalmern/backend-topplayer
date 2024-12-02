@@ -1,8 +1,7 @@
-const AWS = require("aws-sdk");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const { ReminderMail, TrendingNewsMail } = require("./mail_content");
 
-AWS.config.update({ region: process.env.AWS_REGION });
-const ses = new AWS.SES({ apiVersion: "2010-12-01" });
+const ses = new SESClient({ region: process.env.AWS_REGION });
 
 // Utility function to introduce a delay (in milliseconds)
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -42,15 +41,15 @@ const sendBulkEmail = async (type, emailList, data) => {
       let attempt = 0;
       while (attempt < maxRetries) {
         try {
-          await ses.sendEmail(params).promise();
+          const command = new SendEmailCommand(params);
+          const response = await ses.send(command);
+
           console.log("Email sent successfully to " + recipientEmail.email);
           return;
         } catch (error) {
           if (error.code === "Throttling") {
             attempt++;
-            console.error(
-              `Throttling error: Retrying attempt ${attempt}/${maxRetries} for ${recipientEmail.email}`
-            );
+            console.error(`Throttling error: Retrying attempt ${attempt}/${maxRetries} for ${recipientEmail.email}`);
             await delay(retryDelayBase * Math.pow(2, attempt - 1)); // Exponential backoff
           } else {
             console.error("Error sending email to " + recipientEmail.email, error);

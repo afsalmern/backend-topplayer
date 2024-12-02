@@ -6,6 +6,7 @@ const { validationResult } = require("express-validator");
 const { SendNotPurchaseMails, sendEmails } = require("../services/emailService");
 const { ReminderMail } = require("../utils/mail_content");
 const { sendEmail, sendBulkEmail, ses } = require("../utils/ses_mailer");
+const { GetSendQuotaCommand } = require("@aws-sdk/client-ses");
 
 exports.addCategory = (req, res, next) => {
   db.category
@@ -209,52 +210,59 @@ exports.checkUsersWhoDontHavePurchase = async (req, res) => {
 
 exports.sendMail = async (req, res) => {
   try {
-    // const users = await db.user.findAll({
-    //   attributes: ["username", "email"],
-    //   where: { verified: true },
-    //   raw: true,
-    // });
-
-    // const { type } = req.body;
-    // if (type == "reminder") {
-    //   SendNotPurchaseMails(users);
-    // } else {
-    //   sendEmails(
-    //     "New Research Finds Link Between Exercise and Brain Health	",
-    //     "New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health	",
-    //     "top-web-1731934943635-497474337.webp"
-    //   );
-    // }
-
-    // res.status(200).json({ message: "Email sent successfully", result });
-
-    const today = new Date();
-    const previous7Days = new Date();
-    previous7Days.setDate(today.getDate() - 7); // Adjusted for clarity
-
     const users = await db.user.findAll({
-      attributes: ["id", "username", "email"],
-      where: {
-        createdAt: { [db.Op.between]: [previous7Days, today] },
-        verified : true
-      },
-      include: [
-        {
-          model: db.payment,
-          required: false,
-          attributes: [],
-        },
-      ],
-      where: {
-        "$payments.id$": null,
-      },
+      attributes: ["username", "email"],
+      where: { verified: true },
       raw: true,
     });
 
-    return res.status(200).json({
-      message: "Users who don't have a purchase in the last 7 days:",
-      users: users,
-    });
+    const command = new GetSendQuotaCommand({});
+    const data = await ses.send(command);
+
+    console.log("data", data);
+
+    const { type } = req.body;
+    if (type == "reminder") {
+      SendNotPurchaseMails(users);
+    } else {
+      sendEmails(
+        "New Research Finds Link Between Exercise and Brain Health	",
+        "New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health	",
+        "New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health	",
+        "New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health,New Research Finds Link Between Exercise and Brain Health	",
+        "top-web-1731934943635-497474337.webp"
+      );
+    }
+
+    res.status(200).json({ message: "Email sent successfully", result });
+
+    // const today = new Date();
+    // const previous7Days = new Date();
+    // previous7Days.setDate(today.getDate() - 7); // Adjusted for clarity
+
+    // const users = await db.user.findAll({
+    //   attributes: ["id", "username", "email"],
+    //   where: {
+    //     createdAt: { [db.Op.between]: [previous7Days, today] },
+    //     verified : true
+    //   },
+    //   include: [
+    //     {
+    //       model: db.payment,
+    //       required: false,
+    //       attributes: [],
+    //     },
+    //   ],
+    //   where: {
+    //     "$payments.id$": null,
+    //   },
+    //   raw: true,
+    // });
+
+    // return res.status(200).json({
+    //   message: "Users who don't have a purchase in the last 7 days:",
+    //   users: users,
+    // });
   } catch (err) {
     console.error(`Error in sending email: ${err.toString()}`);
     res.status(500).json({ message: "Failed to send email." });
