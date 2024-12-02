@@ -1,63 +1,71 @@
 const AWS = require("aws-sdk");
 const { ReminderMail, TrendingNewsMail } = require("./mail_content");
 
-// Configure AWS SES
-AWS.config.update({ region: process.env.AWS_REGION }); // Replace with your region
-
+AWS.config.update({ region: process.env.AWS_REGION });
 const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 
-// Function to send an email using SES
+// Utility function to introduce a delay (in milliseconds)
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const sendBulkEmail = async (type, emailList, data) => {
   const senderEmail = "noreply@thetopplayer.com"; // Must be verified in SES
+  const maxRetries = 5; // Maximum retries for throttling errors
+  const retryDelayBase = 1000; // Base delay for exponential backoff (in ms)
+  const maxSendRate = 14; // Emails per second
 
-  // Loop through each email in the list and send the email
-  const promises = emailList.map(async (recipientEmail) => {
-    let htmlBody;
-    let subject;
+  // Split email list into batches of 14
+  for (let i = 0; i < emailList.length; i += maxSendRate) {
+    const batch = emailList.slice(i, i + maxSendRate);
 
-    if (type === "reminder") {
-      htmlBody = ReminderMail();
-      subject = "TheTopPlayer Reminder Mail";
-    } else if (type === "trending") {
-      const { newsId, title_en, title_ar, description_en, description_ar, coverimage } = data;
-      htmlBody = TrendingNewsMail(newsId, title_en, title_ar, description_en, description_ar, coverimage);
-      subject = "TheTopPlayer Trending Now";
-    }
+    const promises = batch.map(async (recipientEmail) => {
+      let htmlBody;
+      let subject;
 
-    // Setup email parameters
-    const params = {
-      Source: senderEmail, // Sender email (must be verified in SES)
-      Destination: {
-        ToAddresses: [recipientEmail.email], // Recipient's email
-      },
-      Message: {
-        Subject: {
-          Data: subject,
-          Charset: "UTF-8",
+      if (type === "reminder") {
+        htmlBody = ReminderMail();
+        subject = "TheTopPlayer Reminder Mail";
+      } else if (type === "trending") {
+        const { newsId, title_en, title_ar, description_en, description_ar, coverimage } = data;
+        htmlBody = TrendingNewsMail(newsId, title_en, title_ar, description_en, description_ar, coverimage);
+        subject = "TheTopPlayer Trending Now";
+      }
+
+      const params = {
+        Source: senderEmail,
+        Destination: { ToAddresses: [recipientEmail.email] },
+        Message: {
+          Subject: { Data: subject, Charset: "UTF-8" },
+          Body: { Html: { Data: htmlBody, Charset: "UTF-8" } },
         },
-        Body: {
-          Html: {
-            Data: htmlBody, // Generated HTML template
-            Charset: "UTF-8",
-          },
-        },
-      },
-    };
+      };
 
-    // Send the email
-    try {
-      const data = await ses.sendEmail(params).promise();
-      console.log("Email sent successfully to " + recipientEmail.email, data);
-    } catch (error) {
-      console.error("Error sending email to " + recipientEmail.email, error);
+      let attempt = 0;
+      while (attempt < maxRetries) {
+        try {
+          await ses.sendEmail(params).promise();
+          console.log("Email sent successfully to " + recipientEmail.email);
+          return;
+        } catch (error) {
+          if (error.code === "Throttling") {
+            attempt++;
+            console.error(
+              `Throttling error: Retrying attempt ${attempt}/${maxRetries} for ${recipientEmail.email}`
+            );
+            await delay(retryDelayBase * Math.pow(2, attempt - 1)); // Exponential backoff
+          } else {
+            console.error("Error sending email to " + recipientEmail.email, error);
+            return; // Exit loop on non-throttling errors
+          }
+        }
+      }
+    });
+
+    // Wait for all emails in the batch to complete before moving to the next batch
+    await Promise.all(promises);
+    if (i + maxSendRate < emailList.length) {
+      await delay(1000); // Ensure a 1-second delay between batches
     }
-  });
-
-  // Wait for all emails to be sent
-  await Promise.all(promises);
+  }
 };
 
-module.exports = {
-  sendBulkEmail,
-  ses,
-};
+module.exports = { sendBulkEmail, ses };
