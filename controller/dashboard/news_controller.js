@@ -457,7 +457,7 @@ const createMobileImages = async (imagePaths) => {
 
         // Resize the image for mobile and save it
         await sharp(imageBufferData)
-          .resize({ width: 376, height: 420, fit: "inside" }) // Mobile resolution
+          .resize({ width: 409, height: 526, fit: "inside", }) // Mobile resolution
           .toFile(mobileImagePath);
 
         // Store the path or URL for the resized image

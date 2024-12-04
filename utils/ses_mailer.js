@@ -7,7 +7,9 @@ const ses = new SESClient({ region: process.env.AWS_REGION });
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const sendBulkEmail = async (type, emailList, data) => {
-  const senderEmail = "noreply@thetopplayer.com"; // Must be verified in SES
+  const senderEmail = "info@thetopplayer.com"; // Must be verified in SES
+  const senderName = "The Top Player"; // Custom display name
+
   const maxRetries = 5; // Maximum retries for throttling errors
   const retryDelayBase = 1000; // Base delay for exponential backoff (in ms)
   const maxSendRate = 14; // Emails per second
@@ -26,11 +28,11 @@ const sendBulkEmail = async (type, emailList, data) => {
       } else if (type === "trending") {
         const { newsId, title_en, title_ar, description_en, description_ar, coverimage } = data;
         htmlBody = TrendingNewsMail(newsId, title_en, title_ar, description_en, description_ar, coverimage);
-        subject = "TheTopPlayer Trending Now";
+        subject = title_ar;
       }
 
       const params = {
-        Source: senderEmail,
+        Source: `${senderName} <${senderEmail}>`,
         Destination: { ToAddresses: [recipientEmail.email] },
         Message: {
           Subject: { Data: subject, Charset: "UTF-8" },

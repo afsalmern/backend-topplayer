@@ -573,7 +573,7 @@ function TrendingNewsMail(newsId, newsTitle, newsTitleAr, newsContent, newsConte
                         href="https://www.snapchat.com/add/thetop.player"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                        style="width:13px;margin-right: 10px;display: inline-block;text-decoration: none;"
                       >
                         <img
                           src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-1.png"
@@ -588,7 +588,7 @@ function TrendingNewsMail(newsId, newsTitle, newsTitleAr, newsContent, newsConte
                         href="https://www.tiktok.com/@thetop.player?_t=8i0wA2PQnHc&_r=1"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                        style="width:13px;margin-right: 10px;display: inline-block;text-decoration: none;"
                       >
                         <img
                           src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-2.png"
@@ -603,7 +603,7 @@ function TrendingNewsMail(newsId, newsTitle, newsTitleAr, newsContent, newsConte
                         href="https://api.whatsapp.com/send/?phone=971501225632&text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%2C+%D8%B9%D9%86%D8%AF%D9%8A+%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1+%D8%A8%D8%AE%D8%B5%D9%88%D8%B5&type=phone_number&app_absent=0"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                        style="width:13px;margin-right: 10px;display: inline-block;text-decoration: none;"
                       >
                         <img
                           src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-3.png"
@@ -618,7 +618,7 @@ function TrendingNewsMail(newsId, newsTitle, newsTitleAr, newsContent, newsConte
                         href="https://www.instagram.com/thetop.player/?igshid=OGQ5ZDc2ODk2ZA%3D%3D"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style="width:13px;margin-right: 15px;display: inline-block;text-decoration: none;"
+                        style="width:13px;margin-right: 10px;display: inline-block;text-decoration: none;"
                       >
                         <img
                           src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/n-ft-social-4.png"
