@@ -16,7 +16,11 @@ exports.checkIsPurchased = async (req, res, next) => {
 
   try {
     // Check if the course is free and allow first day of first week
-    if (courseId == process.env.FREE_COURSE_ID && weekNum === 1 && dayNum === 1) {
+    // if (courseId == process.env.FREE_COURSE_ID && weekNum === 1 && dayNum === 1) {
+    //   return next();
+    // }
+
+    if (weekNum === 1 && dayNum === 1) {
       return next();
     }
 
@@ -27,10 +31,16 @@ exports.checkIsPurchased = async (req, res, next) => {
     });
 
     // Handle free course access when user is not registered
+    // if (!registeredCourse) {
+    //   if (courseId == process.env.FREE_COURSE_ID && (weekNum > 1 || dayNum > 1)) {
+    //     return res.status(403).json({ message: "You have not purchased this course" });
+    //   } else if (courseId != process.env.FREE_COURSE_ID) {
+    //     return res.status(403).json({ message: "You have not purchased this course" });
+    //   }
+    // }
+
     if (!registeredCourse) {
-      if (courseId == process.env.FREE_COURSE_ID && (weekNum > 1 || dayNum > 1)) {
-        return res.status(403).json({ message: "You have not purchased this course" });
-      } else if (courseId != process.env.FREE_COURSE_ID) {
+      if (weekNum > 1 || dayNum > 1) {
         return res.status(403).json({ message: "You have not purchased this course" });
       }
     }

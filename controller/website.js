@@ -322,6 +322,7 @@ exports.getAllTestimonialsById = async (req, res, next) => {
 };
 
 exports.getCourseMaterial = async (req, res, next) => {
+  console.log("this calllled");
   try {
     const courseId = req.params.courseId;
     const userId = req.userDecodeId;
@@ -450,14 +451,7 @@ exports.getCourseMaterial = async (req, res, next) => {
 
       console.log("FINAL =====<<<<<<>>>>>>>>", final_course);
 
-      if (courseId == process.env.FREE_COURSE_ID) {
-        console.log("FREE COURSE");
-
-        res.status(200).send(final_course);
-      } else {
-        console.log("NOT VALID");
-        res.status(500).send({ message: "The subscription is not valid" });
-      }
+      return res.status(200).send(final_course);
     }
   } catch (error) {
     console.log(error);
