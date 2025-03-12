@@ -325,7 +325,7 @@ exports.getCourseMaterial = async (req, res, next) => {
   console.log("this calllled");
   try {
     const courseId = req.params.courseId;
-    const userId = req.userDecodeId;
+    const userId = req.userDecodeId || null;
     let monthCount = 3;
     if (courseId == 2) {
       monthCount = 4;
@@ -601,7 +601,7 @@ exports.getVideos = async (req, res, next) => {
 
   try {
     const courseId = req.params.courseId;
-    const userId = req.userDecodeId;
+    const userId = req.userDecodeId || null;
     const subcourseId = req.params.subCourseId;
     const day = req.params.day;
 
@@ -673,95 +673,55 @@ exports.getVideos = async (req, res, next) => {
 
 exports.getVideo = async (req, res, next) => {
   try {
-    let token = req.params.token;
-    const secret = process.env.SECRET;
-
     console.log("params===========>", req.params);
 
-    if (!token) {
-      return res.status(401).send({
-        authentication: false,
-        message: "No token provided!",
-      });
+    const courseId = req.params.courseId;
+    const videoId = req.params.videoId;
+
+    let monthCount = 3;
+    if (courseId == 2) {
+      monthCount = 4;
     }
+    const monthsAgo = new Date();
+    monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
 
-    jwt.verify(token, secret, async (err, decoded) => {
-      if (err) {
-        console.error(`error in verifying ${err.toString()}`);
-        return res.status(401).send({
-          authentication: false,
-          message: err.toString(),
-        });
-      }
 
-      if (!decoded) {
-        return res.status(401).send({
-          authentication: false,
-          message: "Unauthorized!",
-        });
-      }
+    let video = await db.video.findByPk(videoId);
 
-      const courseId = req.params.courseId;
-      const userId = decoded.id;
-      const videoId = req.params.videoId;
+    console.log("video====>", video);
+    console.log("videoId====>", videoId);
 
-      let monthCount = 3;
-      if (courseId == 2) {
-        monthCount = 4;
-      }
-      const monthsAgo = new Date();
-      monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
+    const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video?.url);
 
-      console.log(`userid ${userId} course id ${courseId}`);
-      console.log(monthsAgo);
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
 
-      const registeredCourse = await db.registeredCourse.findOne({
-        where: {
-          courseId: courseId,
-          userId: userId,
-          createdAt: {
-            [db.Op.gte]: monthsAgo,
-          },
-        },
-      });
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
 
-      let video = await db.video.findByPk(videoId);
+      const chunkSize = end - start + 1;
+      const file = fs.createReadStream(videoPath, { start, end });
+      const headers = {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunkSize,
+        "Content-Type": "video/mp4",
+      };
 
-      console.log("video====>", video);
-      console.log("videoId====>", videoId);
+      res.writeHead(206, headers);
+      file.pipe(res);
+    } else {
+      const headers = {
+        "Content-Length": fileSize,
+        "Content-Type": "video/mp4",
+      };
 
-      const videoPath = path.join(__dirname, "..", "assets", "trojanTTt", "videos", "new", video?.url);
-
-      const stat = fs.statSync(videoPath);
-      const fileSize = stat.size;
-      const range = req.headers.range;
-
-      if (range) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-        const chunkSize = end - start + 1;
-        const file = fs.createReadStream(videoPath, { start, end });
-        const headers = {
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Length": chunkSize,
-          "Content-Type": "video/mp4",
-        };
-
-        res.writeHead(206, headers);
-        file.pipe(res);
-      } else {
-        const headers = {
-          "Content-Length": fileSize,
-          "Content-Type": "video/mp4",
-        };
-
-        res.writeHead(200, headers);
-        fs.createReadStream(videoPath).pipe(res);
-      }
-    });
+      res.writeHead(200, headers);
+      fs.createReadStream(videoPath).pipe(res);
+    }
   } catch (error) {
     console.log(`error in getting a Video ${error.toString()}`);
     res.status(500).send({ message: error.toString() });
@@ -885,6 +845,10 @@ exports.watchVideo = (req, res, next) => {
   const videoId = req.body.videoId;
   const userId = req.userDecodeId;
   console.log(`userid ${userId} is registering a video id ${videoId} `);
+
+  if (!userId) {
+    return res.status(200).send({ message: "user watched video successfully" });
+  }
 
   db.watchedVideo
     .findOrCreate({
