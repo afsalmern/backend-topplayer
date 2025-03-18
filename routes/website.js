@@ -42,8 +42,8 @@ router.get(
   [checkUserAuthOptional],
   websiteController.getCourseMaterial
 );
-router.get("/getCourseById/:id", [authMiddleware.checkUserAuth], courseController.getCourseById);
-router.get("/subcourse/:courseId/:subCourseId", [authMiddleware.checkUserAuth], websiteController.getSubCourseMaterial);
+router.get("/getCourseById/:id", checkUserAuthOptional, courseController.getCourseById);
+router.get("/subcourse/:courseId/:subCourseId", checkUserAuthOptional, websiteController.getSubCourseMaterial);
 //router.post('/course',[authMiddleware.checkUserAuth],  websiteController.registerCourse);
 
 router.post(
