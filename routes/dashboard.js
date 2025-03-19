@@ -60,6 +60,7 @@ const {
   deleteInfluencerPerson,
   updateInfluencerPerson,
   updateInfluencerPassword,
+  getCouponsForInfluncers,
 } = require("../controller/Influencers/influencer_person_controller");
 
 const router = express.Router();
@@ -238,6 +239,7 @@ router.post("/influencer-persons", [authMiddleware.checkUserAuth], addInfluencer
 router.patch("/influencer-persons/:id", [authMiddleware.checkUserAuth], updateInfluencerPerson);
 router.delete("/influencer-persons/:id", [authMiddleware.checkUserAuth], deleteInfluencerPerson);
 router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
+router.get("/influencer-coupons/:id", [authMiddleware.checkUserAuth], getCouponsForInfluncers);
 router.patch("/update-password-influencer", [authMiddleware.checkUserAuth], updateInfluencerPassword);
 
 router.get("/congrats-box", [authMiddleware.checkUserAuth], getCongrats);
@@ -334,7 +336,6 @@ router.patch("/coupons/:id", updateInfluencerStatus);
 router.delete("/coupons/:id", deleteInfluencer);
 router.get("/coupons_orders/:influencer?/:from?/:to?", getOrdersInflucencers);
 
-router.post("/influencer-coupon", [authMiddleware.checkUserAuth], addInfluencerToCoupon);
 
 router.post("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.addVideo);
 router.get("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.getAllVideos);

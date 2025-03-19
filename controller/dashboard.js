@@ -104,12 +104,9 @@ exports.login = async (req, res, next) => {
     }
 
     const secret = process.env.SECRET;
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
-    console.log("ROLE", role);
-
-    const dbTofind = role == "influencer" ? db.influencerPersons : db.adminUser;
-    console.log("ROLE", dbTofind);
+    const dbTofind = db.adminUser;
 
     const user = await dbTofind.findOne({ where: { email } });
 
@@ -132,10 +129,9 @@ exports.login = async (req, res, next) => {
 
     const token = jwt.sign({ id: user.id, role: user?.role }, secret, { expiresIn: "1d" });
 
-    console.log(`User ${role == "influencer" ? user.name : user.username} logged in successfully.`);
     return res.status(200).send({
       email: user.email,
-      username: role == "influencer" ? user.name : user.username,
+      username: user.username,
       userId: user.id,
       role: user?.role,
       token: token,

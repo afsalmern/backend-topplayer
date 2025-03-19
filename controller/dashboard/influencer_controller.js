@@ -2,7 +2,7 @@ const { where } = require("sequelize");
 const db = require("../../models");
 // Create a new influencer
 exports.addInfluencer = async function (req, res) {
-  const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage } = req.body;
+  const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage, influencer } = req.body;
 
   try {
     const existingCouponCode = await db.influencer.findOne({
@@ -25,7 +25,7 @@ exports.addInfluencer = async function (req, res) {
       });
     }
 
-    await db.influencer.create({
+    const createdCoupon = await db.influencer.create({
       coupon_code: coupon_code.trim(),
       expire_in,
       start_in,
@@ -33,6 +33,13 @@ exports.addInfluencer = async function (req, res) {
       coupon_percentage,
       commision_percentage,
       is_active: true,
+    });
+
+    const coupon_id = createdCoupon?.id;
+
+    await db.InfluencerCoupons.create({
+      influencer_id : influencer,
+      coupon_id,
     });
 
     res.status(201).send({ message: "Influencer added successfully" });
@@ -91,37 +98,13 @@ exports.getInfluencers = async function (req, res) {
       };
     });
 
-    const selectOptions = influencers.map((influencer) => ({
-      value: influencer.id,
-      label: influencer.coupon_code,
-    }));
-
-    res.status(200).send({updatedInfluencers, selectOptions});
+    res.status(200).send(updatedInfluencers);
   } catch (error) {
     console.error("Error fetching influencers:", error);
     res.status(500).json({ error: "Failed to fetch influencers" });
   }
 };
 
-exports.addInfluencerToCoupon = async function (req, res) {
-  const { influencer_ids, coupon_id } = req.body;
-  try {
-    const coupon = await db.influencer.findByPk(coupon_id);
-    if (!coupon) {
-      return res.status(400).send({ message: "Coupon not found" });
-    }
-
-    console.log(db.influencer);
-
-    await coupon.setInfluencers(influencer_ids);
-    res.status(200).send({ message: "Influencers added to coupon successfully" });
-  } catch (error) {
-    console.error("Error adding influencers to coupon:", error);
-    res.status(500).send({ message: "Error adding influencers to coupon" });
-  }
-};
-
-// Update an influencer
 exports.updateInfluencer = async function (req, res) {
   const { id } = req.params;
   const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage, is_active } = req.body;

@@ -4,9 +4,9 @@ const generateRandomPassword = require("../../utils/generate_password");
 const { passwordResetMailInfluencer } = require("../../utils/mail_content");
 const sendMail = require("../../utils/mailer");
 exports.addInfluencerPerson = async (req, res) => {
+  const { name, phone, email, password, role } = req.body;
+  const transaction = await db.sequelize.transaction();
   try {
-    const { name, phone, email, password } = req.body;
-
     // Check if email or phone already exists in parallel
     const [existingEmail, existingPhone] = await Promise.all([
       db.influencerPersons.findOne({ where: { email } }),
@@ -18,16 +18,36 @@ exports.addInfluencerPerson = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newInfluencerPerson = await db.influencerPersons.create({
-      name,
-      phone,
-      email,
-      password: hashedPassword,
-    });
+    const newInfluencerPerson = await db.influencerPersons.create(
+      {
+        name,
+        phone,
+        email,
+        password: hashedPassword,
+      },
+      {
+        transaction,
+      }
+    );
+
+    const addToAdmin = await db.adminUser.create(
+      {
+        username: name,
+        email,
+        password: hashedPassword,
+        role,
+      },
+      {
+        transaction,
+      }
+    );
+
+    await transaction.commit();
 
     res.status(201).json(newInfluencerPerson);
   } catch (error) {
     console.error("Error creating influencer person:", error);
+    await transaction.rollback();
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -86,10 +106,37 @@ exports.getInfluencerPerson = async (req, res) => {
   }
 };
 
+exports.getCouponsForInfluncers = async (req, res) => {
+  const { id: influencer_id } = req.params;
+  try {
+    const influencer = await db.influencerPersons.findByPk(influencer_id,{
+      attributes:["id","name","email","phone"]
+    });
+    if (!influencer) return res.status(404).json({ message: "Influencer person not found" });
+
+    const couponDetails = await db.influencerPersons.findByPk(influencer_id, {
+      attributes: ["id"],
+      include: [
+        {
+          model: db.influencer,
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+    });
+
+    res.status(200).json({couponDetails,influencer});
+  } catch (error) {
+    console.error("Error gettiing influencer coupons:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 exports.getAllInfluencerPersons = async (req, res) => {
   try {
     const influencerPersons = await db.influencerPersons.findAll({
-      attributes: ["id", "name", "phone", "email","status"],
+      attributes: ["id", "name", "phone", "email", "status"],
       order: [["createdAt", "DESC"]],
     });
 
@@ -106,6 +153,9 @@ exports.deleteInfluencerPerson = async (req, res) => {
 
     const influencerPerson = await db.influencerPersons.findByPk(id);
     if (!influencerPerson) return res.status(404).json({ message: "Influencer person not found" });
+
+    const adminUser = await db.adminUser.findOne({ where: { email: influencerPerson.email } });
+    if (adminUser) await adminUser.destroy();
 
     await influencerPerson.destroy();
 
@@ -127,13 +177,13 @@ exports.updateInfluencerPassword = async (req, res) => {
     const password = generateRandomPassword();
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log(password)
-    console.log(hashedPassword)
-    
+    console.log(password);
+    console.log(hashedPassword);
+
     const updateResult = await influencerPerson.update({
       password: hashedPassword,
     });
-    console.log(updateResult)
+    console.log(updateResult);
 
     if (!updateResult) {
       return res.status(500).json({ message: "Failed to update password" });
