@@ -3,15 +3,10 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_dbname,
-  process.env.DB_user,
-  process.env.DB_pss,
-  {
-    dialect: "mysql",
-    host: process.env.DB_host,
-  }
-);
+const sequelize = new Sequelize(process.env.DB_dbname, process.env.DB_user, process.env.DB_pss, {
+  dialect: "mysql",
+  host: process.env.DB_host,
+});
 
 db = {};
 db.Sequelize = Sequelize;
@@ -47,6 +42,8 @@ db.currency = require("./currency")(sequelize, Sequelize);
 db.footer = require("./footer")(sequelize, Sequelize);
 db.influencer = require("./influncer")(sequelize, Sequelize);
 db.paymentWithCoupon = require("./paymentWithCoupon")(sequelize, Sequelize);
+db.influencerPersons = require("./influencer_persons")(sequelize, Sequelize);
+db.InfluencerCoupons = require("./InfluencerCoupon")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
@@ -161,5 +158,9 @@ db.bannerImages.belongsTo(db.banner, { foreignKey: "bannerId" });
 
 db.influencer.belongsToMany(db.payment, { through: db.paymentWithCoupon });
 db.payment.belongsToMany(db.influencer, { through: db.paymentWithCoupon });
+
+db.influencerPersons.belongsToMany(db.influencer, { through: db.InfluencerCoupons, foreignKey: "influencer_id" });
+db.influencer.belongsToMany(db.influencerPersons, { through: db.InfluencerCoupons, foreignKey: "coupon_id" });
+
 
 module.exports = db;

@@ -104,9 +104,14 @@ exports.login = async (req, res, next) => {
     }
 
     const secret = process.env.SECRET;
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
-    const user = await db.adminUser.findOne({ where: { email } });
+    console.log("ROLE", role);
+
+    const dbTofind = role == "influencer" ? db.influencerPersons : db.adminUser;
+    console.log("ROLE", dbTofind);
+
+    const user = await dbTofind.findOne({ where: { email } });
 
     if (!user) {
       const error = new Error("User not found.");
@@ -116,6 +121,8 @@ exports.login = async (req, res, next) => {
 
     const passwordIsValid = await bcrypt.compare(password, user.password);
 
+    console.log(passwordIsValid);
+
     if (!passwordIsValid) {
       console.error(`User ${user.username} login failed: Invalid password`);
       const error = new Error("Invalid password!");
@@ -123,13 +130,14 @@ exports.login = async (req, res, next) => {
       throw error;
     }
 
-    const token = jwt.sign({ id: user.id }, secret, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user.id, role: user?.role }, secret, { expiresIn: "1d" });
 
-    console.log(`User ${user.username} logged in successfully.`);
-    res.status(200).send({
+    console.log(`User ${role == "influencer" ? user.name : user.username} logged in successfully.`);
+    return res.status(200).send({
       email: user.email,
-      username: user.username,
+      username: role == "influencer" ? user.name : user.username,
       userId: user.id,
+      role: user?.role,
       token: token,
       message: "Login successful",
     });

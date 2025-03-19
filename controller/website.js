@@ -582,14 +582,7 @@ exports.getSubCourseMaterial = async (req, res, next) => {
 
       console.log("final_sub_course====>", final_sub_course);
 
-      if (courseId == process.env.FREE_COURSE_ID) {
-        console.log("FREE COURSE");
-
-        res.status(200).send(final_sub_course);
-      } else {
-        console.log("NOT VALID");
-        res.status(500).send({ message: "The subscription is not valid" });
-      }
+      return res.status(200).send(final_sub_course);
     }
   } catch (error) {
     res.status(500).send({ message: error.toString() });
@@ -684,7 +677,6 @@ exports.getVideo = async (req, res, next) => {
     }
     const monthsAgo = new Date();
     monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
-
 
     let video = await db.video.findByPk(videoId);
 

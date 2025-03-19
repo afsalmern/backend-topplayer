@@ -2,16 +2,7 @@ const { where } = require("sequelize");
 const db = require("../../models");
 // Create a new influencer
 exports.addInfluencer = async function (req, res) {
-  const {
-    name,
-    phone,
-    email,
-    coupon_code,
-    expire_in,
-    start_in,
-    max_apply_limit,
-    coupon_percentage,
-  } = req.body;
+  const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage } = req.body;
 
   try {
     const existingCouponCode = await db.influencer.findOne({
@@ -24,21 +15,6 @@ exports.addInfluencer = async function (req, res) {
       });
     }
 
-    const existingEmail = await db.influencer.findOne({ where: { email } });
-    if (existingEmail) {
-      return res
-        .status(400)
-        .json({ message: "Influencer with this mail already exists" });
-    }
-
-    // Check for duplicate phone
-    const existingPhone = await db.influencer.findOne({ where: { phone } });
-    if (existingPhone) {
-      return res
-        .status(400)
-        .json({ message: "Influencer with this phone number already exists" });
-    }
-
     const startDate = new Date(start_in);
     const expiryDate = new Date(expire_in);
 
@@ -49,15 +25,13 @@ exports.addInfluencer = async function (req, res) {
       });
     }
 
-    const newInfluencer = await db.influencer.create({
-      name,
-      phone,
-      email,
+    await db.influencer.create({
       coupon_code: coupon_code.trim(),
       expire_in,
       start_in,
       max_apply_limit,
       coupon_percentage,
+      commision_percentage,
       is_active: true,
     });
 
@@ -71,7 +45,24 @@ exports.addInfluencer = async function (req, res) {
 // Get all influencers
 exports.getInfluencers = async function (req, res) {
   try {
-    const influencers = await db.influencer.findAll();
+    const influencers = await db.influencer.findAll({
+      attributes: [
+        "id",
+        "name",
+        "phone",
+        "email",
+        "coupon_code",
+        "start_in",
+        "expire_in",
+        "is_active",
+        "max_apply_limit",
+        "coupon_percentage",
+        "commision_percentage",
+        "createdAt",
+        "updatedAt",
+      ],
+      order: [["createdAt", "DESC"]], // Order by latest created records
+    });
 
     const updatedInfluencers = influencers.map((influencer) => {
       const currentDate = new Date();
@@ -90,10 +81,7 @@ exports.getInfluencers = async function (req, res) {
         status = "expired";
       } else if (currentFormatted < startFormatted) {
         status = "to be active";
-      } else if (
-        currentFormatted >= startFormatted &&
-        currentFormatted <= expiryFormatted
-      ) {
+      } else if (currentFormatted >= startFormatted && currentFormatted <= expiryFormatted) {
         status = "active";
       }
 
@@ -103,27 +91,40 @@ exports.getInfluencers = async function (req, res) {
       };
     });
 
-    res.status(200).send(updatedInfluencers);
+    const selectOptions = influencers.map((influencer) => ({
+      value: influencer.id,
+      label: influencer.coupon_code,
+    }));
+
+    res.status(200).send({updatedInfluencers, selectOptions});
   } catch (error) {
     console.error("Error fetching influencers:", error);
     res.status(500).json({ error: "Failed to fetch influencers" });
   }
 };
 
+exports.addInfluencerToCoupon = async function (req, res) {
+  const { influencer_ids, coupon_id } = req.body;
+  try {
+    const coupon = await db.influencer.findByPk(coupon_id);
+    if (!coupon) {
+      return res.status(400).send({ message: "Coupon not found" });
+    }
+
+    console.log(db.influencer);
+
+    await coupon.setInfluencers(influencer_ids);
+    res.status(200).send({ message: "Influencers added to coupon successfully" });
+  } catch (error) {
+    console.error("Error adding influencers to coupon:", error);
+    res.status(500).send({ message: "Error adding influencers to coupon" });
+  }
+};
+
 // Update an influencer
 exports.updateInfluencer = async function (req, res) {
   const { id } = req.params;
-  const {
-    name,
-    phone,
-    email,
-    coupon_code,
-    expire_in,
-    start_in,
-    max_apply_limit,
-    coupon_percentage,
-    is_active,
-  } = req.body;
+  const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage, is_active } = req.body;
 
   try {
     // Find the influencer by primary key
@@ -132,30 +133,6 @@ exports.updateInfluencer = async function (req, res) {
     // If influencer not found, return a 404 error
     if (!influencer) {
       return res.status(404).json({ error: "Influencer not found" });
-    }
-
-    // Check if the email is already in use by another influencer
-    const existingEmail = await db.influencer.findOne({
-      where: {
-        email,
-        id: { [db.Sequelize.Op.ne]: id }, // Exclude the current influencer
-      },
-    });
-
-    if (existingEmail) {
-      return res.status(400).json({ message: "Email already in use" });
-    }
-
-    // Check if the phone number is already in use by another influencer
-    const existingPhone = await db.influencer.findOne({
-      where: {
-        phone,
-        id: { [db.Sequelize.Op.ne]: id }, // Exclude the current influencer
-      },
-    });
-
-    if (existingPhone) {
-      return res.status(400).json({ message: "Phone number already in use" });
     }
 
     // Check if the coupon code is already in use by another influencer
@@ -173,14 +150,15 @@ exports.updateInfluencer = async function (req, res) {
 
     // Update the influencer with new data
     await influencer.update({
-      name: name || influencer.name,
-      phone: phone || influencer.phone,
-      email: email || influencer.email,
+      // name: name || influencer.name,
+      // phone: phone || influencer.phone,
+      // email: email || influencer.email,
       coupon_code: coupon_code.trim() || influencer.coupon_code,
       expire_in: expire_in || influencer.expire_in,
       start_in: start_in || influencer.start_in,
       max_apply_limit: max_apply_limit || influencer.max_apply_limit,
       coupon_percentage: coupon_percentage || influencer.coupon_percentage,
+      commision_percentage: commision_percentage || influencer.commision_percentage,
       is_active: is_active || influencer.is_active,
     });
 
@@ -294,10 +272,7 @@ exports.getOrdersInflucencers = async function (req, res) {
       attributes: [
         [db.Sequelize.literal("FORMAT(SUM(net_amount), 2)"), "totalRevenue"],
         [db.Sequelize.literal("FORMAT(SUM(amount), 2)"), "totalPayment"],
-        [
-          db.Sequelize.fn("COUNT", db.Sequelize.col("net_amount")),
-          "totalOrders",
-        ],
+        [db.Sequelize.fn("COUNT", db.Sequelize.col("net_amount")), "totalOrders"],
         [db.Sequelize.col("influencers.id"), "influencerId"],
         [db.Sequelize.col("influencers.name"), "influencerName"],
         [db.Sequelize.col("influencers.coupon_code"), "couponCode"],

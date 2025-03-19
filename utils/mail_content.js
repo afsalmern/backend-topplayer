@@ -801,4 +801,84 @@ function ReminderMail() {
   `;
 }
 
-module.exports = { WelcomeMail, resendMail, passwordResetMail, EnquiryMail, paymentSuccessMail, TrendingNewsMail, ReminderMail };
+function passwordResetMailInfluencer(username, password) {
+  return `
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        a[href] {
+            color: #9E6439;
+        }
+    </style>
+</head>
+
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+    <div style="width:700px; margin: auto; background: #fff;">
+        <table id="Table_01" width="700" border="0" cellpadding="0" cellspacing="0" align="center"
+            style="background-color: #F8F2ED;background-image: url(https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png);background-position: center;background-size: 440px 360px;background-repeat: no-repeat; padding: 60px 20px;">
+            <tbody>
+                <tr>
+                    <td style="padding: 30px 60px;">
+                        <a href="#!" style="display: block; width: 200px;">
+                            <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" width="200"
+                                height="60" alt="logo">
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 30px 60px;">
+                        <h1
+                            style="font-size: 24px; line-height: 1; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 10px 0;">
+                            The Top Player</h1>
+                        <h1
+                            style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">
+                            Password Reset</h1>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Dear ${username},</p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            We recently received a request to reset the password for your The Top Player account for influencers.Please use the following as the new password:
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            <b>Password: ${password}</b>
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Please enter this OTP on the password reset page to create a new password for your account.
+                            If you didn't initiate this request or have any concerns about the security of your account,
+                            please contact our support team immediately at ${process.env.SUPPORT_EMAILID} or connect us through Whatsapp at ${process.env.SUPPORT_CONTACT}.
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Thank you for helping us maintain the security of your The Top Player account.</p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Best regards, <br>
+                            The Top Player Team</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
+`;
+}
+
+module.exports = {
+  WelcomeMail,
+  resendMail,
+  passwordResetMail,
+  EnquiryMail,
+  paymentSuccessMail,
+  TrendingNewsMail,
+  ReminderMail,
+  passwordResetMailInfluencer,
+};

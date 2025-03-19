@@ -8,18 +8,22 @@ module.exports = (sequelize, Sequelize) => {
     },
     name: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     phone: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     email: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     coupon_code: {
       type: Sequelize.STRING,
+      allowNull: false,
+    },
+    commision_percentage: {
+      type: Sequelize.INTEGER,
       allowNull: false,
     },
     coupon_percentage: {
