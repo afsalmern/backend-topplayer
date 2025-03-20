@@ -80,7 +80,14 @@ const uploadStt = multer({
 
 const multerStorageImage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/bannerImages");
+    const uploadFolder = "public/bannerImages";
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -95,7 +102,14 @@ const uploadImage = multer({
 
 const multerStrNewsBannerImg = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/news-banner-images");
+    const uploadFolder = "public/news-banner-images";
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -130,8 +144,14 @@ const multerStorageNews = multer.diskStorage({
       coverimage: "public/newsCoverImages",
     };
     const uploadFolder = folder[file.fieldname]; // Get folder based on field name
-    cb(null, uploadFolder);
-    // cb(null, 'public/uploads')
+
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     console.log("Inside =========>", file);
@@ -153,7 +173,14 @@ const newsFileUpload = uploadNewsFiles.fields([
 
 const multerStorageWhoVideo = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/who_we_videos");
+    const uploadFolder = "public/who_we_videos";
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -173,9 +200,15 @@ const multerStorageCourse = multer.diskStorage({
       banner: "public/courseImages",
       video: "public/courseImages",
     };
-    const uploadFolder = folder[file.fieldname]; // Get folder based on field name
-    cb(null, uploadFolder);
-    // cb(null, 'public/uploads')
+    const uploadFolder = folder[file.fieldname]; // Get folder based on field name'
+
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -194,7 +227,14 @@ const courseFileUpload = uploadCourseFiles.fields([{ name: "image", maxCount: 1 
 
 const multerStorageBannerVideo = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/banner_videos");
+    const uploadFolder = "public/banner_videos";
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -209,7 +249,14 @@ const uploadBannerVideo = multer({
 
 const multerStorageCongratsBox = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/congrats_images");
+    const uploadFolder = "public/congrats_images";
+    fs.mkdir(uploadFolder, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error creating folder: ${err}`);
+        return cb(err);
+      }
+      cb(null, uploadFolder);
+    });
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -335,7 +382,6 @@ router.put("/coupons/:id", updateInfluencer);
 router.patch("/coupons/:id", updateInfluencerStatus);
 router.delete("/coupons/:id", deleteInfluencer);
 router.get("/coupons_orders/:influencer?/:from?/:to?", getOrdersInflucencers);
-
 
 router.post("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.addVideo);
 router.get("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.getAllVideos);
