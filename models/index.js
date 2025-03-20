@@ -3,9 +3,15 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const sequelize = new Sequelize(process.env.DB_dbname, process.env.DB_user, process.env.DB_pss, {
+const sequelize = new Sequelize(process.env.DB_URL, {
   dialect: "mysql",
-  host: process.env.DB_host,
+  logging: console.log, // Enable logging for debugging (remove in production)
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // Railway might require this
+    },
+  },
 });
 
 db = {};
@@ -161,6 +167,5 @@ db.payment.belongsToMany(db.influencer, { through: db.paymentWithCoupon });
 
 db.influencerPersons.belongsToMany(db.influencer, { through: db.InfluencerCoupons, foreignKey: "influencer_id" });
 db.influencer.belongsToMany(db.influencerPersons, { through: db.InfluencerCoupons, foreignKey: "coupon_id" });
-
 
 module.exports = db;
