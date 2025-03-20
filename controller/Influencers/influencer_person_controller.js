@@ -137,6 +137,15 @@ exports.getAllInfluencerPersons = async (req, res) => {
   try {
     const influencerPersons = await db.influencerPersons.findAll({
       attributes: ["id", "name", "phone", "email", "status"],
+      include: [
+        {
+          model: db.influencer,
+          attributes: ["id","coupon_code"],
+          through: {
+            attributes: [],
+          },
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
 
