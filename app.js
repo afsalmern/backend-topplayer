@@ -27,6 +27,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+
 app.use("/admin", adminRoute);
 app.use("/dashboard", dashRoute);
 app.use("/", websiteRoute);
@@ -34,8 +39,8 @@ app.use("/", websiteRoute);
 // scheduleTasks();
 
 db.sequelize
-  // .sync({ alter: true })
-  .authenticate()
+  .sync({ alter: true })
+  // .authenticate()
   .then(async (result) => {
     app.listen(port, () => {
       console.log(`TP Backend listens to ${port}`);
