@@ -156,7 +156,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
   console.log("Processing coupon:", couponCode);
 
   const coupon = await db.influencer.findOne({
-    attributes: ["id", "coupon_code", "coupon_percentage"],
+    attributes: ["id", "coupon_code", "coupon_percentage", "commision_percentage"],
     where: { coupon_code: couponCode },
     include: [
       {
@@ -187,9 +187,11 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
     await db.InfluencerCommisions.create(
       {
         payment_id: paymentId,
-        influencer_id: coupon.id,
+        coupon_id: coupon.id,
+        influencer_id: influencer_persons?.[0]?.id,
         net_amount: netAmount,
         commision_amount: commission,
+        commision_percentage: coupon.commision_percentage,
         total_amount: totalAmount,
       },
       { transaction }
