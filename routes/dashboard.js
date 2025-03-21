@@ -51,6 +51,7 @@ const {
   getOrdersInflucencers,
   updateInfluencerStatus,
   addInfluencerToCoupon,
+  getInfluencerOrders,
 } = require("../controller/dashboard/influencer_controller");
 const { getCongrats, deleteCongrats, updateCongrats, addCongrats } = require("../controller/congrats_controller");
 const {
@@ -376,12 +377,13 @@ router.post("/terms", [authMiddleware.checkUserAuth], termsController.addTermsAn
 router.put("/terms/:id", [authMiddleware.checkUserAuth], termsController.updateTermsAndConditions);
 router.delete("/terms/:id", [authMiddleware.checkUserAuth], termsController.deleteTermsAndConditions);
 
-router.post("/coupons", addInfluencer);
-router.get("/coupons", getInfluencers);
-router.put("/coupons/:id", updateInfluencer);
-router.patch("/coupons/:id", updateInfluencerStatus);
-router.delete("/coupons/:id", deleteInfluencer);
-router.get("/coupons_orders/:influencer?/:from?/:to?", getOrdersInflucencers);
+router.post("/coupons",[authMiddleware.checkUserAuth], addInfluencer);
+router.get("/coupons",[authMiddleware.checkUserAuth], getInfluencers);
+router.put("/coupons/:id",[authMiddleware.checkUserAuth], updateInfluencer);
+router.patch("/coupons/:id",[authMiddleware.checkUserAuth], updateInfluencerStatus);
+router.delete("/coupons/:id",[authMiddleware.checkUserAuth], deleteInfluencer);
+router.get("/influencer-orders/:influencer?/:from?/:to?",[authMiddleware.checkUserAuth], getInfluencerOrders);
+// router.get("/influencer-orders/",[authMiddleware.checkUserAuth], getInfluencerOrders);
 
 router.post("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.addVideo);
 router.get("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.getAllVideos);

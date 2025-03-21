@@ -10,7 +10,7 @@ exports.addInfluencer = async function (req, res) {
     });
 
     if (existingCouponCode) {
-      return res.status(400).json({
+      return res.status(500).json({
         message: "Coupon code already exists. Please choose a different one.",
       });
     }
@@ -38,7 +38,7 @@ exports.addInfluencer = async function (req, res) {
     const coupon_id = createdCoupon?.id;
 
     await db.InfluencerCoupons.create({
-      influencer_id : influencer,
+      influencer_id: influencer,
       coupon_id,
     });
 
@@ -243,12 +243,22 @@ exports.getOrdersInflucencers = async function (req, res) {
       include: [
         {
           model: db.influencer,
-          where: influencerWhere,
           through: {
             model: db.paymentWithCoupon,
-            attributes: [], // Include influencerId from the join table
+            attributes: [],
           },
-          attributes: [], // Exclude coupon attributes
+          attributes: [],
+          include: [
+            {
+              model: db.influencerPersons,
+              where: influencerWhere,
+              through: {
+                model: db.InfluencerCoupons,
+                attributes: [],
+              },
+              attributes: ["id", "name"],
+            },
+          ],
         },
       ],
       where: paymentWhere,
@@ -259,9 +269,93 @@ exports.getOrdersInflucencers = async function (req, res) {
         [db.Sequelize.col("influencers.id"), "influencerId"],
         [db.Sequelize.col("influencers.name"), "influencerName"],
         [db.Sequelize.col("influencers.coupon_code"), "couponCode"],
+        [db.Sequelize.col("influencers->influencer_persons.id"), "influencerPersonId"],
+        [db.Sequelize.col("influencers->influencer_persons.name"), "influencerPersonName"],
       ],
-      group: ["influencers.id"], // Group by influencerId in the join table
+      group: ["influencers.id", "influencers->influencer_persons.id"],
       raw: true,
+    });
+
+    res.status(200).send({ paymentWithCoupons });
+  } catch (error) {
+    console.error("Error getting influencer orders:", error);
+    res.status(500).json({ error: "Failed to get influencer orders" });
+  }
+};
+
+exports.getInfluencerOrders = async function (req, res) {
+  const { influencer = "all", from, to } = req.params;
+
+  const addOneDay = (date) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + 1);
+    return result;
+  };
+
+  // Define where conditions for payment and influencer
+  const paymentWhere = {};
+  let dynamicThrough = {};
+
+  // Check and set conditions for date filters
+  if (from && to) {
+    // If both 'from' and 'to' are provided, filter by date range
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+    };
+  } else if (from) {
+    // If only 'from' is provided, filter from 'from' date onwards
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.gte]: new Date(from),
+    };
+  } else if (to) {
+    // If only 'to' is provided, filter up to 'to' date
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.lte]: new Date(to),
+    };
+  }
+
+  if (influencer !== "all") {
+    dynamicThrough = {
+      where: {
+        influencer_id: influencer,
+      },
+    };
+  }
+
+  console.log(paymentWhere);
+  console.log(dynamicThrough);
+
+  try {
+    const paymentWithCoupons = await db.payment.findAll({
+      attributes: ["id", "amount", "net_amount"],
+      required: true,
+      include: [
+        {
+          model: db.influencer,
+          attributes: ["id", "coupon_code"],
+          required: true,
+          include: [
+            {
+              model: db.influencerPersons,
+              attributes: ["id", "name"],
+              required: true,
+              through: dynamicThrough,
+            },
+          ],
+        },
+        {
+          model: db.course,
+          attributes: ["name"],
+          required: true,
+        },
+        {
+          model: db.user,
+          attributes: ["username"],
+          as: "users",
+          required: true,
+        },
+      ],
+      where: paymentWhere,
     });
 
     res.status(200).send({ paymentWithCoupons });
