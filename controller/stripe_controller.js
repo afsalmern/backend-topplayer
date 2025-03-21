@@ -1,6 +1,7 @@
 const { paymentSuccessMail } = require("../utils/mail_content");
 const sendMail = require("../utils/mailer");
 const { getCommisionAmount } = require("../utils/Revenue_helpers");
+const stripe = require("stripe")(process.env.STRIPE_SK);
 
 exports.handleStripeWebhook = async (req, res) => {
   console.log("Stripe webhook received");
