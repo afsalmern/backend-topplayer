@@ -10,10 +10,12 @@ const db = require("./models");
 
 const websiteController = require("./controller/website");
 const scheduleTasks = require("./scheduleTasks/reminderMail");
+const { handleStripeWebhook } = require("./controller/stripe_controller");
 
 const port = process.env.PORT;
 
-app.use("/webhook", express.raw({ type: "application/json" }), websiteController.stripeWebhook);
+// app.use("/webhook", express.raw({ type: "application/json" }), websiteController.stripeWebhook);
+app.use("/webhook", express.raw({ type: "application/json" }), handleStripeWebhook);
 
 app.use(express.json({ limit: "200mb" }));
 app.use(express.urlencoded({ extended: true }));
