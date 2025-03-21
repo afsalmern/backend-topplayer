@@ -188,7 +188,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
       {
         payment_id: paymentId,
         coupon_id: coupon.id,
-        influencer_id: influencer_persons?.[0]?.id,
+        influencer_id: coupon?.influencer_persons?.[0]?.id,
         net_amount: netAmount,
         commision_amount: commission,
         commision_percentage: coupon.commision_percentage,
