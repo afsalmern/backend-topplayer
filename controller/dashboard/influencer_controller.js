@@ -322,12 +322,9 @@ exports.getInfluencerOrders = async function (req, res) {
     };
   }
 
-  console.log(paymentWhere);
-  console.log(dynamicThrough);
-
   try {
     const paymentWithCoupons = await db.payment.findAll({
-      attributes: ["id", "amount", "net_amount"],
+      attributes: ["id"],
       required: true,
       include: [
         {
@@ -342,6 +339,12 @@ exports.getInfluencerOrders = async function (req, res) {
               through: dynamicThrough,
             },
           ],
+        },
+        {
+          model: db.InfluencerCommisions,
+          attributes: ["id", "commision_amount", "total_amount", "net_amount"],
+          as: "commisions",
+          required: true,
         },
         {
           model: db.course,
