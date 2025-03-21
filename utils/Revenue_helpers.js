@@ -3,7 +3,7 @@ const { Sequelize, course } = require("../models");
 const getOrders = async (where, whereClause) => {
   const orders = await db.payment.findAll({
     where: where,
-    attributes: ["stripe_fee", "net_amount", "createdAt", "amount","fromTamara"],
+    attributes: ["stripe_fee", "net_amount", "createdAt", "amount", "fromTamara"],
     include: [
       {
         model: db.course,
@@ -65,14 +65,8 @@ const getPayments = async (where, whereClause) => {
     ],
     attributes: [
       "courseId",
-      [
-        Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.net_amount)"), 2),
-        "totalIncome",
-      ],
-      [
-        Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-        "totalRevenue",
-      ],
+      [Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.net_amount)"), 2), "totalIncome"],
+      [Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2), "totalRevenue"],
       [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
     ],
     group: ["courseId"],
@@ -93,10 +87,7 @@ const getEnrolledUsersPerCourse = async (where, whereClause) => {
     where: where,
     attributes: [
       "courseId",
-      [
-        Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.net_amount)"), 2),
-        "revenue",
-      ],
+      [Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.net_amount)"), 2), "revenue"],
       [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
     ],
     include: [
@@ -124,8 +115,21 @@ const getEnrolledUsersPerCourse = async (where, whereClause) => {
   return enrolledUsersPerCourse;
 };
 
+const getCommisionAmount = (amount, percent) => {
+  if (!amount || !percent || isNaN(amount) || isNaN(percent)) {
+    throw new Error("Invalid input: Amount and percent must be numbers.");
+  }
+
+  // Calculate commission
+  const commission = (amount * percent) / 100;
+
+  // Format to 6 decimal places
+  return parseFloat(commission.toFixed(2));
+};
+
 module.exports = {
   getOrders,
   getPayments,
   getEnrolledUsersPerCourse,
+  getCommisionAmount,
 };

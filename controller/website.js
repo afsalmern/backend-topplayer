@@ -14,6 +14,7 @@ const { where } = require("sequelize");
 const sendMail = require("../utils/mailer");
 const isCouponExpired = require("../utils/coupon_helper");
 const convertAmountForStripe = require("../utils/stripeConversion");
+const { getCommisionAmount } = require("../utils/Revenue_helpers");
 
 const messages_en = {
   news_added_successfully: "News added successfully",
@@ -871,6 +872,7 @@ exports.postStripePayment = async (req, res) => {
 
     const courseDB = await db.course.findByPk(courseId);
     const coupon = await db.influencer.findOne({
+      attributes: ["id", "coupon_code", "coupon_percentage"],
       where: { coupon_code: coupon_code },
     });
 
@@ -925,14 +927,12 @@ exports.stripeWebhook = async (req, res) => {
   const endpointSecret = process.env.STRIPE_ENDPOINT_SEC;
 
   console.log(endpointSecret);
+
   try {
     let event = req.body;
     console.log(event);
-    // Only verify the event if you have an endpoint secret defined.
-    // Otherwise use the basic event deserialized with JSON.parse
-    if (endpointSecret) {
-      // Get the signature sent by Stripe
 
+    if (endpointSecret) {
       const signature = req.headers["stripe-signature"];
       console.log(signature, "SIGNATURE");
       try {
@@ -1026,7 +1026,20 @@ exports.stripeWebhook = async (req, res) => {
         if (coupon_code) {
           console.log("COUPON FOUND", coupon_code);
           const coupon = await db.influencer.findOne({
-            where: { coupon_code: coupon_code },
+            attributes: ["id", "coupon_code", "coupon_percentage"],
+            where: {
+              coupon_code: coupon_code,
+            },
+            include: [
+              {
+                model: db.influencerPersons,
+                attributes: ["id", "name", "status"],
+                through: {
+                  model: db.InfluencerCoupons,
+                  attributes: [],
+                },
+              },
+            ],
           });
 
           if (coupon) {
@@ -1036,6 +1049,16 @@ exports.stripeWebhook = async (req, res) => {
               influencerId: coupon.id,
             });
           }
+
+          const commision = getCommisionAmount(netAmount, coupon?.coupon_percentage);
+
+          await db.InfluencerCommisions.create({
+            payment_id: paymentData.id,
+            influencer_id: coupon.id,
+            net_amount: netAmount,
+            commision_amount: commision,
+            total_amount: amount,
+          });
         }
 
         const courseCamp = await db.course.findOne({
@@ -1247,10 +1270,26 @@ exports.applyCoupon = async (req, res) => {
   try {
     const couponExist = await db.influencer.findOne({
       where: db.Sequelize.where(db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")), coupon_code),
+      attributes: ["id", "coupon_code", "start_in", "expire_in", "is_active", "coupon_percentage"],
+      include: [
+        {
+          model: db.influencerPersons,
+          attributes: ["id", "status"],
+          through: {
+            attributes: [],
+          },
+        },
+      ],
     });
 
     if (!couponExist) {
       return res.status(400).send({ error: errorMessages.notFound });
+    }
+
+    const isCouponActive = couponExist.influencer_persons?.[0]?.status == "active";
+
+    if (!isCouponActive) {
+      return res.status(400).send({ error: errorMessages.notActive });
     }
 
     const startDate = new Date(couponExist.start_in);
@@ -1266,12 +1305,6 @@ exports.applyCoupon = async (req, res) => {
 
     if (currentFormatted > expiryFormatted) {
       return res.status(400).send({ error: errorMessages.expired });
-    }
-
-    const isCouponActive = couponExist.is_active;
-
-    if (!isCouponActive) {
-      return res.status(400).send({ error: errorMessages.notActive });
     }
 
     const discountpercentage = couponExist.coupon_percentage;
