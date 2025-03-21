@@ -183,7 +183,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
     );
 
     // Calculate and create commission record
-    const commission = getCommisionAmount(netAmount, coupon.coupon_percentage);
+    const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
     await db.InfluencerCommisions.create(
       {
         payment_id: paymentId,
