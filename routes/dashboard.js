@@ -52,6 +52,7 @@ const {
   updateInfluencerStatus,
   addInfluencerToCoupon,
   getInfluencerOrders,
+  getReportDataForInfluencer,
 } = require("../controller/dashboard/influencer_controller");
 const { getCongrats, deleteCongrats, updateCongrats, addCongrats } = require("../controller/congrats_controller");
 const {
@@ -62,6 +63,7 @@ const {
   updateInfluencerPerson,
   updateInfluencerPassword,
   getCouponsForInfluncers,
+  getDashboardDataForInfluencers,
 } = require("../controller/Influencers/influencer_person_controller");
 
 const router = express.Router();
@@ -287,8 +289,18 @@ router.post("/influencer-persons", [authMiddleware.checkUserAuth], addInfluencer
 router.patch("/influencer-persons/:id", [authMiddleware.checkUserAuth], updateInfluencerPerson);
 router.delete("/influencer-persons/:id", [authMiddleware.checkUserAuth], deleteInfluencerPerson);
 router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
-router.get("/influencer-coupons/:id", [authMiddleware.checkUserAuth], getCouponsForInfluncers);
+router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
+router.get("/influencer-dashboard", [authMiddleware.checkUserAuth], getDashboardDataForInfluencers);
 router.patch("/update-password-influencer", [authMiddleware.checkUserAuth], updateInfluencerPassword);
+
+router.post("/coupons", [authMiddleware.checkUserAuth], addInfluencer);
+router.get("/coupons", [authMiddleware.checkUserAuth], getInfluencers);
+router.put("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencer);
+router.patch("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencerStatus);
+router.delete("/coupons/:id", [authMiddleware.checkUserAuth], deleteInfluencer);
+router.get("/influencer-orders/:influencer?/:from?/:to?", [authMiddleware.checkUserAuth], getInfluencerOrders);
+router.get("/influencer-reports/:coupon?/:from?/:to?", [authMiddleware.checkUserAuth], getReportDataForInfluencer);
+// router.get("/influencer-orders/",[authMiddleware.checkUserAuth], getInfluencerOrders);
 
 router.get("/congrats-box", [authMiddleware.checkUserAuth], getCongrats);
 router.post("/congrats-box", [authMiddleware.checkUserAuth], uploadCongratsBox.single("file"), addCongrats);
@@ -376,14 +388,6 @@ router.get("/terms", [authMiddleware.checkUserAuth], termsController.getTermsAnd
 router.post("/terms", [authMiddleware.checkUserAuth], termsController.addTermsAndConditions);
 router.put("/terms/:id", [authMiddleware.checkUserAuth], termsController.updateTermsAndConditions);
 router.delete("/terms/:id", [authMiddleware.checkUserAuth], termsController.deleteTermsAndConditions);
-
-router.post("/coupons",[authMiddleware.checkUserAuth], addInfluencer);
-router.get("/coupons",[authMiddleware.checkUserAuth], getInfluencers);
-router.put("/coupons/:id",[authMiddleware.checkUserAuth], updateInfluencer);
-router.patch("/coupons/:id",[authMiddleware.checkUserAuth], updateInfluencerStatus);
-router.delete("/coupons/:id",[authMiddleware.checkUserAuth], deleteInfluencer);
-router.get("/influencer-orders/:influencer?/:from?/:to?",[authMiddleware.checkUserAuth], getInfluencerOrders);
-// router.get("/influencer-orders/",[authMiddleware.checkUserAuth], getInfluencerOrders);
 
 router.post("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.addVideo);
 router.get("/video", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.getAllVideos);

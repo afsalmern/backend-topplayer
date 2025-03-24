@@ -230,7 +230,7 @@ async function updateCampEnrollmentStatus(courseId, transaction) {
 /**
  * Send payment confirmation email to the user
  */
-async function sendPaymentConfirmationEmail(userId, amount, paymentId) {
+async function sendPaymentConfirmationEmail(userId, amount,paymentId) {
   try {
     const user = await db.user.findByPk(userId);
 

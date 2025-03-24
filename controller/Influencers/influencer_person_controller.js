@@ -109,8 +109,8 @@ exports.getInfluencerPerson = async (req, res) => {
 exports.getCouponsForInfluncers = async (req, res) => {
   const { id: influencer_id } = req.params;
   try {
-    const influencer = await db.influencerPersons.findByPk(influencer_id,{
-      attributes:["id","name","email","phone"]
+    const influencer = await db.influencerPersons.findByPk(influencer_id, {
+      attributes: ["id", "name", "email", "phone"],
     });
     if (!influencer) return res.status(404).json({ message: "Influencer person not found" });
 
@@ -126,7 +126,7 @@ exports.getCouponsForInfluncers = async (req, res) => {
       ],
     });
 
-    res.status(200).json({couponDetails,influencer});
+    res.status(200).json({ couponDetails, influencer });
   } catch (error) {
     console.error("Error gettiing influencer coupons:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -140,7 +140,7 @@ exports.getAllInfluencerPersons = async (req, res) => {
       include: [
         {
           model: db.influencer,
-          attributes: ["id","coupon_code"],
+          attributes: ["id", "coupon_code"],
           through: {
             attributes: [],
           },
@@ -216,6 +216,58 @@ exports.updateInfluencerPassword = async (req, res) => {
     }
   } catch (error) {
     console.error("Error deleting influencer person:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getDashboardDataForInfluencers = async (req, res) => {
+  const { userDecodeId } = req;
+
+  try {
+    const monthWiseData = await db.sequelize.query(
+      `SELECT 
+    MONTHNAME(ic.createdAt) AS month,
+    c.coupon_code AS coupon_name,
+    SUM(ic.total_amount) AS total_sales,
+    SUM(ic.commision_amount) AS total_commission,
+    SUM(ic.net_amount) AS total_net_amount
+FROM influencer_commisions ic
+JOIN influencers c ON ic.coupon_id = c.id
+WHERE ic.influencer_id = :influencerId
+GROUP BY MONTH(ic.createdAt), MONTHNAME(ic.createdAt), c.coupon_code
+ORDER BY MONTH(ic.createdAt), c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: {
+          influencerId: userDecodeId,
+        },
+      }
+    );
+
+    const couponWiseData = await db.sequelize.query(
+      `SELECT 
+      c.id AS coupon_id,
+      c.coupon_code AS coupon_name,
+      COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+      SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+      SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+      SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+  FROM influencer_commisions ic
+  JOIN influencers c ON ic.coupon_id = c.id
+  WHERE ic.influencer_id = :influencerId
+  GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    return res.status(200).json({
+      monthWiseData,
+      couponWiseData,
+    });
+  } catch (error) {
+    console.error("Error getting dashboard data for influencers:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

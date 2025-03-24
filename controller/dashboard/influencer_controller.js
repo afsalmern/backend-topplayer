@@ -1,4 +1,4 @@
-const { where } = require("sequelize");
+const { where, Op } = require("sequelize");
 const db = require("../../models");
 // Create a new influencer
 exports.addInfluencer = async function (req, res) {
@@ -365,5 +365,205 @@ exports.getInfluencerOrders = async function (req, res) {
   } catch (error) {
     console.error("Error getting influencer orders:", error);
     res.status(500).json({ error: "Failed to get influencer orders" });
+  }
+};
+
+exports.getOrdersForInfluencer = async function (req, res) {
+  const { from, to } = req.params;
+  const { userDecodeId } = req;
+
+  const addOneDay = (date) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + 1);
+    return result;
+  };
+
+  // Define where conditions for payment and influencer
+  const paymentWhere = {};
+
+  // Check and set conditions for date filters
+  if (from && to) {
+    // If both 'from' and 'to' are provided, filter by date range
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+    };
+  } else if (from) {
+    // If only 'from' is provided, filter from 'from' date onwards
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.gte]: new Date(from),
+    };
+  } else if (to) {
+    // If only 'to' is provided, filter up to 'to' date
+    paymentWhere.createdAt = {
+      [db.Sequelize.Op.lte]: new Date(to),
+    };
+  }
+
+  try {
+    const paymentWithCoupons = await db.payment.findAll({
+      attributes: ["id"],
+      required: true,
+      include: [
+        {
+          model: db.influencer,
+          attributes: ["id", "coupon_code"],
+          required: true,
+          include: [
+            {
+              model: db.influencerPersons,
+              attributes: ["id", "name"],
+              required: true,
+              through: {
+                where: {
+                  influencer_id: userDecodeId,
+                },
+              },
+            },
+          ],
+        },
+        {
+          model: db.InfluencerCommisions,
+          attributes: ["id", "commision_amount", "total_amount", "net_amount"],
+          as: "commisions",
+          required: true,
+        },
+        {
+          model: db.course,
+          attributes: ["name"],
+          required: true,
+        },
+        {
+          model: db.user,
+          attributes: ["username"],
+          as: "users",
+          required: true,
+        },
+      ],
+      where: paymentWhere,
+    });
+
+    res.status(200).send({ paymentWithCoupons });
+  } catch (error) {
+    console.error("Error getting influencer orders:", error);
+    res.status(500).json({ error: "Failed to get influencer orders" });
+  }
+};
+
+exports.getReportDataForInfluencer = async function (req, res) {
+  try {
+    const { userDecodeId } = req;
+    const { coupon = "all", from, to } = req.params;
+    const paymentWhere = {};
+    let influencerCommisionWhere = {};
+
+    const addOneDay = (date) => {
+      const result = new Date(date);
+      result.setDate(result.getDate() + 1);
+      return result;
+    };
+
+    // Check and set conditions for date filters
+    if (from && to) {
+      // If both 'from' and 'to' are provided, filter by date range
+      paymentWhere.createdAt = {
+        [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+      };
+    } else if (from) {
+      // If only 'from' is provided, filter from 'from' date onwards
+      paymentWhere.createdAt = {
+        [db.Sequelize.Op.gte]: new Date(from),
+      };
+    } else if (to) {
+      // If only 'to' is provided, filter up to 'to' date
+      paymentWhere.createdAt = {
+        [db.Sequelize.Op.lte]: new Date(to),
+      };
+    }
+
+    if (coupon !== "all") {
+      influencerCommisionWhere = {
+        [Op.and]: [
+          {
+            influencer_id: userDecodeId,
+          },
+          {
+            coupon_id: coupon,
+          },
+        ],
+      };
+    } else {
+      influencerCommisionWhere = {
+        influencer_id: userDecodeId,
+      };
+    }
+
+
+    const commisionsData = await db.InfluencerCommisions.findAll({
+      attributes: ["id", "commision_amount", "influencer_id"],
+      required: true,
+      where: influencerCommisionWhere,
+      include: [
+        {
+          model: db.influencer,
+          attributes: ["id", "coupon_code"],
+          as: "influencer",
+          required: true,
+          include: [
+            {
+              model: db.influencerPersons,
+              attributes: ["id", "name"],
+              required: true,
+              through: {
+                attributes: [],
+              },
+            },
+          ],
+        },
+        {
+          model: db.payment,
+          as: "payment",
+          attributes: ["id", "createdAt", "courseId"],
+          required: true,
+          where:paymentWhere,
+          include: [
+            {
+              model: db.course,
+              attributes: ["name"],
+              required: true,
+            },
+            {
+              model: db.user,
+              attributes: ["username"],
+              as: "users",
+              required: true,
+            },
+          ],
+        },
+      ],
+      group: ["influencer_commisions.id", "influencer.id", "influencer->influencer_persons.id", "payment.id", "payment->course.id"], // Grouping to avoid duplication
+    });
+
+    const orderCounts = await db.sequelize.query(
+      `SELECT 
+    c.id AS coupon_id,
+    c.coupon_code AS coupon_name,
+    COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+    SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+    SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+    SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+FROM influencer_commisions ic
+JOIN influencers c ON ic.coupon_id = c.id
+WHERE ic.influencer_id = :influencerId
+GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    res.status(200).send({ commisionsData, orderCounts });
+  } catch (error) {
+    console.error("Error getting influencer report data:", error);
+    res.status(500).json({ error: "Failed to get influencer report data" });
   }
 };
