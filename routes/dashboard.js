@@ -287,6 +287,7 @@ router.put("/devices", authMiddleware.checkUserAuth, updateDeviceCountGlobally);
 //   .post(authMiddleware.checkUserAuth, manageUser);
 
 router.get("/influencer-persons", [authMiddleware.checkUserAuth], getAllInfluencerPersons);
+router.get("/influencer-coupons/:id", [authMiddleware.checkUserAuth], getCouponsForInfluncers);
 router.post("/influencer-persons", [authMiddleware.checkUserAuth], addInfluencerPerson);
 router.patch("/influencer-persons/:id", [authMiddleware.checkUserAuth], updateInfluencerPerson);
 router.delete("/influencer-persons/:id", [authMiddleware.checkUserAuth], deleteInfluencerPerson);
