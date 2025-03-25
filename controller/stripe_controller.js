@@ -184,7 +184,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
 
     // Calculate and create commission record
     const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
-    await db.InfluencerCommisions.create(
+    const commissionRecord = await db.InfluencerCommisions.create(
       {
         payment_id: paymentId,
         coupon_id: coupon.id,
@@ -197,6 +197,17 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
       { transaction }
     );
   }
+
+  await db.Payouts.create(
+    {
+      influencer_id: coupon?.influencer_persons?.[0]?.id,
+      commision_history_id: commissionRecord.id,
+      amount: commission,
+    },
+    {
+      transaction,
+    }
+  );
 }
 
 /**
@@ -230,7 +241,7 @@ async function updateCampEnrollmentStatus(courseId, transaction) {
 /**
  * Send payment confirmation email to the user
  */
-async function sendPaymentConfirmationEmail(userId, amount,paymentId) {
+async function sendPaymentConfirmationEmail(userId, amount, paymentId) {
   try {
     const user = await db.user.findByPk(userId);
 

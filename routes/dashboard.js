@@ -399,9 +399,9 @@ router.put("/video/:id", [authMiddleware.checkUserAuth], uploadStt.single("video
 router.delete("/video/:id", [authMiddleware.checkUserAuth], uploadStt.single("video"), videoUploadController.deleteVideo);
 
 router.get("/dashboard_details", [authMiddleware.checkUserAuth], getDashboardDetails);
-router.get("/revenue/:filter?/:from?/:to?", [authMiddleware.checkUserAuth], getOrders);
+router.get("/revenue", [authMiddleware.checkUserAuth], getOrders);
 
-router.get("/revenue_usd/:filter?/:from?/:to?", [authMiddleware.checkUserAuth], getOrdersUsd);
+router.get("/revenue_usd", [authMiddleware.checkUserAuth], getOrdersUsd);
 
 router.post("/uploadVideo", [authMiddleware.checkUserAuth], uploadStt.single("video"), (req, res) => {
   res.status(200).send({ message: "saved successfully" });

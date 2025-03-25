@@ -1,12 +1,6 @@
 const { Sequelize, where } = require("sequelize");
 const db = require("../../models");
-const {
-  getOrders,
-  getPayments,
-  getEnrolledUsersPerCourse,
-  combinePaymentData,
-  getTamaraOrders,
-} = require("../../utils/Revenue_helpers");
+const { getOrders, getPayments, getEnrolledUsersPerCourse, combinePaymentData, getTamaraOrders } = require("../../utils/Revenue_helpers");
 
 exports.getDashboardDetails = async (req, res) => {
   try {
@@ -66,9 +60,7 @@ exports.getDashboardDetails = async (req, res) => {
     const registeredUsersCount = await db.user.count({
       where: {
         id: {
-          [Sequelize.Op.notIn]: Sequelize.literal(
-            `(SELECT userId FROM registered_courses)`
-          ),
+          [Sequelize.Op.notIn]: Sequelize.literal(`(SELECT userId FROM registered_courses)`),
         },
       },
     });
@@ -81,10 +73,7 @@ exports.getDashboardDetails = async (req, res) => {
 
     // Query to get count of paid users in each course
     const enrolledUsersPerCourse = await db.payment.findAll({
-      attributes: [
-        "courseId",
-        [Sequelize.fn("COUNT", Sequelize.literal("userId")), "enrolled_users"],
-      ],
+      attributes: ["courseId", [Sequelize.fn("COUNT", Sequelize.literal("userId")), "enrolled_users"]],
       include: [
         {
           model: db.course,
@@ -105,8 +94,7 @@ exports.getDashboardDetails = async (req, res) => {
     enrolledUsersPerCourse.forEach((course) => {
       const dataValues = course.dataValues;
       const courseId = dataValues.courseId;
-      const enrolled_users =
-        dataValues.enrolled_users == 0 ? 0 : dataValues.enrolled_users; // Access enrolled_users using get() method
+      const enrolled_users = dataValues.enrolled_users == 0 ? 0 : dataValues.enrolled_users; // Access enrolled_users using get() method
       enrolledUsersMap.set(courseId, enrolled_users);
     });
 
@@ -136,22 +124,12 @@ exports.getDashboardDetails = async (req, res) => {
         [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt")), "year"],
         [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt")), "month"],
         [Sequelize.fn("COUNT", Sequelize.col("*")), "payment_count"],
-        [
-          Sequelize.fn(
-            "ROUND",
-            Sequelize.fn("SUM", Sequelize.col("payment.amount")),
-            2
-          ),
-          "total_amount",
-        ],
+        [Sequelize.fn("ROUND", Sequelize.fn("SUM", Sequelize.col("payment.amount")), 2), "total_amount"],
       ],
       where: {
         userId: { [Sequelize.Op.not]: null },
       },
-      group: [
-        [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt"))],
-        [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt"))],
-      ],
+      group: [[Sequelize.fn("YEAR", Sequelize.col("payment.createdAt"))], [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt"))]],
       order: [
         [Sequelize.fn("YEAR", Sequelize.col("payment.createdAt")), "ASC"],
         [Sequelize.fn("MONTH", Sequelize.col("payment.createdAt")), "ASC"],
@@ -190,10 +168,7 @@ exports.getDashboardDetails = async (req, res) => {
         [Sequelize.fn("COUNT", "*"), "visitors"],
         [Sequelize.literal("(SELECT COUNT(*) FROM visitors)"), "totalVisitors"],
       ],
-      group: [
-        Sequelize.fn("YEAR", Sequelize.col("createdAt")),
-        Sequelize.fn("MONTH", Sequelize.col("createdAt")),
-      ],
+      group: [Sequelize.fn("YEAR", Sequelize.col("createdAt")), Sequelize.fn("MONTH", Sequelize.col("createdAt"))],
     });
 
     const totatlVisitors = visitors.length > 0 ? visitors[0].totalVisitors : 0;
@@ -220,7 +195,7 @@ exports.getDashboardDetails = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
-    const { filter, from, to } = req.params;
+    const { filter, from, to } = req.query;
     let maxFromDate = "2024-06-15";
     const where = {};
 
@@ -243,12 +218,7 @@ exports.getOrders = async (req, res) => {
     if (to !== undefined) {
       console.log("HERE");
       where.createdAt = {
-        [Sequelize.Op.between]: [
-          new Date(from).toISOString(),
-          new Date(
-            new Date(to).setDate(new Date(to).getDate() + 1)
-          ).toISOString(),
-        ],
+        [Sequelize.Op.between]: [new Date(from).toISOString(), new Date(new Date(to).setDate(new Date(to).getDate() + 1)).toISOString()],
       };
     }
 
@@ -263,10 +233,7 @@ exports.getOrders = async (req, res) => {
     const orders = await getOrders(where, whereClause);
     const payments = await getPayments(where, whereClause);
 
-    const enrolledUsersPerCourse = await getEnrolledUsersPerCourse(
-      where,
-      whereClause
-    );
+    const enrolledUsersPerCourse = await getEnrolledUsersPerCourse(where, whereClause);
 
     const totalIncome = payments.reduce((acc, payment) => {
       return acc + (payment.totalIncome || 0);
@@ -296,7 +263,7 @@ exports.getOrders = async (req, res) => {
 
 exports.getOrdersUsd = async (req, res) => {
   try {
-    const { filter, from, to } = req.params;
+    const { filter, from, to } = req.query;
     let maxToDate = "2024-06-15";
     const where = {};
 
@@ -320,12 +287,7 @@ exports.getOrdersUsd = async (req, res) => {
 
     if (from !== undefined) {
       where.createdAt = {
-        [Sequelize.Op.between]: [
-          new Date(from).toISOString(),
-          new Date(
-            new Date(to).setDate(new Date(to).getDate() + 1)
-          ).toISOString(),
-        ],
+        [Sequelize.Op.between]: [new Date(from).toISOString(), new Date(new Date(to).setDate(new Date(to).getDate() + 1)).toISOString()],
       };
     }
 
@@ -358,10 +320,7 @@ exports.getOrdersUsd = async (req, res) => {
       ],
       attributes: [
         "courseId",
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "totalIncome",
-        ],
+        [Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2), "totalIncome"],
         [Sequelize.fn("COUNT", Sequelize.col("payment.id")), "numberOfOrders"],
       ],
       group: ["courseId"],
@@ -371,10 +330,7 @@ exports.getOrdersUsd = async (req, res) => {
       where: where,
       attributes: [
         "courseId",
-        [
-          Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2),
-          "revenue",
-        ],
+        [Sequelize.fn("ROUND", Sequelize.literal("SUM(payment.amount)"), 2), "revenue"],
         [Sequelize.fn("COUNT", Sequelize.literal("payment.id")), "orders"],
       ],
       include: [
@@ -404,14 +360,7 @@ exports.getOrdersUsd = async (req, res) => {
         {
           model: db.course,
           as: "course",
-          attributes: [
-            "id",
-            "name",
-            "amount",
-            "offerAmount",
-            "duration",
-            "isDeleted",
-          ], // Include 'duration' attribute
+          attributes: ["id", "name", "amount", "offerAmount", "duration", "isDeleted"], // Include 'duration' attribute
           include: {
             model: db.category,
             attributes: ["id", "name", "iscamp"],
@@ -462,7 +411,7 @@ exports.getOrdersUsd = async (req, res) => {
         totalIncome,
         numberOfOrders,
       },
-      orders:formattedOrders,
+      orders: formattedOrders,
     });
   } catch (error) {
     console.error(`Error in getting dashboard details: ${error}`);

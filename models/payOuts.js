@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-  const InfluencerCommisions = sequelize.define(
-    "influencer_commisions",
+  const Payouts = sequelize.define(
+    "payouts",
     {
       id: {
         type: Sequelize.INTEGER,
@@ -16,37 +16,26 @@ module.exports = (sequelize, Sequelize) => {
           key: "id",
         },
       },
-      coupon_id: {
+      commision_history_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "influencers",
+          model: "influencer_commisions",
           key: "id",
         },
       },
-      payment_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "payments",
-          key: "id",
-        },
-      },
-      commision_amount: {
+      amount: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
-      commision_percentage: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
+      remarks: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
-      net_amount: {
-        type: Sequelize.DECIMAL(10, 2),
+      status: {
+        type: Sequelize.ENUM("pending", "approved", "rejected"),
         allowNull: false,
-      },
-      total_amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false,
+        defaultValue: "pending",
       },
     },
     {
@@ -54,5 +43,5 @@ module.exports = (sequelize, Sequelize) => {
     }
   );
 
-  return InfluencerCommisions;
+  return Payouts;
 };

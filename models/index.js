@@ -56,6 +56,7 @@ db.paymentWithCoupon = require("./paymentWithCoupon")(sequelize, Sequelize);
 db.influencerPersons = require("./influencer_persons")(sequelize, Sequelize);
 db.InfluencerCoupons = require("./InfluencerCoupon")(sequelize, Sequelize);
 db.InfluencerCommisions = require("./influencer_commisions")(sequelize, Sequelize);
+db.Payouts = require("./payOuts")(sequelize, Sequelize);
 
 db.user.hasMany(db.forgetPAss);
 db.category.hasMany(db.course, { onDelete: "cascade" });
@@ -182,5 +183,11 @@ db.InfluencerCommisions.belongsTo(db.influencerPersons, { foreignKey: "influence
 
 db.payment.hasMany(db.InfluencerCommisions, { foreignKey: "payment_id", as: "commisions" });
 db.InfluencerCommisions.belongsTo(db.payment, { foreignKey: "payment_id", as: "payment" });
+
+db.Payouts.belongsTo(db.influencerPersons, { foreignKey: "influencer_id", as: "influencerPerson" });
+db.influencerPersons.hasMany(db.Payouts, { foreignKey: "influencer_id", as: "payouts" });
+
+db.Payouts.belongsTo(db.InfluencerCommisions, { foreignKey: "commision_history_id", as: "commisions" });
+db.InfluencerCommisions.hasMany(db.Payouts, { foreignKey: "commision_history_id", as: "payouts" });
 
 module.exports = db;
