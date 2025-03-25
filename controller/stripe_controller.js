@@ -196,18 +196,17 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
       },
       { transaction }
     );
+    await db.Payouts.create(
+      {
+        influencer_id: coupon?.influencer_persons?.[0]?.id,
+        commision_history_id: commissionRecord.id,
+        amount: commission,
+      },
+      {
+        transaction,
+      }
+    );
   }
-
-  await db.Payouts.create(
-    {
-      influencer_id: coupon?.influencer_persons?.[0]?.id,
-      commision_history_id: commissionRecord.id,
-      amount: commission,
-    },
-    {
-      transaction,
-    }
-  );
 }
 
 /**
