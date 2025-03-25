@@ -284,7 +284,7 @@ exports.getOrdersInflucencers = async function (req, res) {
 };
 
 exports.getInfluencerOrders = async function (req, res) {
-  const { influencer = "all", from, to } = req.params;
+  const { influencer = "all", from, to } = req.query;
 
   const addOneDay = (date) => {
     const result = new Date(date);
@@ -497,7 +497,6 @@ exports.getReportDataForInfluencer = async function (req, res) {
       };
     }
 
-
     const commisionsData = await db.InfluencerCommisions.findAll({
       attributes: ["id", "commision_amount", "influencer_id"],
       required: true,
@@ -524,7 +523,7 @@ exports.getReportDataForInfluencer = async function (req, res) {
           as: "payment",
           attributes: ["id", "createdAt", "courseId"],
           required: true,
-          where:paymentWhere,
+          where: paymentWhere,
           include: [
             {
               model: db.course,

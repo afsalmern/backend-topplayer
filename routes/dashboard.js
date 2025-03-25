@@ -64,6 +64,8 @@ const {
   updateInfluencerPassword,
   getCouponsForInfluncers,
   getDashboardDataForInfluencers,
+  getCouponPerformance,
+  getCouponBreakDowns,
 } = require("../controller/Influencers/influencer_person_controller");
 
 const router = express.Router();
@@ -298,9 +300,11 @@ router.get("/coupons", [authMiddleware.checkUserAuth], getInfluencers);
 router.put("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencer);
 router.patch("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencerStatus);
 router.delete("/coupons/:id", [authMiddleware.checkUserAuth], deleteInfluencer);
-router.get("/influencer-orders/:influencer?/:from?/:to?", [authMiddleware.checkUserAuth], getInfluencerOrders);
-router.get("/influencer-reports/:coupon?/:from?/:to?", [authMiddleware.checkUserAuth], getReportDataForInfluencer);
-// router.get("/influencer-orders/",[authMiddleware.checkUserAuth], getInfluencerOrders);
+router.get("/influencer-orders", [authMiddleware.checkUserAuth], getInfluencerOrders);
+router.get("/influencer-reports", [authMiddleware.checkUserAuth], getReportDataForInfluencer);
+
+router.get("/coupon-reports", [authMiddleware.checkUserAuth], getCouponPerformance);
+router.get("/coupon-breakdowns/:coupon?/:from?/:to?", [authMiddleware.checkUserAuth], getCouponBreakDowns);
 
 router.get("/congrats-box", [authMiddleware.checkUserAuth], getCongrats);
 router.post("/congrats-box", [authMiddleware.checkUserAuth], uploadCongratsBox.single("file"), addCongrats);

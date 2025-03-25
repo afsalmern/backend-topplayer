@@ -271,3 +271,110 @@ ORDER BY MONTH(ic.createdAt), c.coupon_code;`,
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.getCouponPerformance = async (req, res) => {
+  try {
+    const couponWiseData = await db.sequelize.query(
+      `SELECT 
+      c.id AS coupon_id,
+      c.coupon_code AS coupon_name,
+      COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+      SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+      SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+      SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+  FROM influencer_commisions ic
+  JOIN influencers c ON ic.coupon_id = c.id
+  GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const coupons = await db.influencer.findAll({
+      attributes: ["id", "coupon_code"],
+      include: [
+        {
+          model: db.influencerPersons,
+          attributes: ["id", "status"],
+          where: { status: "active" },
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      couponWiseData,
+      coupons,
+    });
+  } catch (error) {
+    console.error("Error getting dashboard data for influencers:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getCouponBreakDowns = async function (req, res) {
+  try {
+    const { coupon = "all", from, to } = req.query;
+    const paymentWhere = [];
+    const replacements = {};
+
+
+    console.log("FILTER",req.query)
+
+    const addOneDay = (date) => {
+      const result = new Date(date);
+      result.setDate(result.getDate() + 1);
+      return result;
+    };
+
+    // Apply filters to the WHERE clause
+    if (from && to) {
+      paymentWhere.push(`ic.createdAt BETWEEN :fromDate AND :toDate`);
+      replacements.fromDate = new Date(from);
+      replacements.toDate = addOneDay(new Date(to));
+    } else if (from) {
+      paymentWhere.push(`ic.createdAt >= :fromDate`);
+      replacements.fromDate = new Date(from);
+    } else if (to) {
+      paymentWhere.push(`ic.createdAt <= :toDate`);
+      replacements.toDate = new Date(to);
+    }
+
+    // Apply coupon filter if it's not "all"
+    if (coupon != "all") {
+      paymentWhere.push(`ic.coupon_id = :couponId`);
+      replacements.couponId = coupon;
+    }
+
+    // Construct the WHERE clause dynamically
+    const whereClause = paymentWhere.length ? `WHERE ${paymentWhere.join(" AND ")}` : "";
+
+    console.log("FILTER",whereClause)
+    console.log("FILTER",paymentWhere)
+
+    const orderCounts = await db.sequelize.query(
+      `SELECT 
+        c.id AS coupon_id,
+        c.coupon_code AS coupon_name,
+        COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+        SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+        SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+        SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+      FROM influencer_commisions ic
+      JOIN influencers c ON ic.coupon_id = c.id
+      ${whereClause}  -- Dynamic filters applied
+      GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements, // Pass the parameters dynamically
+      }
+    );
+
+    res.status(200).send({ orderCounts });
+  } catch (error) {
+    console.error("Error getting influencer report data:", error);
+    res.status(500).json({ error: "Failed to get influencer report data" });
+  }
+};
