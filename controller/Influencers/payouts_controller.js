@@ -12,7 +12,7 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
     };
 
     const payoutDetails = await db.Payouts.findAll({
-      attributes: ["id", "remarks", "amount", "status"],
+      attributes: ["id", "remarks", "amount", "status","type"],
       where: influencerWhere,
       include: [
         {
