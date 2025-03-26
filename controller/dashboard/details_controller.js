@@ -418,3 +418,50 @@ exports.getOrdersUsd = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getPayoutDetails = async (req, res) => {
+  const { id: influencer = "all" } = req.params;
+
+  let influencerWhere = {};
+
+  if (influencer !== "all") {
+    influencerWhere = {
+      influencer_id: influencer,
+    };
+  }
+
+  try {
+    const payoutDetails = await db.Payouts.findAll({
+      where: influencerWhere,
+      include: [
+        {
+          model: db.influencerPersons,
+          as: "influencerPerson",
+          attributes: ["id", "name", "email", "phone"],
+        },
+        {
+          model: db.InfluencerCommisions,
+          as: "commisions",
+          attributes: ["id", "coupon_id"],
+          include: [
+            {
+              model: db.influencer,
+              as: "influencer",
+              attributes: ["id", "coupon_code"],
+            },
+          ],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const totalCommisions = await db.Payouts.sum("amount", {
+      where: influencerWhere,
+    });
+
+    res.status(200).json({ payoutDetails, totalCommisions });
+  } catch (error) {
+    console.error(`Error in getting payout details: ${error}`);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

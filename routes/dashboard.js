@@ -37,7 +37,7 @@ const {
   getMainBannerById,
   updateMainBanner,
 } = require("../controller/dashboard/main_banner_controller");
-const { getDashboardDetails, getOrders, getOrdersUsd } = require("../controller/dashboard/details_controller");
+const { getDashboardDetails, getOrders, getOrdersUsd, getPayoutDetails } = require("../controller/dashboard/details_controller");
 const { getAllEnquiries, deleteEnquiry } = require("../controller/dashboard/enquiry_contoller");
 const { getAllSubscriptions, deleteSubscription } = require("../controller/dashboard/subscription_controller");
 const { addCurrency, getAllCurrencies, updateCurrency, deleteCurrency } = require("../controller/dashboard/currency_controller");
@@ -295,6 +295,9 @@ router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluen
 router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
 router.get("/influencer-dashboard", [authMiddleware.checkUserAuth], getDashboardDataForInfluencers);
 router.patch("/update-password-influencer", [authMiddleware.checkUserAuth], updateInfluencerPassword);
+
+router.get("/payout-details/:id?", [authMiddleware.checkUserAuth], getPayoutDetails);
+
 
 router.post("/coupons", [authMiddleware.checkUserAuth], addInfluencer);
 router.get("/coupons", [authMiddleware.checkUserAuth], getInfluencers);
