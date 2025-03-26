@@ -28,6 +28,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
+      type:{
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       remarks: {
         type: Sequelize.STRING,
         allowNull: true,

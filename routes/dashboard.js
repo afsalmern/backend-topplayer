@@ -24,11 +24,8 @@ const {
   updateDeviceCountGlobally,
 } = require("../controller/dashboard/user_controller");
 const {
-  getAllorders,
   updateOrderSubscription,
   getAllOrders,
-  getAllRevenues,
-  getAllRevenuesOld,
 } = require("../controller/dashboard/order_controller");
 const {
   addMainBanner,
@@ -48,11 +45,10 @@ const {
   getInfluencers,
   updateInfluencer,
   deleteInfluencer,
-  getOrdersInflucencers,
   updateInfluencerStatus,
-  addInfluencerToCoupon,
   getInfluencerOrders,
-  getReportDataForInfluencer,
+  getCommisionReportDataForInfluencer,
+  getCouponReportDataForInfluencer,
 } = require("../controller/dashboard/influencer_controller");
 const { getCongrats, deleteCongrats, updateCongrats, addCongrats } = require("../controller/congrats_controller");
 const {
@@ -67,6 +63,7 @@ const {
   getCouponPerformance,
   getCouponBreakDowns,
 } = require("../controller/Influencers/influencer_person_controller");
+const { getPayoutDetailsForInfluencer } = require("../controller/Influencers/payouts_controller");
 
 const router = express.Router();
 
@@ -305,7 +302,11 @@ router.put("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencer);
 router.patch("/coupons/:id", [authMiddleware.checkUserAuth], updateInfluencerStatus);
 router.delete("/coupons/:id", [authMiddleware.checkUserAuth], deleteInfluencer);
 router.get("/influencer-orders", [authMiddleware.checkUserAuth], getInfluencerOrders);
-router.get("/influencer-reports", [authMiddleware.checkUserAuth], getReportDataForInfluencer);
+router.get("/influencer-reports-coupons", [authMiddleware.checkUserAuth], getCouponReportDataForInfluencer);
+router.get("/influencer-reports-commisions", [authMiddleware.checkUserAuth], getCommisionReportDataForInfluencer);
+
+
+router.get("/influencer-payouts/:id", [authMiddleware.checkUserAuth], getPayoutDetailsForInfluencer);
 
 router.get("/coupon-reports", [authMiddleware.checkUserAuth], getCouponPerformance);
 router.get("/coupon-breakdowns/:coupon?/:from?/:to?", [authMiddleware.checkUserAuth], getCouponBreakDowns);

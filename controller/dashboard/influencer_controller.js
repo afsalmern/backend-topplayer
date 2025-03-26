@@ -449,10 +449,39 @@ exports.getOrdersForInfluencer = async function (req, res) {
   }
 };
 
-exports.getReportDataForInfluencer = async function (req, res) {
+exports.getCouponReportDataForInfluencer = async function (req, res) {
   try {
     const { userDecodeId } = req;
-    const { coupon = "all", from, to } = req.params;
+
+    const orderCounts = await db.sequelize.query(
+      `SELECT 
+    c.id AS coupon_id,
+    c.coupon_code AS coupon_name,
+    COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+    SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+    SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+    SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+FROM influencer_commisions ic
+JOIN influencers c ON ic.coupon_id = c.id
+WHERE ic.influencer_id = :influencerId
+GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    res.status(200).send({ orderCounts });
+  } catch (error) {
+    console.error("Error getting influencer report data:", error);
+    res.status(500).json({ error: "Failed to get influencer report data" });
+  }
+};
+
+exports.getCommisionReportDataForInfluencer = async function (req, res) {
+  try {
+    const { userDecodeId } = req;
+    const { coupon = "all", from, to } = req.query;
     const paymentWhere = {};
     let influencerCommisionWhere = {};
 
@@ -497,8 +526,10 @@ exports.getReportDataForInfluencer = async function (req, res) {
       };
     }
 
+    console.log("commisionWhere:", influencerCommisionWhere);
+
     const commisionsData = await db.InfluencerCommisions.findAll({
-      attributes: ["id", "commision_amount", "influencer_id"],
+      attributes: ["id", "commision_amount", "influencer_id", "coupon_id"],
       required: true,
       where: influencerCommisionWhere,
       include: [
@@ -542,25 +573,7 @@ exports.getReportDataForInfluencer = async function (req, res) {
       group: ["influencer_commisions.id", "influencer.id", "influencer->influencer_persons.id", "payment.id", "payment->course.id"], // Grouping to avoid duplication
     });
 
-    const orderCounts = await db.sequelize.query(
-      `SELECT 
-    c.id AS coupon_id,
-    c.coupon_code AS coupon_name,
-    COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
-    SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
-    SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
-    SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
-FROM influencer_commisions ic
-JOIN influencers c ON ic.coupon_id = c.id
-WHERE ic.influencer_id = :influencerId
-GROUP BY c.id, c.coupon_code;`,
-      {
-        type: db.sequelize.QueryTypes.SELECT,
-        replacements: { influencerId: userDecodeId },
-      }
-    );
-
-    res.status(200).send({ commisionsData, orderCounts });
+    res.status(200).send({ commisionsData });
   } catch (error) {
     console.error("Error getting influencer report data:", error);
     res.status(500).json({ error: "Failed to get influencer report data" });

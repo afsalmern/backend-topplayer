@@ -201,6 +201,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
         influencer_id: coupon?.influencer_persons?.[0]?.id,
         commision_history_id: commissionRecord.id,
         amount: commission,
+        type: "credit",
       },
       {
         transaction,
