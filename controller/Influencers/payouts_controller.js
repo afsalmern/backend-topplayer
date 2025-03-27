@@ -1,5 +1,36 @@
 exports.getPayoutDetailsForInfluencer = async (req, res) => {
-  const { id: influencer_id } = req.params;
+  const { from, to, id: influencer_id, type = "all" } = req.query;
+
+  console.log(req.query);
+
+  const payoutWhere = {
+    influencer_id: influencer_id,
+  };
+
+  const addOneDay = (date) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + 1);
+    return result;
+  };
+
+  if (from && to) {
+    payoutWhere.createdAt = {
+      [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+    };
+  } else if (from) {
+    payoutWhere.createdAt = {
+      [db.Sequelize.Op.gte]: new Date(from),
+    };
+  } else if (to) {
+    payoutWhere.createdAt = {
+      [db.Sequelize.Op.lte]: new Date(to),
+    };
+  }
+
+  if (type != "all") {
+    payoutWhere.type = type;
+  }
+
   try {
     const influencer = await db.influencerPersons.findByPk(influencer_id, {
       attributes: ["id", "name", "email", "phone"],
@@ -7,13 +38,9 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
 
     if (!influencer) return res.status(404).json({ message: "Influencer person not found" });
 
-    const influencerWhere = {
-      influencer_id: influencer_id,
-    };
-
     const payoutDetails = await db.Payouts.findAll({
-      attributes: ["id", "remarks", "amount", "status","type"],
-      where: influencerWhere,
+      attributes: ["id", "remarks", "amount", "status", "type", "createdAt"],
+      where: payoutWhere,
       include: [
         {
           model: db.InfluencerCommisions,
@@ -25,18 +52,89 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
               as: "influencer",
               attributes: ["id", "coupon_code"],
             },
+            {
+              model: db.influencerPersons,
+              as: "influencerPerson",
+              attributes: ["id", "name"],
+            },
           ],
         },
       ],
+      order: [["createdAt", "DESC"]],
     });
 
-    const totalCommisions = await db.Payouts.sum("amount", {
-      where: influencerWhere,
-    });
+    const payDetails = await db.sequelize.query(
+      `SELECT 
+    i.name AS influencer_name,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
+FROM payouts p
+JOIN influencer_persons i ON p.influencer_id = i.id
+GROUP BY i.name
+ORDER BY i.name;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+      }
+    );
 
-    res.status(200).json({ payoutDetails, totalCommisions, influencer });
+    const { commission_received, commission_total } = payDetails[0];
+
+    const total = Math.round(Number(commission_total) * 100) / 100;
+    const received = Math.round(Number(commission_received) * 100) / 100;
+    const to_receive = Math.round((Number(commission_total) - Number(commission_received)) * 100) / 100;
+
+    res.status(200).json({
+      payoutDetails,
+      influencer,
+      payDetails: {
+        total,
+        to_receive,
+        received,
+      },
+    });
   } catch (error) {
     console.log("error in getting payout details", error);
+    res.status(500).send({ message: error.toString() });
+  }
+};
+
+exports.settleAmount = async (req, res) => {
+  const { amount } = req.body;
+  const { id: influencer_id } = req.params;
+  try {
+    const payDetails = await db.sequelize.query(
+      `SELECT 
+    i.name AS influencer_name,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
+FROM payouts p
+JOIN influencer_persons i ON p.influencer_id = i.id
+GROUP BY i.name
+ORDER BY i.name;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const { commission_received, commission_total } = payDetails[0];
+
+    const to_receive = Math.round((Number(commission_total) - Number(commission_received)) * 100) / 100;
+
+    if (amount > to_receive) {
+      return res.status(400).json({ message: "Please enter a valid amount, you have to settle only " + to_receive + " amount" });
+    }
+
+    await db.Payouts.create({
+      influencer_id: influencer_id,
+      amount: amount,
+      type: "debit",
+    });
+
+    res.status(200).json({ status: true, message: "Payout settled successfully", payDetails });
+  } catch (error) {
+    console.log("error in settling payout", error);
     res.status(500).send({ message: error.toString() });
   }
 };

@@ -18,7 +18,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       commision_history_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "influencer_commisions",
           key: "id",

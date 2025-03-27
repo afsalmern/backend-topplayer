@@ -63,7 +63,7 @@ const {
   getCouponPerformance,
   getCouponBreakDowns,
 } = require("../controller/Influencers/influencer_person_controller");
-const { getPayoutDetailsForInfluencer } = require("../controller/Influencers/payouts_controller");
+const { getPayoutDetailsForInfluencer, settleAmount } = require("../controller/Influencers/payouts_controller");
 
 const router = express.Router();
 
@@ -306,7 +306,8 @@ router.get("/influencer-reports-coupons", [authMiddleware.checkUserAuth], getCou
 router.get("/influencer-reports-commisions", [authMiddleware.checkUserAuth], getCommisionReportDataForInfluencer);
 
 
-router.get("/influencer-payouts/:id", [authMiddleware.checkUserAuth], getPayoutDetailsForInfluencer);
+router.get("/influencer-payouts", [authMiddleware.checkUserAuth], getPayoutDetailsForInfluencer);
+router.post("/settle-amount/:id", [authMiddleware.checkUserAuth], settleAmount);
 
 router.get("/coupon-reports", [authMiddleware.checkUserAuth], getCouponPerformance);
 router.get("/coupon-breakdowns/:coupon?/:from?/:to?", [authMiddleware.checkUserAuth], getCouponBreakDowns);
