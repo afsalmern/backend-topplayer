@@ -54,8 +54,7 @@ exports.addInfluencerPerson = async (req, res) => {
 
 exports.updateInfluencerPerson = async (req, res) => {
   try {
-    const { id } = req.params; // Get ID from URL
-    const { name, phone, email, password } = req.body;
+    const { id, name, phone, email } = req.body;
 
     // Check if influencer exists
     const influencerPerson = await db.influencerPersons.findByPk(id);
@@ -70,16 +69,11 @@ exports.updateInfluencerPerson = async (req, res) => {
     if (existingEmail) return res.status(400).json({ message: "Email already in use" });
     if (existingPhone) return res.status(400).json({ message: "Phone number already in use" });
 
-    // Hash password if updated
-    let hashedPassword = influencerPerson.password;
-    if (password) hashedPassword = await bcrypt.hash(password, 10);
-
     // Update influencer person
     await influencerPerson.update({
       name,
       phone,
       email,
-      password: hashedPassword,
     });
 
     res.status(200).json({ message: "Influencer person updated successfully" });
@@ -200,7 +194,7 @@ exports.updateInfluencerPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const influencerPerson = await db.influencerPersons.findOne({
-      email,
+      where: { email },
     });
     if (!influencerPerson) return res.status(404).json({ message: "Influencer person not found" });
 
@@ -210,13 +204,18 @@ exports.updateInfluencerPassword = async (req, res) => {
     console.log(password);
     console.log(hashedPassword);
 
-    const updateResult = await influencerPerson.update({
-      password: hashedPassword,
-    });
-    console.log(updateResult);
+    const affectedRows = await influencerPerson.update({ password: hashedPassword });
 
-    if (!updateResult) {
+    if (affectedRows === 0) {
       return res.status(500).json({ message: "Failed to update password" });
+    }
+
+    const adminUser = await db.adminUser.findOne({ where: { email: influencerPerson.email } });
+    console.log(adminUser);
+    if (adminUser) {
+      await adminUser.update({
+        password: hashedPassword,
+      });
     }
 
     const subject = "TheTopPlayer Influencer Password Reset";
