@@ -71,12 +71,26 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
         SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
 FROM payouts p
 JOIN influencer_persons i ON p.influencer_id = i.id
+WHERE p.influencer_id = :influencerId
 GROUP BY i.name
 ORDER BY i.name;`,
       {
         type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: influencer_id },
       }
     );
+
+    if (payDetails.length === 0) {
+      return res.status(200).send({
+        payoutDetails,
+        influencer,
+        payDetails: {
+          total : 0,
+          to_receive : 0,
+          received : 0,
+        },
+      });
+    }
 
     const { commission_received, commission_total } = payDetails[0];
 

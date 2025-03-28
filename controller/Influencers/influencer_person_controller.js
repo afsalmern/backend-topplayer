@@ -89,6 +89,27 @@ exports.updateInfluencerPerson = async (req, res) => {
   }
 };
 
+exports.updateInfluencerPersonStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // Get ID from URL
+    const { is_active } = req.body;
+
+    // Check if influencer exists
+    const influencerPerson = await db.influencerPersons.findByPk(id);
+    if (!influencerPerson) return res.status(404).json({ message: "Influencer person not found" });
+
+    // Update influencer person
+    await influencerPerson.update({
+      status: is_active ? "active" : "blocked",
+    });
+
+    res.status(200).json({ message: "Influencer person updated successfully" });
+  } catch (error) {
+    console.error("Error updating influencer person:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 exports.getInfluencerPerson = async (req, res) => {
   try {
     const { id } = req.params;
@@ -224,6 +245,45 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
   const { userDecodeId } = req;
 
   try {
+    const couponStats = await db.sequelize.query(
+      `
+    SELECT 
+    c.coupon_id,
+    i.coupon_code,
+    COUNT(c.id) AS total_uses
+FROM influencer_commisions c
+JOIN influencers i ON c.coupon_id = i.id
+WHERE c.influencer_id = :influencerId
+GROUP BY c.coupon_id, i.coupon_code
+ORDER BY total_uses DESC;
+
+      `,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    const couponSales = await db.sequelize.query(
+      `
+     SELECT 
+    c.coupon_id,
+    i.coupon_code,
+    SUM(c.commision_amount) AS total_sales
+FROM influencer_commisions c
+JOIN influencers i ON c.coupon_id = i.id
+WHERE c.influencer_id = :influencerId
+GROUP BY c.coupon_id, i.coupon_code
+ORDER BY total_sales DESC;
+
+
+      `,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
     const monthWiseData = await db.sequelize.query(
       `SELECT 
     MONTHNAME(ic.createdAt) AS month,
@@ -262,9 +322,72 @@ ORDER BY MONTH(ic.createdAt), c.coupon_code;`,
       }
     );
 
+    const payDetails = await db.sequelize.query(
+      `SELECT 
+    i.name AS influencer_name,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
+FROM payouts p
+JOIN influencer_persons i ON p.influencer_id = i.id
+WHERE p.influencer_id = :influencerId
+GROUP BY i.name
+ORDER BY i.name;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    const monthlySales = await db.sequelize.query(
+      `SELECT 
+    EXTRACT(YEAR FROM c.createdAt) AS year,
+    EXTRACT(MONTH FROM c.createdAt) AS month,
+    COUNT(c.id) AS commission_count,
+    SUM(c.commision_amount) AS total_commission
+FROM influencer_commisions c
+WHERE c.influencer_id = :influencerId
+GROUP BY year, month
+ORDER BY year DESC, month DESC;
+`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    if (payDetails.length === 0) {
+      return res.status(200).json({
+        monthWiseData,
+        couponWiseData,
+        couponStats,
+        couponSales,
+        monthlySales,
+        cardData: {
+          total: 0,
+          received: 0,
+          to_receive: 0,
+        },
+      });
+    }
+
+    const { commission_received, commission_total } = payDetails[0];
+
+    const total = Math.round(Number(commission_total) * 100) / 100;
+    const received = Math.round(Number(commission_received) * 100) / 100;
+    const to_receive = Math.round((Number(commission_total) - Number(commission_received)) * 100) / 100;
+
     return res.status(200).json({
       monthWiseData,
       couponWiseData,
+      couponStats,
+      couponSales,
+      monthlySales,
+      cardData: {
+        total,
+        received,
+        to_receive,
+      },
     });
   } catch (error) {
     console.error("Error getting dashboard data for influencers:", error);
@@ -320,8 +443,7 @@ exports.getCouponBreakDowns = async function (req, res) {
     const paymentWhere = [];
     const replacements = {};
 
-
-    console.log("FILTER",req.query)
+    console.log("FILTER", req.query);
 
     const addOneDay = (date) => {
       const result = new Date(date);
@@ -351,8 +473,8 @@ exports.getCouponBreakDowns = async function (req, res) {
     // Construct the WHERE clause dynamically
     const whereClause = paymentWhere.length ? `WHERE ${paymentWhere.join(" AND ")}` : "";
 
-    console.log("FILTER",whereClause)
-    console.log("FILTER",paymentWhere)
+    console.log("FILTER", whereClause);
+    console.log("FILTER", paymentWhere);
 
     const orderCounts = await db.sequelize.query(
       `SELECT 

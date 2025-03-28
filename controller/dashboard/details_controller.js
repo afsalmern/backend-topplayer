@@ -422,41 +422,40 @@ exports.getOrdersUsd = async (req, res) => {
 exports.getPayoutDetails = async (req, res) => {
   const { id: influencer = "all" } = req.params;
 
-  let influencerWhere = {};
-
-  if (influencer !== "all") {
-    influencerWhere = {
-      influencer_id: influencer,
-    };
-  }
-
   try {
-    const payoutDetails = await db.Payouts.findAll({
-      where: influencerWhere,
-      include: [
-        {
-          model: db.influencerPersons,
-          as: "influencerPerson",
-          attributes: ["id", "name", "email", "phone"],
-        },
-        {
-          model: db.InfluencerCommisions,
-          as: "commisions",
-          attributes: ["id", "coupon_id"],
-          include: [
-            {
-              model: db.influencer,
-              as: "influencer",
-              attributes: ["id", "coupon_code"],
-            },
-          ],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
+    // Base query for payout details
+    let query = `
+      SELECT 
+        ip.name AS influencer_name,
+        ip.id AS influencer_id,
+        ip.email AS influencer_email,
+        ip.phone AS influencer_phone,
+        SUM(c.commision_amount) AS total_commission
+      FROM influencer_commisions c
+      JOIN influencer_persons ip ON c.influencer_id = ip.id
+    `;
+
+    // If a specific influencer ID is provided, filter the results
+    let replacements = [];
+    if (influencer !== "all") {
+      query += ` WHERE c.influencer_id = ? `;
+      replacements.push(influencer);
+    }
+
+    query += `
+      GROUP BY c.influencer_id, ip.name, ip.email, ip.phone
+      ORDER BY total_commission DESC;
+    `;
+
+    // Execute the query
+    const payoutDetails = await db.sequelize.query(query, {
+      type: db.sequelize.QueryTypes.SELECT,
+      replacements,
     });
 
+    // Calculate total commission for the filtered influencer
     const totalCommisions = await db.Payouts.sum("amount", {
-      where: influencerWhere,
+      where: influencer !== "all" ? { influencer_id: influencer } : {},
     });
 
     res.status(200).json({ payoutDetails, totalCommisions });

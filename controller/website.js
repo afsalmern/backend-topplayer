@@ -1282,6 +1282,8 @@ exports.applyCoupon = async (req, res) => {
       ],
     });
 
+    console.log("ddddd",couponExist);
+
     if (!couponExist) {
       return res.status(400).send({ error: errorMessages.notFound });
     }
