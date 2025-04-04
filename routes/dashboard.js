@@ -63,6 +63,7 @@ const {
   getCouponPerformance,
   getCouponBreakDowns,
   updateInfluencerPersonStatus,
+  getSalesDataForInfluencers,
 } = require("../controller/Influencers/influencer_person_controller");
 const { getPayoutDetailsForInfluencer, settleAmount } = require("../controller/Influencers/payouts_controller");
 
@@ -293,6 +294,7 @@ router.delete("/influencer-persons/:id", [authMiddleware.checkUserAuth], deleteI
 router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
 router.get("/influencer-persons/:id", [authMiddleware.checkUserAuth], getInfluencerPerson);
 router.get("/influencer-dashboard", [authMiddleware.checkUserAuth], getDashboardDataForInfluencers);
+router.get("/influencer-dashboard-sales", [authMiddleware.checkUserAuth], getSalesDataForInfluencers);
 router.patch("/update-password-influencer", [authMiddleware.checkUserAuth], updateInfluencerPassword);
 
 router.get("/payout-details/:id?", [authMiddleware.checkUserAuth], getPayoutDetails);
