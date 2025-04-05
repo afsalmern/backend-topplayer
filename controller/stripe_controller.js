@@ -1,5 +1,6 @@
 const { paymentSuccessMail } = require("../utils/mail_content");
 const sendMail = require("../utils/mailer");
+const getCountryFromPhone = require("../utils/phone_to_country");
 const { getCommisionAmount } = require("../utils/Revenue_helpers");
 const stripe = require("stripe")(process.env.STRIPE_SK);
 
@@ -81,6 +82,14 @@ async function handleChargeUpdated(charge, transaction) {
 
   console.log("Payment metadata:", paymentIntentData.metadata);
 
+  const user = await db.user.findByPk(userId, {
+    attributes: ["id", "username", "email", "mobile"],
+  });
+  if (!user) {
+    console.log("User not found");
+    return;
+  }
+
   // Update or create course registration
   await updateOrCreateCourseRegistration(userId, courseId, transaction);
 
@@ -89,14 +98,14 @@ async function handleChargeUpdated(charge, transaction) {
 
   // Process coupon if available
   if (coupon_code) {
-    await processCoupon(coupon_code, paymentData.id, netAmount, amount, transaction);
+    await processCoupon(coupon_code, paymentData.id, netAmount, amount, user.mobile, transaction);
   }
 
   // Check if course is a camp and update enrollment status
   await updateCampEnrollmentStatus(courseId, transaction);
 
   // Send payment confirmation email
-  await sendPaymentConfirmationEmail(userId, amount, paymentIntentData.id);
+  await sendPaymentConfirmationEmail(user, amount, paymentIntentData.id);
 }
 
 async function handlePaymentIntentFailed(paymentIntent) {
@@ -152,7 +161,7 @@ async function createPaymentRecord(userId, courseId, amount, netAmount, fee, str
 /**
  * Process coupon and create commission record
  */
-async function processCoupon(couponCode, paymentId, netAmount, totalAmount, transaction) {
+async function processCoupon(couponCode, paymentId, netAmount, totalAmount, mobile, transaction) {
   console.log("Processing coupon:", couponCode);
 
   const coupon = await db.influencer.findOne({
@@ -182,6 +191,8 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
       { transaction }
     );
 
+    const country_name = getCountryFromPhone(mobile);
+
     // Calculate and create commission record
     const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
     const commissionRecord = await db.InfluencerCommisions.create(
@@ -193,6 +204,7 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, tran
         commision_amount: commission,
         commision_percentage: coupon.commision_percentage,
         total_amount: totalAmount,
+        country_name,
       },
       { transaction }
     );
@@ -241,10 +253,8 @@ async function updateCampEnrollmentStatus(courseId, transaction) {
 /**
  * Send payment confirmation email to the user
  */
-async function sendPaymentConfirmationEmail(userId, amount, paymentId) {
+async function sendPaymentConfirmationEmail(user, amount, paymentId) {
   try {
-    const user = await db.user.findByPk(userId);
-
     const subject = "TheTopPlayer Payment";
     const text = "Payment successful";
     const html = paymentSuccessMail(user.username, amount, paymentId);

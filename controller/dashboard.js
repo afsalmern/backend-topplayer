@@ -8,7 +8,7 @@ const { ReminderMail } = require("../utils/mail_content");
 const { sendEmail, sendBulkEmail, ses } = require("../utils/ses_mailer");
 const { GetSendQuotaCommand } = require("@aws-sdk/client-ses");
 const { getCommisionAmount } = require("../utils/Revenue_helpers");
-const { parsePhoneNumber } = require("libphonenumber-js/mobile");
+const getCountryFromPhone = require("../utils/phone_to_country");
 
 exports.addCategory = (req, res, next) => {
   db.category
@@ -221,17 +221,10 @@ exports.checkUsersWhoDontHavePurchase = async (req, res) => {
 
 exports.sendMail = async (req, res) => {
   const { mobile } = req.body;
-
   try {
-    const parsed = parsePhoneNumber(mobile);
-    if (parsed && parsed.isValid()) {
-      return {
-        country: parsed.country, // e.g., 'AE'
-        countryCallingCode: parsed.countryCallingCode, // e.g., '971'
-      };
-    } else {
-      return { error: "Invalid phone number" };
-    }
+    const country = getCountryFromPhone(mobile);
+
+    return res.status(200).json({ country });
   } catch (err) {
     console.error(`Error in sending email: ${err.toString()}`);
     res.status(500).json({ message: "Failed to send email." });

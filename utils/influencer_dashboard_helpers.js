@@ -325,6 +325,184 @@ FROM combined;
   }
 };
 
+const getSalesDataCountyWise = async (userDecodeId) => {
+  try {
+    const countryWiseData = await db.sequelize.query(
+      `
+    WITH years AS (
+    SELECT YEAR(CURDATE()) - 2 AS year_num UNION ALL
+    SELECT YEAR(CURDATE()) - 1 UNION ALL
+    SELECT YEAR(CURDATE()) UNION ALL
+    SELECT YEAR(CURDATE()) + 1 UNION ALL
+    SELECT YEAR(CURDATE()) + 2
+),
+
+country_year_data AS (
+    SELECT 
+        country_name,
+        YEAR(createdAt) AS year_num,
+        SUM(commision_amount) AS revenue
+    FROM influencer_commisions
+    WHERE YEAR(createdAt) BETWEEN YEAR(CURDATE()) - 2 AND YEAR(CURDATE()) + 2
+    AND influencer_id = :influencerId -- Add your influencer_id parameter here
+    GROUP BY country_name, YEAR(createdAt)
+),
+
+all_combinations AS (
+    SELECT 
+        c.country_name,
+        y.year_num
+    FROM 
+        (SELECT DISTINCT country_name FROM influencer_commisions WHERE influencer_id = :influencerId) c -- Add same parameter here
+    CROSS JOIN years y
+),
+
+final_data AS (
+    SELECT 
+        ac.country_name,
+        ac.year_num,
+        COALESCE(cyd.revenue, 0) AS revenue
+    FROM all_combinations ac
+    LEFT JOIN country_year_data cyd 
+        ON ac.country_name = cyd.country_name AND ac.year_num = cyd.year_num
+    ORDER BY ac.country_name, ac.year_num
+)
+SELECT JSON_ARRAYAGG(
+    JSON_OBJECT(
+        'name', country_name,
+      'data', data_json
+    )
+) AS result
+FROM (
+    SELECT 
+        country_name,
+        JSON_ARRAYAGG(revenue) AS data_json
+    FROM final_data
+    GROUP BY country_name
+) grouped;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    return countryWiseData;
+  } catch (error) {
+    console.log("Error getting daily data");
+    throw error;
+  }
+};
+
+const getPayDetails = async (userDecodeId) => {
+  try {
+    const payDetails = await db.sequelize.query(
+      `SELECT 
+        i.name AS influencer_name,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received,
+        JSON_ARRAYAGG(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total_details,
+        JSON_ARRAYAGG(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_recieved_details
+    FROM payouts p
+    JOIN influencer_persons i ON p.influencer_id = i.id
+    WHERE p.influencer_id = :influencerId
+    GROUP BY i.name
+    ORDER BY i.name;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    return payDetails;
+  } catch (error) {
+    console.log("Error getting pay details data");
+    throw error;
+  }
+};
+
+const getMonthWiseData = async (userDecodeId) => {
+  try {
+    const monthWiseData = await db.sequelize.query(
+      `SELECT
+        MONTHNAME(ic.createdAt) AS month,
+        c.coupon_code AS coupon_name,
+        SUM(ic.total_amount) AS total_sales,
+        SUM(ic.commision_amount) AS total_commission,
+        SUM(ic.net_amount) AS total_net_amount
+    FROM influencer_commisions ic
+    JOIN influencers c ON ic.coupon_id = c.id
+    WHERE ic.influencer_id = :influencerId
+    GROUP BY MONTH(ic.createdAt), MONTHNAME(ic.createdAt), c.coupon_code
+    ORDER BY MONTH(ic.createdAt), c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: {
+          influencerId: userDecodeId,
+        },
+      }
+    );
+
+    return monthWiseData;
+  } catch (error) {
+    console.log("Error getting month wise data");
+    throw error;
+  }
+};
+
+const getCouponWiseData = async (userDecodeId) => {
+  try {
+    const couponWiseData = await db.sequelize.query(
+      `SELECT
+            c.id AS coupon_id,
+            c.coupon_code AS coupon_name,
+            COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
+            SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
+            SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
+            SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
+        FROM influencer_commisions ic
+        JOIN influencers c ON ic.coupon_id = c.id
+        WHERE ic.influencer_id = :influencerId
+        GROUP BY c.id, c.coupon_code;`,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    return couponWiseData;
+  } catch (error) {
+    console.log("Error getting month wise data");
+    throw error;
+  }
+};
+
+const getMonthlySales = async (userDecodeId) => {
+  try {
+    const monthlySales = await db.sequelize.query(
+      `SELECT
+        EXTRACT(YEAR FROM c.createdAt) AS year,
+        EXTRACT(MONTH FROM c.createdAt) AS month,
+        COUNT(c.id) AS commission_count,
+        SUM(c.commision_amount) AS total_commission
+    FROM influencer_commisions c
+    WHERE c.influencer_id = :influencerId
+    GROUP BY year, month
+    ORDER BY year DESC, month DESC;
+    `,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: userDecodeId },
+      }
+    );
+
+    return monthlySales;
+  } catch (error) {
+    console.log("Error getting month wise data");
+    throw error;
+  }
+};
+
 module.exports = {
   getCommissionBreakdowns,
   getCouponStats,
@@ -333,22 +511,9 @@ module.exports = {
   getSalesDataMonthly,
   getSalesDataWeekly,
   getSalesDataToday,
+  getSalesDataCountyWise,
+  getPayDetails,
+  getMonthWiseData,
+  getCouponWiseData,
+  getMonthlySales,
 };
-
-// const filterData: any = {
-//   today: {
-//     labels: ["12.00 AM",.........],
-//     revenue: [28,......],
-//     sales: [4, ..........],
-//   },
-//   monthly: {
-//     labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-//     revenue: [340, 290, 360, 320, 470, 510, 390],
-//     sales: [15, 12, 17, 14, 21, 25, 19],
-//   },
-//   weekly: {
-//     labels: ["week1","week2","week3","week4"],
-//     revenue: [440, 505, 414, 671],
-//     sales: [23, 42, 35, 27],
-//   },
-// };

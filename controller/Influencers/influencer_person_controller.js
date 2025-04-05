@@ -11,6 +11,10 @@ const {
   getSalesDataMonthly,
   getSalesDataWeekly,
   getSalesDataToday,
+  getSalesDataCountyWise,
+  getPayDetails,
+  getCouponWiseData,
+  getMonthlySales,
 } = require("../../utils/influencer_dashboard_helpers");
 exports.addInfluencerPerson = async (req, res) => {
   const { name, phone, email, password, role } = req.body;
@@ -261,87 +265,20 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
 
     const orderCounts = await getOrderCounts(userDecodeId);
 
-    //     const monthWiseData = await db.sequelize.query(
-    //       `SELECT
-    //     MONTHNAME(ic.createdAt) AS month,
-    //     c.coupon_code AS coupon_name,
-    //     SUM(ic.total_amount) AS total_sales,
-    //     SUM(ic.commision_amount) AS total_commission,
-    //     SUM(ic.net_amount) AS total_net_amount
-    // FROM influencer_commisions ic
-    // JOIN influencers c ON ic.coupon_id = c.id
-    // WHERE ic.influencer_id = :influencerId
-    // GROUP BY MONTH(ic.createdAt), MONTHNAME(ic.createdAt), c.coupon_code
-    // ORDER BY MONTH(ic.createdAt), c.coupon_code;`,
-    //       {
-    //         type: db.sequelize.QueryTypes.SELECT,
-    //         replacements: {
-    //           influencerId: userDecodeId,
-    //         },
-    //       }
-    //     );
+    const countryWiseData = await getSalesDataCountyWise(userDecodeId);
 
-    //   const couponWiseData = await db.sequelize.query(
-    //     `SELECT
-    //     c.id AS coupon_id,
-    //     c.coupon_code AS coupon_name,
-    //     COUNT(ic.payment_id) AS total_uses,  -- Number of times the coupon was used
-    //     SUM(ic.total_amount) AS total_sales, -- Total sales generated using this coupon
-    //     SUM(ic.commision_amount) AS total_commission, -- Total commission given for this coupon
-    //     SUM(ic.net_amount) AS total_net_amount -- Total net amount after deductions
-    // FROM influencer_commisions ic
-    // JOIN influencers c ON ic.coupon_id = c.id
-    // WHERE ic.influencer_id = :influencerId
-    // GROUP BY c.id, c.coupon_code;`,
-    //     {
-    //       type: db.sequelize.QueryTypes.SELECT,
-    //       replacements: { influencerId: userDecodeId },
-    //     }
-    //   );
+    const payDetails = await getPayDetails(userDecodeId);
 
-    const payDetails = await db.sequelize.query(
-      `SELECT 
-    i.name AS influencer_name,
-    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
-    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
-    SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received,
-    JSON_ARRAYAGG(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total_details,
-    JSON_ARRAYAGG(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_recieved_details
-FROM payouts p
-JOIN influencer_persons i ON p.influencer_id = i.id
-WHERE p.influencer_id = :influencerId
-GROUP BY i.name
-ORDER BY i.name;`,
-      {
-        type: db.sequelize.QueryTypes.SELECT,
-        replacements: { influencerId: userDecodeId },
-      }
-    );
+    // const couponWiseData = await getCouponWiseData(userDecodeId);
 
-    //     const monthlySales = await db.sequelize.query(
-    //       `SELECT
-    //     EXTRACT(YEAR FROM c.createdAt) AS year,
-    //     EXTRACT(MONTH FROM c.createdAt) AS month,
-    //     COUNT(c.id) AS commission_count,
-    //     SUM(c.commision_amount) AS total_commission
-    // FROM influencer_commisions c
-    // WHERE c.influencer_id = :influencerId
-    // GROUP BY year, month
-    // ORDER BY year DESC, month DESC;
-    // `,
-    //       {
-    //         type: db.sequelize.QueryTypes.SELECT,
-    //         replacements: { influencerId: userDecodeId },
-    //       }
-    //     );
+    // const monthlySales = await getMonthlySales(userDecodeId);
 
     if (payDetails.length === 0) {
       return res.status(200).json({
-        monthWiseData,
-        couponWiseData,
         couponStats,
         couponSales,
-        monthlySales,
+        commisionData,
+        orderCounts,
         cardData: {
           total: 0,
           received: 0,
@@ -356,10 +293,14 @@ ORDER BY i.name;`,
     const received = Math.round(Number(commission_received) * 100) / 100;
     const to_receive = Math.round((Number(commission_total) - Number(commission_received)) * 100) / 100;
 
+    const currentYear = new Date().getFullYear();
+    const years = [];
+
+    for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+      years.push(i);
+    }
+
     return res.status(200).json({
-      // monthWiseData,
-      // couponWiseData,
-      // monthlySales,
       couponStats,
       couponSales,
       commisionData,
@@ -372,6 +313,8 @@ ORDER BY i.name;`,
         commission_recieved_details,
         commission_pending_details: [to_receive, to_receive],
       },
+      countryWiseData : countryWiseData[0]?.result || [],
+      years,
     });
   } catch (error) {
     console.error("Error getting dashboard data for influencers:", error);
