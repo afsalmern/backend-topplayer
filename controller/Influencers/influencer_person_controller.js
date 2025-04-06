@@ -284,6 +284,8 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
           received: 0,
           to_receive: 0,
         },
+        countryWiseData : [],
+        years: [],
       });
     }
 
