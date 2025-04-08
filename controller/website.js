@@ -877,22 +877,26 @@ exports.postStripePayment = async (req, res) => {
     });
 
     if (coupon_code) {
-      const discountpercentage = coupon.coupon_percentage;
-
-      const discountAmount = (courseDB?.offerAmount * discountpercentage) / 100;
-
-      const finalisedDiscountAmount = Math.trunc(discountAmount * currency_rate);
-
-      convertedAmount = Math.ceil(courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
+      const discountPercentage = coupon.coupon_percentage;
+      const discountAmount = (courseDB?.offerAmount * discountPercentage) / 100;
+      const finalisedDiscountAmount = courseDB && currency_rate
+        ? (discountAmount * currency_rate)
+        : 0;
+    
+      const rawConverted = (courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
+    
+      convertedAmount = Number(rawConverted % 1 === 0 ? rawConverted : rawConverted.toFixed(2));
     } else {
-      convertedAmount = Math.ceil((courseDB.offerAmount * currency_rate).toFixed(2));
+      const rawConverted = courseDB?.offerAmount * currency_rate;
+      convertedAmount = Number(rawConverted % 1 === 0 ? rawConverted : rawConverted.toFixed(2));
     }
+    
 
     const amount = await convertAmountForStripe(convertedAmount, currency_code);
 
     // const amount = convertedAmount * 100;
 
-    console.log("AMOUNT", amount);
+    console.log("AMOUNT TO BE SAVED", amount);
 
     const userDB = await db.user.findByPk(req.userDecodeId);
     const customerId = userDB.stripe_customer_id;
@@ -1310,11 +1314,6 @@ exports.applyCoupon = async (req, res) => {
 
     const discountAmount = (amount * discountpercentage) / 100;
     const finalisedDiscountAmount = discountAmount;
-
-    console.log("copnnn", courseAmount);
-    console.log("copnnn", discountpercentage);
-    console.log("copnnn", discountAmount);
-    console.log("copnnn", finalisedDiscountAmount);
 
     res.status(200).send({
       discountAmount: finalisedDiscountAmount,
