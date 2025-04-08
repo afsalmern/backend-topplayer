@@ -397,17 +397,39 @@ const getPayDetails = async (userDecodeId) => {
   try {
     const payDetails = await db.sequelize.query(
       `SELECT 
-        i.name AS influencer_name,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
-        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received,
-        JSON_ARRAYAGG(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total_details,
-        JSON_ARRAYAGG(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_recieved_details
-    FROM payouts p
-    JOIN influencer_persons i ON p.influencer_id = i.id
-    WHERE p.influencer_id = :influencerId
-    GROUP BY i.name
-    ORDER BY i.name;`,
+    i.name AS influencer_name,
+    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
+    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
+    SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received,
+
+    (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'amount', p1.amount,
+                'date', DATE_FORMAT(p1.createdAt, '%Y-%m-%d %H:%i:%s')
+            )
+        )
+        FROM payouts p1
+        WHERE p1.influencer_id = p.influencer_id AND p1.type = 'credit'
+    ) AS commission_total_details,
+
+    (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'amount', p2.amount,
+                'date', DATE_FORMAT(p2.createdAt, '%Y-%m-%d %H:%i:%s')
+            )
+        )
+        FROM payouts p2
+        WHERE p2.influencer_id = p.influencer_id AND p2.type = 'debit'
+    ) AS commission_recieved_details
+
+FROM payouts p
+JOIN influencer_persons i ON p.influencer_id = i.id
+WHERE p.influencer_id = :influencerId
+GROUP BY i.name
+ORDER BY i.name;
+`,
       {
         type: db.sequelize.QueryTypes.SELECT,
         replacements: { influencerId: userDecodeId },

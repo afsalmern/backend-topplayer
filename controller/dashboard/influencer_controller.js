@@ -18,8 +18,17 @@ exports.addInfluencer = async function (req, res) {
     const startDate = new Date(start_in);
     const expiryDate = new Date(expire_in);
 
+    if (
+      startDate.getFullYear() === expiryDate.getFullYear() &&
+      startDate.getMonth() === expiryDate.getMonth() &&
+      startDate.getDate() === expiryDate.getDate()
+    ) {
+      // Set expiryDate to the end of the day
+      expiryDate.setHours(23, 59, 59, 999);
+    }
+
     // Check if start date is not less than expiry date
-    if (startDate >= expiryDate) {
+    if (startDate > expiryDate) {
       return res.status(400).json({
         message: "The start date must be earlier than the expiry date.",
       });
@@ -29,7 +38,7 @@ exports.addInfluencer = async function (req, res) {
       coupon_code: coupon_code.trim(),
       expire_in,
       start_in,
-      max_apply_limit,
+      max_apply_limit: 0,
       coupon_percentage,
       commision_percentage,
       is_active: true,

@@ -876,9 +876,6 @@ exports.postStripePayment = async (req, res) => {
       where: { coupon_code: coupon_code },
     });
 
-    console.log("COUPON", coupon);
-    console.log("COUPON CODE", coupon_code);
-
     if (coupon_code) {
       const discountpercentage = coupon.coupon_percentage;
 
@@ -1267,6 +1264,8 @@ exports.applyCoupon = async (req, res) => {
   const currentDate = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
 
+  const amount = Math.ceil((courseAmount * currentCurrency?.currency_rate).toFixed(2));
+
   try {
     const couponExist = await db.influencer.findOne({
       where: db.Sequelize.where(db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")), coupon_code),
@@ -1281,8 +1280,6 @@ exports.applyCoupon = async (req, res) => {
         },
       ],
     });
-
-    console.log("ddddd",couponExist);
 
     if (!couponExist) {
       return res.status(400).send({ error: errorMessages.notFound });
@@ -1311,8 +1308,13 @@ exports.applyCoupon = async (req, res) => {
 
     const discountpercentage = couponExist.coupon_percentage;
 
-    const discountAmount = (courseAmount * discountpercentage) / 100;
-    const finalisedDiscountAmount = Math.trunc(discountAmount * currentCurrency.currency_rate);
+    const discountAmount = (amount * discountpercentage) / 100;
+    const finalisedDiscountAmount = discountAmount;
+
+    console.log("copnnn", courseAmount);
+    console.log("copnnn", discountpercentage);
+    console.log("copnnn", discountAmount);
+    console.log("copnnn", finalisedDiscountAmount);
 
     res.status(200).send({
       discountAmount: finalisedDiscountAmount,

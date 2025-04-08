@@ -16,6 +16,7 @@ const {
   getCouponWiseData,
   getMonthlySales,
 } = require("../../utils/influencer_dashboard_helpers");
+const { generateLightColors } = require("../../utils/color_generator");
 exports.addInfluencerPerson = async (req, res) => {
   const { name, phone, email, password, role } = req.body;
   const transaction = await db.sequelize.transaction();
@@ -302,6 +303,8 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
       years.push(i);
     }
 
+    const colors = generateLightColors(years.length);
+
     return res.status(200).json({
       couponStats,
       couponSales,
@@ -317,6 +320,7 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
       },
       countryWiseData : countryWiseData[0]?.result || [],
       years,
+      colors
     });
   } catch (error) {
     console.error("Error getting dashboard data for influencers:", error);
