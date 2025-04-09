@@ -398,9 +398,9 @@ const getPayDetails = async (userDecodeId) => {
     const payDetails = await db.sequelize.query(
       `SELECT 
     i.name AS influencer_name,
-    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
-    SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
-    SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received,
+    SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_total,
+    SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_to_receive,
+    SUM(CASE WHEN p.type = 'Settled' THEN p.amount ELSE 0 END) AS commission_received,
 
     (
         SELECT JSON_ARRAYAGG(
@@ -410,7 +410,7 @@ const getPayDetails = async (userDecodeId) => {
             )
         )
         FROM payouts p1
-        WHERE p1.influencer_id = p.influencer_id AND p1.type = 'credit'
+        WHERE p1.influencer_id = p.influencer_id AND p1.type = 'Settlement pending'
     ) AS commission_total_details,
 
     (
@@ -421,7 +421,7 @@ const getPayDetails = async (userDecodeId) => {
             )
         )
         FROM payouts p2
-        WHERE p2.influencer_id = p.influencer_id AND p2.type = 'debit'
+        WHERE p2.influencer_id = p.influencer_id AND p2.type = 'Settled'
     ) AS commission_recieved_details
 
 FROM payouts p
