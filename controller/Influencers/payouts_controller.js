@@ -10,13 +10,17 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
   };
 
   if (from && to) {
+    console.log("FROM AND TO", from, to);
+
     const fromDate = new Date(from);
     const toDate = new Date(to);
+    const today = new Date();
 
     // Check if both dates are the same (YYYY-MM-DD)
     const isSameDay = fromDate.toDateString() === toDate.toDateString();
+    const isToToday = toDate.toDateString() === today.toDateString();
 
-    if (isSameDay) {
+    if (isSameDay || isToToday ) {
       // Extend toDate to end of day
       toDate.setHours(23, 59, 59, 999);
     }
@@ -25,21 +29,42 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
       [Op.between]: [fromDate, toDate],
     };
   } else if (from) {
+    console.log("FROM");
     payoutWhere[db.Sequelize.literal("DATE(created_at)")] = {
       [Op.gte]: from,
     };
   } else if (to) {
-    payoutWhere[db.Sequelize.literal("DATE(created_at)")] = {
-      [Op.lte]: to,
-    };
+    const toDate = new Date(to);
+    const today = new Date();
+
+    const isToToday = toDate.toDateString() === today.toDateString();
+    console.log("isToToday", isToToday);
+
+    if (isToToday) {
+      // Set to the end of today
+      toDate.setHours(23, 59, 59, 999);
+
+      payoutWhere.createdAt = {
+        [Op.lte]: toDate,
+      };
+    } else {
+      console.log("else");
+
+      // Just match up to the end of the 'to' day
+      const endOfDay = new Date(to);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      payoutWhere.createdAt = {
+        [Op.lte]: endOfDay,
+      };
+    }
   }
 
   if (type != "all") {
     payoutWhere.type = type;
   }
 
-
-  console.log("PAYOUT WHERE",payoutWhere);
+  console.log("PAYOUT WHERE", payoutWhere);
 
   try {
     const influencer = await db.influencerPersons.findByPk(influencer_id, {

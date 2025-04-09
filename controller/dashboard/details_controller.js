@@ -422,7 +422,6 @@ exports.getOrdersUsd = async (req, res) => {
 exports.getPayoutDetails = async (req, res) => {
   const { id: influencer = "all", start, end } = req.query;
 
-  console.log(start, end);
 
   try {
     let replacements = [];

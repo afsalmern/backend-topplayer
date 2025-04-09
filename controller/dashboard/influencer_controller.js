@@ -295,31 +295,32 @@ exports.getOrdersInflucencers = async function (req, res) {
 exports.getInfluencerOrders = async function (req, res) {
   const { influencer = "all", from, to } = req.query;
 
-  const addOneDay = (date) => {
-    const result = new Date(date);
-    result.setDate(result.getDate() + 1);
-    return result;
-  };
-
   // Define where conditions for payment and influencer
   const paymentWhere = {};
   let dynamicThrough = {};
 
-  // Check and set conditions for date filters
   if (from && to) {
-    // If both 'from' and 'to' are provided, filter by date range
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    // Check if both dates are the same (YYYY-MM-DD)
+    const isSameDay = fromDate.toDateString() === toDate.toDateString();
+
+    if (isSameDay) {
+      // Extend toDate to end of day
+      toDate.setHours(23, 59, 59, 999);
+    }
+
     paymentWhere.createdAt = {
-      [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+      [Op.between]: [fromDate, toDate],
     };
   } else if (from) {
-    // If only 'from' is provided, filter from 'from' date onwards
-    paymentWhere.createdAt = {
-      [db.Sequelize.Op.gte]: new Date(from),
+    paymentWhere[db.Sequelize.literal("DATE(createdAt)")] = {
+      [Op.gte]: from,
     };
   } else if (to) {
-    // If only 'to' is provided, filter up to 'to' date
-    paymentWhere.createdAt = {
-      [db.Sequelize.Op.lte]: new Date(to),
+    paymentWhere[db.Sequelize.literal("DATE(createdAt)")] = {
+      [Op.lte]: to,
     };
   }
 
@@ -333,7 +334,7 @@ exports.getInfluencerOrders = async function (req, res) {
 
   try {
     const paymentWithCoupons = await db.payment.findAll({
-      attributes: ["id"],
+      attributes: ["id", "createdAt"],
       required: true,
       include: [
         {
@@ -491,95 +492,118 @@ exports.getCommisionReportDataForInfluencer = async function (req, res) {
   try {
     const { userDecodeId } = req;
     const { coupon = "all", from, to } = req.query;
-    const paymentWhere = {};
-    let influencerCommisionWhere = {};
-
-    const addOneDay = (date) => {
-      const result = new Date(date);
-      result.setDate(result.getDate() + 1);
-      return result;
+    let influencerCommisionWhere = {
+      influencer_id: userDecodeId,
     };
 
-    // Check and set conditions for date filters
-    if (from && to) {
-      // If both 'from' and 'to' are provided, filter by date range
-      paymentWhere.createdAt = {
-        [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
-      };
-    } else if (from) {
-      // If only 'from' is provided, filter from 'from' date onwards
-      paymentWhere.createdAt = {
-        [db.Sequelize.Op.gte]: new Date(from),
-      };
-    } else if (to) {
-      // If only 'to' is provided, filter up to 'to' date
-      paymentWhere.createdAt = {
-        [db.Sequelize.Op.lte]: new Date(to),
-      };
-    }
-
     if (coupon !== "all") {
-      influencerCommisionWhere = {
-        [Op.and]: [
-          {
-            influencer_id: userDecodeId,
-          },
-          {
-            coupon_id: coupon,
-          },
-        ],
-      };
-    } else {
-      influencerCommisionWhere = {
-        influencer_id: userDecodeId,
+      influencerCommisionWhere.coupon_id = coupon;
+    }
+
+    if (from && to) {
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+
+      // Extend toDate to end of day
+      toDate.setHours(23, 59, 59, 999);
+
+      influencerCommisionWhere.createdAt = {
+        [Op.between]: [fromDate, toDate],
       };
     }
 
-    console.log("commisionWhere:", influencerCommisionWhere);
+    const paymentWhere = {};
+    let dynamicThrough = {};
 
-    const commisionsData = await db.InfluencerCommisions.findAll({
-      attributes: ["id", "commision_amount", "influencer_id", "coupon_id"],
+    // const commisionsData = await db.InfluencerCommisions.findAll({
+    //   attributes: ["id", "commision_amount", "influencer_id", "coupon_id", "createdAt"],
+    //   required: true,
+    //   where: influencerCommisionWhere,
+    //   include: [
+    //     {
+    //       model: db.influencer,
+    //       attributes: ["id", "coupon_code"],
+    //       as: "influencer",
+    //       required: true,
+    //       include: [
+    //         {
+    //           model: db.influencerPersons,
+    //           attributes: ["id", "name"],
+    //           required: true,
+    //           through: {
+    //             attributes: [],
+    //           },
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       model: db.payment,
+    //       as: "payment",
+    //       attributes: ["id", "createdAt", "courseId"],
+    //       required: true,
+    //       include: [
+    //         {
+    //           model: db.course,
+    //           attributes: ["name"],
+    //           required: true,
+    //         },
+    //         {
+    //           model: db.user,
+    //           attributes: ["username"],
+    //           as: "users",
+    //           required: true,
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   group: [
+    //     "influencer_commisions.id",
+    //     "influencer.id",
+    //     "influencer->influencer_persons.id",
+    //     "payment.id",
+    //     "payment->course.id",
+    //     "payment->users.id",
+    //   ],
+    // });
+
+    console.log("isToToday", influencerCommisionWhere);
+
+    const commisionsData = await db.payment.findAll({
+      attributes: ["id", "createdAt"],
       required: true,
-      where: influencerCommisionWhere,
       include: [
         {
           model: db.influencer,
           attributes: ["id", "coupon_code"],
-          as: "influencer",
           required: true,
           include: [
             {
               model: db.influencerPersons,
               attributes: ["id", "name"],
               required: true,
-              through: {
-                attributes: [],
-              },
+              through: dynamicThrough,
             },
           ],
         },
         {
-          model: db.payment,
-          as: "payment",
-          attributes: ["id", "createdAt", "courseId"],
+          model: db.InfluencerCommisions,
+          attributes: ["id", "commision_amount", "total_amount", "net_amount"],
+          as: "commisions",
           required: true,
-          where: paymentWhere,
-          include: [
-            {
-              model: db.course,
-              attributes: ["name"],
-              required: true,
-            },
-            {
-              model: db.user,
-              attributes: ["username"],
-              as: "users",
-              required: true,
-            },
-          ],
+          where: influencerCommisionWhere,
+        },
+        {
+          model: db.course,
+          attributes: ["name"],
+          required: true,
+        },
+        {
+          model: db.user,
+          attributes: ["username"],
+          as: "users",
+          required: true,
         },
       ],
-      group: ["influencer_commisions.id", "influencer.id", "influencer->influencer_persons.id", "payment.id", "payment->course.id"], // Grouping to avoid duplication
     });
 
     res.status(200).send({ commisionsData });
