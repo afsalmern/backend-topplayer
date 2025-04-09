@@ -315,7 +315,7 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
         received,
         to_receive,
         commission_total_details,
-        commission_recieved_details,
+        commission_recieved_details : commission_recieved_details.length == 1 ? [commission_recieved_details[0], commission_recieved_details[0]] : commission_recieved_details,
         commission_pending_details: [to_receive, to_receive],
       },
       countryWiseData : countryWiseData[0]?.result || [],
