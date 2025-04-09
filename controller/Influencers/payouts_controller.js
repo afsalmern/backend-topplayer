@@ -1,3 +1,5 @@
+const { Op } = require("../../models");
+
 exports.getPayoutDetailsForInfluencer = async (req, res) => {
   const { from, to, id: influencer_id, type = "all" } = req.query;
 
@@ -7,29 +9,37 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
     influencer_id: influencer_id,
   };
 
-  const addOneDay = (date) => {
-    const result = new Date(date);
-    result.setDate(result.getDate() + 1);
-    return result;
-  };
-
   if (from && to) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    // Check if both dates are the same (YYYY-MM-DD)
+    const isSameDay = fromDate.toDateString() === toDate.toDateString();
+
+    if (isSameDay) {
+      // Extend toDate to end of day
+      toDate.setHours(23, 59, 59, 999);
+    }
+
     payoutWhere.createdAt = {
-      [db.Sequelize.Op.between]: [new Date(from), addOneDay(new Date(to))],
+      [Op.between]: [fromDate, toDate],
     };
   } else if (from) {
-    payoutWhere.createdAt = {
-      [db.Sequelize.Op.gte]: new Date(from),
+    payoutWhere[db.Sequelize.literal("DATE(created_at)")] = {
+      [Op.gte]: from,
     };
   } else if (to) {
-    payoutWhere.createdAt = {
-      [db.Sequelize.Op.lte]: new Date(to),
+    payoutWhere[db.Sequelize.literal("DATE(created_at)")] = {
+      [Op.lte]: to,
     };
   }
 
   if (type != "all") {
     payoutWhere.type = type;
   }
+
+
+  console.log("PAYOUT WHERE",payoutWhere);
 
   try {
     const influencer = await db.influencerPersons.findByPk(influencer_id, {
@@ -85,9 +95,9 @@ ORDER BY i.name;`,
         payoutDetails,
         influencer,
         payDetails: {
-          total : 0,
-          to_receive : 0,
-          received : 0,
+          total: 0,
+          to_receive: 0,
+          received: 0,
         },
       });
     }

@@ -422,6 +422,8 @@ exports.getOrdersUsd = async (req, res) => {
 exports.getPayoutDetails = async (req, res) => {
   const { id: influencer = "all", start, end } = req.query;
 
+  console.log(start, end);
+
   try {
     let replacements = [];
     let whereConditions = [];
@@ -467,6 +469,8 @@ exports.getPayoutDetails = async (req, res) => {
       GROUP BY c.influencer_id, ip.name, ip.email, ip.phone
       ORDER BY total_commission DESC;
     `;
+
+    console.log(query, replacements);
 
     const payoutDetails = await db.sequelize.query(query, {
       type: db.sequelize.QueryTypes.SELECT,
