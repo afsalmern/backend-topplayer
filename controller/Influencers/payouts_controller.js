@@ -10,8 +10,6 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
   };
 
   if (from && to) {
-    console.log("FROM AND TO", from, to);
-
     const fromDate = new Date(from);
     const toDate = new Date(to);
     const today = new Date();
@@ -20,7 +18,7 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
     const isSameDay = fromDate.toDateString() === toDate.toDateString();
     const isToToday = toDate.toDateString() === today.toDateString();
 
-    if (isSameDay || isToToday ) {
+    if (isSameDay || isToToday) {
       // Extend toDate to end of day
       toDate.setHours(23, 59, 59, 999);
     }
@@ -28,36 +26,6 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
     payoutWhere.createdAt = {
       [Op.between]: [fromDate, toDate],
     };
-  } else if (from) {
-    console.log("FROM");
-    payoutWhere[db.Sequelize.literal("DATE(created_at)")] = {
-      [Op.gte]: from,
-    };
-  } else if (to) {
-    const toDate = new Date(to);
-    const today = new Date();
-
-    const isToToday = toDate.toDateString() === today.toDateString();
-    console.log("isToToday", isToToday);
-
-    if (isToToday) {
-      // Set to the end of today
-      toDate.setHours(23, 59, 59, 999);
-
-      payoutWhere.createdAt = {
-        [Op.lte]: toDate,
-      };
-    } else {
-      console.log("else");
-
-      // Just match up to the end of the 'to' day
-      const endOfDay = new Date(to);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      payoutWhere.createdAt = {
-        [Op.lte]: endOfDay,
-      };
-    }
   }
 
   if (type != "all") {
@@ -101,9 +69,9 @@ exports.getPayoutDetailsForInfluencer = async (req, res) => {
     const payDetails = await db.sequelize.query(
       `SELECT 
     i.name AS influencer_name,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
-        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
+        SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'Settled' THEN p.amount ELSE 0 END) AS commission_received
 FROM payouts p
 JOIN influencer_persons i ON p.influencer_id = i.id
 WHERE p.influencer_id = :influencerId
@@ -155,9 +123,9 @@ exports.settleAmount = async (req, res) => {
     const payDetails = await db.sequelize.query(
       `SELECT 
     i.name AS influencer_name,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_total,
-        SUM(CASE WHEN p.type = 'credit' THEN p.amount ELSE 0 END) AS commission_to_receive,
-        SUM(CASE WHEN p.type = 'debit' THEN p.amount ELSE 0 END) AS commission_received
+        SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_total,
+        SUM(CASE WHEN p.type = 'Settlement pending' THEN p.amount ELSE 0 END) AS commission_to_receive,
+        SUM(CASE WHEN p.type = 'Settled' THEN p.amount ELSE 0 END) AS commission_received
 FROM payouts p
 JOIN influencer_persons i ON p.influencer_id = i.id
 GROUP BY i.name
@@ -178,7 +146,7 @@ ORDER BY i.name;`,
     await db.Payouts.create({
       influencer_id: influencer_id,
       amount: amount,
-      type: "debit",
+      type: "Settled",
     });
 
     res.status(200).json({ status: true, message: "Payout settled successfully", payDetails });

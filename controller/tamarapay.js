@@ -407,7 +407,7 @@ async function processCoupon(coupon_code, paymentId, user, totalAmount) {
       influencer_id: coupon?.influencer_persons?.[0]?.id,
       commision_history_id: commissionRecord.id,
       amount: commission,
-      type: "credit"
+      type: "Settlement pending"
     }, { transaction });
     
     await transaction.commit();
