@@ -420,9 +420,12 @@ exports.getOrdersUsd = async (req, res) => {
 };
 
 exports.getPayoutDetails = async (req, res) => {
-  const { id: influencer = "all" } = req.params;
+  const { id: influencer = "all", start, end } = req.query;
 
   try {
+    let replacements = [];
+    let whereConditions = [];
+
     // Base query for payout details
     let query = `
       SELECT 
@@ -435,11 +438,29 @@ exports.getPayoutDetails = async (req, res) => {
       JOIN influencer_persons ip ON c.influencer_id = ip.id
     `;
 
-    // If a specific influencer ID is provided, filter the results
-    let replacements = [];
+    // Handle influencer filter
     if (influencer !== "all") {
-      query += ` WHERE c.influencer_id = ? `;
+      whereConditions.push("c.influencer_id = ?");
       replacements.push(influencer);
+    }
+
+    // Handle date range filter
+    if (start && end) {
+      const fromDate = new Date(start);
+      let toDate = new Date(end);
+
+      // If from === to, set end time to end of that day
+      if (start === end) {
+        toDate.setHours(23, 59, 59, 999);
+      }
+
+      whereConditions.push("c.createdAt BETWEEN ? AND ?");
+      replacements.push(fromDate, toDate);
+    }
+
+    // Combine where conditions
+    if (whereConditions.length > 0) {
+      query += " WHERE " + whereConditions.join(" AND ");
     }
 
     query += `
@@ -447,7 +468,6 @@ exports.getPayoutDetails = async (req, res) => {
       ORDER BY total_commission DESC;
     `;
 
-    // Execute the query
     const payoutDetails = await db.sequelize.query(query, {
       type: db.sequelize.QueryTypes.SELECT,
       replacements,

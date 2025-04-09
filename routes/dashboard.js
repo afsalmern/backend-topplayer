@@ -297,7 +297,7 @@ router.get("/influencer-dashboard", [authMiddleware.checkUserAuth], getDashboard
 router.get("/influencer-dashboard-sales", [authMiddleware.checkUserAuth], getSalesDataForInfluencers);
 router.patch("/update-password-influencer", [authMiddleware.checkUserAuth], updateInfluencerPassword);
 
-router.get("/payout-details/:id?", [authMiddleware.checkUserAuth], getPayoutDetails);
+router.get("/payout-details", [authMiddleware.checkUserAuth], getPayoutDetails);
 
 
 router.post("/coupons", [authMiddleware.checkUserAuth], addInfluencer);
