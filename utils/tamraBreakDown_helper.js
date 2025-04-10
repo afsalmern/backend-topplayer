@@ -1,6 +1,9 @@
 const calculatePaymentDetails = (amount,currency) => {
   let variableFeePercentage, fixedFee, taxRate;
 
+
+  console.log("CURREENCY INSIDE HELPER =========>", currency);
+
   // Set rates based on currency
   switch (currency) {
     case "SAR": // Saudi Arabia
