@@ -369,6 +369,7 @@ exports.getInfluencerOrders = async function (req, res) {
         },
       ],
       where: paymentWhere,
+      order: [["createdAt", "DESC"]],
     });
 
     res.status(200).send({ paymentWithCoupons });
