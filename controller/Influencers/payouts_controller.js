@@ -128,6 +128,7 @@ exports.settleAmount = async (req, res) => {
         SUM(CASE WHEN p.type = 'Settled' THEN p.amount ELSE 0 END) AS commission_received
 FROM payouts p
 JOIN influencer_persons i ON p.influencer_id = i.id
+WHERE p.influencer_id = :influencerId
 GROUP BY i.name
 ORDER BY i.name;`,
       {
@@ -138,6 +139,8 @@ ORDER BY i.name;`,
     const { commission_received, commission_total } = payDetails[0];
 
     const to_receive = Math.round((Number(commission_total) - Number(commission_received)) * 100) / 100;
+
+    console.log("AMOUNTS",to_receive, amount);
 
     if (amount > to_receive) {
       return res.status(400).json({ message: "Please enter a valid amount, you have to settle only " + to_receive + " amount" });
