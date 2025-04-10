@@ -537,7 +537,7 @@ exports.tamaraWebHook = async (req, res) => {
 
         if (coupon_code) {
           console.log("COUPON FOUND IN TAMARA", coupon_code);
-
+          
           const coupon = await db.influencer.findOne({
             attributes: ["id", "coupon_code", "coupon_percentage", "commision_percentage"],
             where: { coupon_code: coupon_code },
@@ -552,8 +552,10 @@ exports.tamaraWebHook = async (req, res) => {
               },
             ],
           });
-
-          if (coupon) {
+          console.log("COUPON FOUND IN TAMARA", coupon);
+          
+          if (coupon && paymentData) {
+            console.log("COUPON FOUND IN TAMARA", coupon);
             await db.paymentWithCoupon.create({
               paymentId: paymentData?.id,
               influencerId: coupon?.id,
@@ -582,6 +584,7 @@ exports.tamaraWebHook = async (req, res) => {
             });
           }
         }
+        
 
         const userDB = await db.user.findByPk(userId);
 
