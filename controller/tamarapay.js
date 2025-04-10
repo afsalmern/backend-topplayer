@@ -156,46 +156,43 @@ exports.createTamaraPayment = async (req, res) => {
 // exports.tamaraWebHook = async (req, res) => {
 //   try {
 //     console.log("req body=============>:", req.body);
-    
+
 //     const referenceOrderId = req.body.order_reference_id;
 //     console.log("referenceOrderId ==>", referenceOrderId);
-    
+
 //     // Fetch order details
 //     const orderDetails = await db.tamaraPayment.findOne({
 //       where: { referenceId: referenceOrderId },
 //     });
-    
+
 //     if (!orderDetails) {
 //       console.error("Order details not found for referenceId:", referenceOrderId);
 //       return res.status(404).send("Order details not found");
 //     }
-    
+
 //     console.log("orderDetails=====>", orderDetails);
 //     console.log("orderDetails referenceId=====>", orderDetails.referenceId);
-    
-//     // Extract order information
-//     const {
-//       courseId,
-//       userId,
-//       amount,
-//       orderId: order_id,
-//       coupon_code,
-//       currency_code = null
-//     } = orderDetails;
-    
+
+// const courseId = orderDetails.courseId;
+// const userId = orderDetails.userId;
+// const amount = orderDetails.amount;
+// const order_id = orderDetails.orderId;
+// const coupon_code = orderDetails.coupon_code;
+// const currency_code = orderDetails.currency_code || null;
+
 //     console.log("ORDER ID ==========>", order_id);
-    
+
 //     // Fetch related data
 //     const course = await db.course.findByPk(courseId);
 //     const user = await db.user.findByPk(userId, {
 //       attributes: ["id", "mobile", "email", "username"]
 //     });
-    
+
 //     if (!user) {
 //       console.error("User not found for userId:", userId);
 //       return res.status(404).send("User not found");
 //     }
-    
+
 //     // Process notification based on event_type
 //     switch (req.body.event_type) {
 //       case "order_approved": {
@@ -213,31 +210,31 @@ exports.createTamaraPayment = async (req, res) => {
 //         });
 //         break;
 //       }
-      
+
 //       case "ORDER_CONFIRMED":
 //         console.log("Order confirmed:", referenceOrderId);
 //         // Update application data (e.g., mark order as confirmed)
 //         break;
-        
+
 //       case "order_declined":
 //         console.log("Order declined:", referenceOrderId);
 //         await handleDeclinedOrCancelled(orderDetails);
 //         break;
-        
+
 //       case "ORDER_PAYMENT_CAPTURED":
 //         console.log("Payment captured:", referenceOrderId);
 //         // Update application data (e.g., mark order as paid)
 //         break;
-        
+
 //       case "ORDER_CANCELLED":
 //         console.log("Order cancelled:", referenceOrderId);
 //         await handleDeclinedOrCancelled(orderDetails);
 //         break;
-        
+
 //       default:
 //         console.log(`Unhandled event type: ${req.body.event_type}`);
 //     }
-    
+
 //     res.sendStatus(200); // Acknowledge receipt of the webhook
 //   } catch (error) {
 //     console.error("Error in tamaraWebHook:", error);
@@ -248,25 +245,14 @@ exports.createTamaraPayment = async (req, res) => {
 /**
  * Handle order approved event
  */
-async function handleOrderApproved({
-  order_id,
-  course,
-  amount,
-  currency_code,
-  userId,
-  courseId,
-  coupon_code,
-  user,
-  referenceOrderId,
-  orderDetails
-}) {
+async function handleOrderApproved({ order_id, course, amount, currency_code, userId, courseId, coupon_code, user, referenceOrderId, orderDetails }) {
   try {
     console.log("ORDER ID ==========>", order_id);
-    
+
     // Authorize the order
     const authorised_data = await tamara.authoriseOrder(order_id);
     console.log("AUTHORISED DATA ============= >", authorised_data);
-    
+
     // Capture the payment
     const captured_data = await tamara.capture({
       items: [
@@ -276,31 +262,30 @@ async function handleOrderApproved({
           reference_id: course?.id,
           sku: "SA-12436",
           quantity: 1,
-          total_amount: { amount, currency: currency_code }
-        }
+          total_amount: { amount, currency: currency_code },
+        },
       ],
       order_id: order_id,
       shipping_info: {
         shipped_at: new Date().toISOString(),
-        shipping_company: "DHL"
+        shipping_company: "DHL",
       },
-      total_amount: { amount, currency: currency_code }
+      total_amount: { amount, currency: currency_code },
     });
     console.log("CAPTURED DATA ===========>", captured_data);
-    
+
     // Register the course for the user
     await registerCourseForUser(userId, courseId);
-    
+
     // Process payment and coupon
     const paymentId = await processPayment(amount, currency_code, courseId, userId);
-    
+
     if (coupon_code) {
       await processCoupon(coupon_code, paymentId, user, amount);
     }
-    
+
     // Send confirmation email to user
     await sendConfirmationEmail(user, amount, orderDetails.referenceId);
-    
   } catch (error) {
     console.error("Error in handleOrderApproved:", error);
     throw error; // Re-throw to be caught by main handler
@@ -312,15 +297,12 @@ async function handleOrderApproved({
  */
 async function registerCourseForUser(userId, courseId) {
   const existingData = await db.registeredCourse.findOne({
-    where: { userId, courseId }
+    where: { userId, courseId },
   });
-  
+
   if (existingData) {
     console.log("EXISTING DATA - Updating registration timestamp");
-    await db.registeredCourse.update(
-      { createdAt: new Date() },
-      { where: { userId, courseId } }
-    );
+    await db.registeredCourse.update({ createdAt: new Date() }, { where: { userId, courseId } });
   } else {
     console.log("NEW DATA - Creating new registration");
     await db.registeredCourse.create({ userId, courseId });
@@ -333,16 +315,16 @@ async function registerCourseForUser(userId, courseId) {
 async function processPayment(amount, currency_code, courseId, userId) {
   const amounts = calculatePaymentDetails(amount, currency_code);
   const { totalAmountAfterDeductions, totalDeductedAmount } = amounts;
-  
+
   const paymentData = await db.payment.create({
     courseId,
     userId,
     amount,
     net_amount: totalAmountAfterDeductions || amount,
     stripe_fee: totalDeductedAmount || 0,
-    fromTamara: true
+    fromTamara: true,
   });
-  
+
   return paymentData?.id;
 }
 
@@ -351,7 +333,7 @@ async function processPayment(amount, currency_code, courseId, userId) {
  */
 async function processCoupon(coupon_code, paymentId, user, totalAmount) {
   console.log("COUPON FOUND IN TAMARA", coupon_code);
-  
+
   const coupon = await db.influencer.findOne({
     attributes: ["id", "coupon_code", "coupon_percentage", "commision_percentage"],
     where: { coupon_code },
@@ -361,55 +343,61 @@ async function processCoupon(coupon_code, paymentId, user, totalAmount) {
         attributes: ["id", "name", "status"],
         through: {
           model: db.InfluencerCoupons,
-          attributes: []
-        }
-      }
-    ]
+          attributes: [],
+        },
+      },
+    ],
   });
-  
+
   if (!coupon) {
     console.log("Coupon not found:", coupon_code);
     return;
   }
-  
+
   // Create payment with coupon record
   await db.paymentWithCoupon.create({
     paymentId,
-    influencerId: coupon.id
+    influencerId: coupon.id,
   });
   console.log("COUPON FOUND IN TAMARA AND SAVED", coupon_code);
-  
+
   // Get user's country from phone number
   const country_name = getCountryFromPhone(user?.mobile);
-  
+
   // Start a transaction for commission-related operations
   const transaction = await db.sequelize.transaction();
-  
+
   try {
     // Calculate commission amount
     const totalAmountAfterDeductions = calculatePaymentDetails(totalAmount).totalAmountAfterDeductions;
     const commission = getCommisionAmount(totalAmountAfterDeductions, coupon.commision_percentage);
-    
+
     // Create commission record
-    const commissionRecord = await db.InfluencerCommisions.create({
-      payment_id: paymentId,
-      coupon_id: coupon.id,
-      influencer_id: coupon?.influencer_persons?.[0]?.id,
-      net_amount: totalAmountAfterDeductions,
-      commision_amount: commission,
-      commision_percentage: coupon.commision_percentage,
-      total_amount: totalAmount,
-      country_name
-    }, { transaction });
-    
+    const commissionRecord = await db.InfluencerCommisions.create(
+      {
+        payment_id: paymentId,
+        coupon_id: coupon.id,
+        influencer_id: coupon?.influencer_persons?.[0]?.id,
+        net_amount: totalAmountAfterDeductions,
+        commision_amount: commission,
+        commision_percentage: coupon.commision_percentage,
+        total_amount: totalAmount,
+        country_name,
+      },
+      { transaction }
+    );
+
     // Create payout record
-    await db.Payouts.create({
-      influencer_id: coupon?.influencer_persons?.[0]?.id,
-      commision_history_id: commissionRecord.id,
-      amount: commission,
-      type: "Settlement pending"
-    }, { transaction });
-    
+    await db.Payouts.create(
+      {
+        influencer_id: coupon?.influencer_persons?.[0]?.id,
+        commision_history_id: commissionRecord.id,
+        amount: commission,
+        type: "Settlement pending",
+      },
+      { transaction }
+    );
+
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
@@ -425,7 +413,7 @@ async function sendConfirmationEmail(user, amount, referenceId) {
   const subject = "TheTopPlayer Payment";
   const text = "Payment successful";
   const html = paymentSuccessMail(user.username, amount, referenceId);
-  
+
   try {
     const isMailSent = await sendMail(user.email, subject, text, html);
     if (isMailSent) {
@@ -576,30 +564,22 @@ exports.tamaraWebHook = async (req, res) => {
 
             // Calculate and create commission record
             const commission = getCommisionAmount(totalAmountAfterDeductions, coupon.commision_percentage);
-            const commissionRecord = await db.InfluencerCommisions.create(
-              {
-                payment_id: paymentData?.id,
-                coupon_id: coupon.id,
-                influencer_id: coupon?.influencer_persons?.[0]?.id,
-                net_amount: totalAmountAfterDeductions,
-                commision_amount: commission,
-                commision_percentage: coupon.commision_percentage,
-                total_amount: amount,
-                country_name,
-              },
-              { transaction }
-            );
-            await db.Payouts.create(
-              {
-                influencer_id: coupon?.influencer_persons?.[0]?.id,
-                commision_history_id: commissionRecord.id,
-                amount: commission,
-                type: "credit",
-              },
-              {
-                transaction,
-              }
-            );
+            const commissionRecord = await db.InfluencerCommisions.create({
+              payment_id: paymentData?.id,
+              coupon_id: coupon.id,
+              influencer_id: coupon?.influencer_persons?.[0]?.id,
+              net_amount: totalAmountAfterDeductions,
+              commision_amount: commission,
+              commision_percentage: coupon.commision_percentage,
+              total_amount: amount,
+              country_name,
+            });
+            await db.Payouts.create({
+              influencer_id: coupon?.influencer_persons?.[0]?.id,
+              commision_history_id: commissionRecord.id,
+              amount: commission,
+              type: "credit",
+            });
           }
         }
 
