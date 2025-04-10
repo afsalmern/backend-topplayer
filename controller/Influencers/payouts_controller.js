@@ -133,6 +133,7 @@ GROUP BY i.name
 ORDER BY i.name;`,
       {
         type: db.sequelize.QueryTypes.SELECT,
+        replacements: { influencerId: influencer_id },
       }
     );
 
