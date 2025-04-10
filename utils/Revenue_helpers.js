@@ -22,6 +22,7 @@ const getOrders = async (where, whereClause) => {
         required: true, // Allow payments that have no associated user
       },
     ],
+    order: [["createdAt", "DESC"]],
   });
 
   const formattedOrders = orders.map((order) => ({
