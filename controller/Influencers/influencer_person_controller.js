@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const db = require("../../models");
 const generateRandomPassword = require("../../utils/generate_password");
-const { passwordResetMailInfluencer } = require("../../utils/mail_content");
+const { passwordResetMailInfluencer, welcomeMailInfluencer } = require("../../utils/mail_content");
 const sendMail = require("../../utils/mailer");
 const {
   getCommissionBreakdowns,
@@ -55,6 +55,18 @@ exports.addInfluencerPerson = async (req, res) => {
         transaction,
       }
     );
+
+    const subject = "TheTopPlayer Influencer Onboard";
+    const text = "Welcome influencer"; // plain text body
+    const html = welcomeMailInfluencer(name, password);
+
+    const isMailsend = await sendMail(email, subject, text, html);
+
+    if (isMailsend) {
+      console.log("Email sent:");
+    } else {
+      console.error("Error sending email:", error);
+    }
 
     await transaction.commit();
 
@@ -285,7 +297,7 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
           received: 0,
           to_receive: 0,
         },
-        countryWiseData : [],
+        countryWiseData: [],
         years: [],
       });
     }
@@ -314,13 +326,15 @@ exports.getDashboardDataForInfluencers = async (req, res) => {
         total,
         received,
         to_receive,
-        commission_total_details : commission_total_details?.length == 1 ? [commission_total_details[0], commission_total_details[0]] : commission_total_details,
-        commission_recieved_details : commission_recieved_details?.length == 1 ? [commission_recieved_details[0], commission_recieved_details[0]] : commission_recieved_details,
+        commission_total_details:
+          commission_total_details?.length == 1 ? [commission_total_details[0], commission_total_details[0]] : commission_total_details,
+        commission_recieved_details:
+          commission_recieved_details?.length == 1 ? [commission_recieved_details[0], commission_recieved_details[0]] : commission_recieved_details,
         commission_pending_details: [to_receive, to_receive],
       },
-      countryWiseData : countryWiseData[0]?.result || [],
+      countryWiseData: countryWiseData[0]?.result || [],
       years,
-      colors
+      colors,
     });
   } catch (error) {
     console.error("Error getting dashboard data for influencers:", error);

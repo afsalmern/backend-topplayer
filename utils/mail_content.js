@@ -872,6 +872,84 @@ function passwordResetMailInfluencer(username, password) {
 `;
 }
 
+function welcomeMailInfluencer(username, password) {
+  return `
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Welcome to The Top Player</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        a[href] {
+            color: #9E6439;
+        }
+    </style>
+</head>
+
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+    <div style="width:700px; margin: auto; background: #fff;">
+        <table id="Table_01" width="700" border="0" cellpadding="0" cellspacing="0" align="center"
+            style="background-color: #F8F2ED;background-image: url(https://ux.intersmarthosting.in/Mailers/TopPlayer/images/dElmt-countBg-1.png);background-position: center;background-size: 440px 360px;background-repeat: no-repeat; padding: 60px 20px;">
+            <tbody>
+                <tr>
+                    <td style="padding: 30px 60px;">
+                        <a href="#!" style="display: block; width: 200px;">
+                            <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" width="200"
+                                height="60" alt="logo">
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 30px 60px;">
+                        <h1
+                            style="font-size: 24px; line-height: 1; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 10px 0;">
+                            Welcome to The Top Player!</h1>
+                        <h1
+                            style="font-size: 20px; line-height: 1.2; font-weight: 600; font-family: Arial, Helvetica, sans-serif; color: #9E6439; margin: 1px 0;">
+                            Influencer Account Created</h1>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Dear ${username},</p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            We're excited to welcome you onboard as an influencer with <strong>The Top Player</strong>!
+                            Your account has been successfully created and you're now part of our exclusive network of collaborators.
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            You can log in to your account using the following credentials:
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            <b>Password: ${password}</b>
+                        </p>
+                       <p
+    style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+    Please login at <a href="https://thetopplayer-a2551.web.app/" target="_blank">https://thetopplayer-a2551.web.app/</a>. 
+    If you have any questions or need assistance, feel free to reach out to us at 
+    <a href="mailto:${process.env.SUPPORT_EMAILID}">${process.env.SUPPORT_EMAILID}</a> or contact us on WhatsApp at ${process.env.SUPPORT_CONTACT}.
+</p>
+
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            We're looking forward to a great journey together. Let's make something amazing!
+                        </p>
+                        <p
+                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
+                            Best regards, <br>
+                            The Top Player Team</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
+`;
+}
+
 module.exports = {
   WelcomeMail,
   resendMail,
@@ -881,4 +959,5 @@ module.exports = {
   TrendingNewsMail,
   ReminderMail,
   passwordResetMailInfluencer,
+  welcomeMailInfluencer,
 };
