@@ -51,10 +51,10 @@ exports.addInfluencer = async function (req, res) {
       coupon_id,
     });
 
-    res.status(201).send({ message: "Influencer added successfully" });
+    res.status(201).send({ message: "Coupon added successfully" });
   } catch (error) {
-    console.error("Error adding influencer:", error);
-    res.status(500).send({ message: "Error adding influencer" });
+    console.error("Error adding coupon:", error);
+    res.status(500).send({ message: "Error adding coupon" });
   }
 };
 
@@ -124,7 +124,7 @@ exports.updateInfluencer = async function (req, res) {
 
     // If influencer not found, return a 404 error
     if (!influencer) {
-      return res.status(404).json({ error: "Influencer not found" });
+      return res.status(404).json({ error: "Coupon not found" });
     }
 
     // Check if the coupon code is already in use by another influencer
@@ -155,10 +155,10 @@ exports.updateInfluencer = async function (req, res) {
     });
 
     // Send the updated influencer data as response
-    res.status(200).send({ message: "Influencer updated successfully" });
+    res.status(200).send({ message: "Coupon updated successfully" });
   } catch (error) {
-    console.error("Error updating influencer:", error);
-    res.status(500).json({ error: "Failed to update influencer" });
+    console.error("Error updating Coupon:", error);
+    res.status(500).json({ error: "Failed to update Coupon" });
   }
 };
 
@@ -172,7 +172,7 @@ exports.updateInfluencerStatus = async function (req, res) {
 
     // If influencer not found, return a 404 error
     if (!influencer) {
-      return res.status(404).json({ error: "Influencer not found" });
+      return res.status(404).json({ error: "Coupon not found" });
     }
 
     // Update the influencer with new data
@@ -181,10 +181,10 @@ exports.updateInfluencerStatus = async function (req, res) {
     });
 
     // Send the updated influencer data as response
-    res.status(200).send({ message: "Influencer updated successfully" });
+    res.status(200).send({ message: "Coupon updated successfully" });
   } catch (error) {
-    console.error("Error updating influencer:", error);
-    res.status(500).json({ error: "Failed to update influencer" });
+    console.error("Error updating Coupon:", error);
+    res.status(500).json({ error: "Failed to update coupon" });
   }
 };
 
@@ -196,16 +196,16 @@ exports.deleteInfluencer = async function (req, res) {
     const influencer = await db.influencer.findByPk(id);
 
     if (!influencer) {
-      return res.status(404).json({ error: "Influencer not found" });
+      return res.status(404).json({ error: "Coupon not found" });
     }
 
     await influencer.destroy();
 
-    console.log(`Influencer with ID ${id} deleted successfully`);
-    res.status(200).send({ message: "Influencer deleted successfully" });
+    console.log(`Coupon with ID ${id} deleted successfully`);
+    res.status(200).send({ message: "Coupon deleted successfully" });
   } catch (error) {
-    console.error("Error deleting influencer:", error);
-    res.status(500).json({ error: "Failed to delete influencer" });
+    console.error("Error deleting coupon:", error);
+    res.status(500).json({ error: "Failed to delete coupon" });
   }
 };
 

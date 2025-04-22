@@ -422,61 +422,58 @@ exports.getOrdersUsd = async (req, res) => {
 exports.getPayoutDetails = async (req, res) => {
   const { id: influencer = "all", start, end } = req.query;
 
-
   try {
     let replacements = [];
     let whereConditions = [];
 
-    // Base query for payout details
     let query = `
       SELECT 
-        ip.name AS influencer_name,
         ip.id AS influencer_id,
+        ip.name AS influencer_name,
         ip.email AS influencer_email,
         ip.phone AS influencer_phone,
-        SUM(c.commision_amount) AS total_commission
+        SUM(c.commision_amount) AS total_commission,
+        MIN(c.createdAt) AS commission_start_date,
+        MAX(c.createdAt) AS commission_end_date
       FROM influencer_commisions c
       JOIN influencer_persons ip ON c.influencer_id = ip.id
     `;
 
-    // Handle influencer filter
+    // Dynamic WHERE conditions
     if (influencer !== "all") {
       whereConditions.push("c.influencer_id = ?");
       replacements.push(influencer);
     }
 
-    // Handle date range filter
     if (start && end) {
       const fromDate = new Date(start);
       let toDate = new Date(end);
 
-      // If from === to, set end time to end of that day
       if (start === end) {
         toDate.setHours(23, 59, 59, 999);
+        fromDate.setHours(0, 0, 0, 0);
       }
 
       whereConditions.push("c.createdAt BETWEEN ? AND ?");
       replacements.push(fromDate, toDate);
     }
 
-    // Combine where conditions
     if (whereConditions.length > 0) {
       query += " WHERE " + whereConditions.join(" AND ");
     }
 
     query += `
-      GROUP BY c.influencer_id, ip.name, ip.email, ip.phone
-      ORDER BY total_commission DESC;
+      GROUP BY ip.id, ip.name, ip.email, ip.phone
+      ORDER BY total_commission DESC
     `;
 
-    console.log(query, replacements);
+    console.log("Executing SQL:", query, replacements);
 
     const payoutDetails = await db.sequelize.query(query, {
       type: db.sequelize.QueryTypes.SELECT,
       replacements,
     });
 
-    // Calculate total commission for the filtered influencer
     const totalCommisions = await db.Payouts.sum("amount", {
       where: influencer !== "all" ? { influencer_id: influencer } : {},
     });

@@ -70,7 +70,7 @@ exports.addInfluencerPerson = async (req, res) => {
 
     await transaction.commit();
 
-    res.status(201).json(newInfluencerPerson);
+    res.status(201).json({ message: "Influencer created successfully" });
   } catch (error) {
     console.error("Error creating influencer person:", error);
     await transaction.rollback();
@@ -102,7 +102,7 @@ exports.updateInfluencerPerson = async (req, res) => {
       email,
     });
 
-    res.status(200).json({ message: "Influencer person updated successfully" });
+    res.status(200).json({ message: "Influencer updated successfully" });
   } catch (error) {
     console.error("Error updating influencer person:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -116,14 +116,14 @@ exports.updateInfluencerPersonStatus = async (req, res) => {
 
     // Check if influencer exists
     const influencerPerson = await db.influencerPersons.findByPk(id);
-    if (!influencerPerson) return res.status(404).json({ message: "Influencer person not found" });
+    if (!influencerPerson) return res.status(404).json({ message: "Influencer not found" });
 
     // Update influencer person
     await influencerPerson.update({
       status: is_active ? "active" : "blocked",
     });
 
-    res.status(200).json({ message: "Influencer person updated successfully" });
+    res.status(200).json({ message: "Influencer updated successfully" });
   } catch (error) {
     console.error("Error updating influencer person:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -209,7 +209,7 @@ exports.deleteInfluencerPerson = async (req, res) => {
 
     await influencerPerson.destroy();
 
-    res.status(200).json({ message: "Influencer person deleted successfully" });
+    res.status(200).json({ message: "Influencer deleted successfully" });
   } catch (error) {
     console.error("Error deleting influencer person:", error);
     res.status(500).json({ message: "Internal Server Error" });

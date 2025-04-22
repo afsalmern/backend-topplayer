@@ -825,7 +825,7 @@ function passwordResetMailInfluencer(username, password) {
                     <td style="padding: 30px 60px;">
                         <a href="#!" style="display: block; width: 200px;">
                             <img src="https://ux.intersmarthosting.in/Mailers/TopPlayer/images/logo.png" width="200"
-                                height="60" alt="logo">
+                                height="60">
                         </a>
                     </td>
                 </tr>
