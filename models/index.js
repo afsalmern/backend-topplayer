@@ -3,26 +3,26 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-// const sequelize = new Sequelize(
-//   process.env.DB_dbname,
-//   process.env.DB_user,
-//   process.env.DB_pss,
-//   {
-//     dialect: "mysql",
-//     host: process.env.DB_host,
-//   }
-// );
+const sequelize = new Sequelize(
+  process.env.DB_dbname,
+  process.env.DB_user,
+  process.env.DB_pss,
+  {
+    dialect: "mysql",
+    host: process.env.DB_host,
+  }
+);
 
-const sequelize = new Sequelize(process.env.DB_URL, {
-  dialect: "mysql",
-  logging: console.log, // Enable logging for debugging (remove in production)
-  dialectOptions: {
-    ssl: {
-      require: false,
-      rejectUnauthorized: false, // Railway might require this
-    },
-  },
-});
+// const sequelize = new Sequelize(process.env.DB_URL, {
+//   dialect: "mysql",
+//   logging: console.log, // Enable logging for debugging (remove in production)
+//   dialectOptions: {
+//     ssl: {
+//       require: false,
+//       rejectUnauthorized: false, // Railway might require this
+//     },
+//   },
+// });
 
 db = {};
 db.Sequelize = Sequelize;
