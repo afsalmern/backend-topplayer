@@ -22,8 +22,7 @@ const sequelize = new Sequelize(process.env.DB_URL, {
       rejectUnauthorized: false, // Railway might require this
     },
   },
-});
-x
+})
 db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
