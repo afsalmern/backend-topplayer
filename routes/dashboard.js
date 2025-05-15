@@ -66,6 +66,7 @@ const {
   getSalesDataForInfluencers,
 } = require("../controller/Influencers/influencer_person_controller");
 const { getPayoutDetailsForInfluencer, settleAmount } = require("../controller/Influencers/payouts_controller");
+const { dashboardDetails } = require("../controller/dashboard/admin_dashboard_controller");
 
 const router = express.Router();
 
@@ -284,6 +285,11 @@ router.put("/devices", authMiddleware.checkUserAuth, updateDeviceCountGlobally);
 //   .get(authMiddleware.checkUserAuth, getAllusers)
 //   .patch(authMiddleware.checkUserAuth, updateUserStatus)
 //   .post(authMiddleware.checkUserAuth, manageUser);
+
+//Dashboard
+router.get("/admin-dashboard", [authMiddleware.checkUserAuth], dashboardDetails);
+
+
 
 router.get("/influencer-persons", [authMiddleware.checkUserAuth], getAllInfluencerPersons);
 router.get("/influencer-coupons/:id", [authMiddleware.checkUserAuth], getCouponsForInfluncers);

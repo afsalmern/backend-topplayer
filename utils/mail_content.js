@@ -872,7 +872,7 @@ function passwordResetMailInfluencer(username, password) {
 `;
 }
 
-function welcomeMailInfluencer(username, password) {
+function welcomeMailInfluencer(username, email, password) {
   return `
 <!DOCTYPE html>
 <html>
@@ -920,10 +920,16 @@ function welcomeMailInfluencer(username, password) {
                             style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
                             You can log in to your account using the following credentials:
                         </p>
-                        <p
-                            style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
-                            <b>Password: ${password}</b>
-                        </p>
+                          <table style="font-size: 15px; font-family: Arial, Helvetica, sans-serif; color: #000; border-collapse: collapse; margin-bottom: 25px;">
+            <tr>
+                <td style="padding: 8px 12px; font-weight: bold;">Email:</td>
+                <td style="padding: 8px 12px;">${email}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; font-weight: bold;">Password:</td>
+                <td style="padding: 8px 12px;">${password}</td>
+            </tr>
+        </table>
                        <p
     style="font-size: 15px; line-height: 1.4; font-weight: 400; font-family: Arial, Helvetica, sans-serif; color: #000; margin: 25px 0;">
     Please login at <a href="https://thetopplayer-a2551.web.app/" target="_blank">https://thetopplayer-a2551.web.app/</a>. 

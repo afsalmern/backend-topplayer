@@ -23,6 +23,7 @@ const sequelize = new Sequelize(process.env.DB_URL, {
     },
   },
 })
+
 db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

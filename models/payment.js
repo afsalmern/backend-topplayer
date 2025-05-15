@@ -21,6 +21,10 @@ module.exports = (sequelize, Sequelize) => {
     stripeId: {
       type: Sequelize.STRING,
     },
+    country_name: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     fromTamara: {
       type: Sequelize.BOOLEAN,
       allowNull: true,

@@ -58,7 +58,7 @@ exports.addInfluencerPerson = async (req, res) => {
 
     const subject = "TheTopPlayer Influencer Onboard";
     const text = "Welcome influencer"; // plain text body
-    const html = welcomeMailInfluencer(name, password);
+    const html = welcomeMailInfluencer(name, email, password);
 
     const isMailsend = await sendMail(email, subject, text, html);
 
