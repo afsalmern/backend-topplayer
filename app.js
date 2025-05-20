@@ -41,8 +41,8 @@ app.use("/", websiteRoute);
 // scheduleTasks();
 
 db.sequelize
-  // .sync({ alter: true })
-  .authenticate()
+  .sync({ alter: true })
+  // .authenticate()
   .then(async (result) => {
     app.listen(port, () => {
       console.log(`TP Backend listens to ${port}`);
