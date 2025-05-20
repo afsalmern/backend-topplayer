@@ -1,8 +1,11 @@
 const { where, Op } = require("sequelize");
 const db = require("../../models");
+const { couponCreatedMailInfluencer } = require("../../utils/mail_content");
+const sendMail = require("../../utils/mailer");
 // Create a new influencer
 exports.addInfluencer = async function (req, res) {
   const { coupon_code, expire_in, start_in, max_apply_limit, coupon_percentage, commision_percentage, influencer } = req.body;
+  const transaction = await db.sequelize.transaction();
 
   try {
     const existingCouponCode = await db.influencer.findOne({
@@ -10,6 +13,7 @@ exports.addInfluencer = async function (req, res) {
     });
 
     if (existingCouponCode) {
+      await transaction.rollback();
       return res.status(500).json({
         message: "Coupon code already exists. Please choose a different one.",
       });
@@ -29,30 +33,67 @@ exports.addInfluencer = async function (req, res) {
 
     // Check if start date is not less than expiry date
     if (startDate > expiryDate) {
+      await transaction.rollback();
       return res.status(400).json({
         message: "The start date must be earlier than the expiry date.",
       });
     }
 
-    const createdCoupon = await db.influencer.create({
-      coupon_code: coupon_code.trim(),
-      expire_in,
-      start_in,
-      max_apply_limit: 0,
-      coupon_percentage,
-      commision_percentage,
-      is_active: true,
-    });
+    const createdCoupon = await db.influencer.create(
+      {
+        coupon_code: coupon_code.trim(),
+        expire_in,
+        start_in,
+        max_apply_limit: 0,
+        coupon_percentage,
+        commision_percentage,
+        is_active: true,
+      },
+      {
+        transaction,
+      }
+    );
 
     const coupon_id = createdCoupon?.id;
-
-    await db.InfluencerCoupons.create({
-      influencer_id: influencer,
-      coupon_id,
+    const influencer_person = await db.influencerPersons.findByPk(influencer, {
+      attributes: ["id", "name", "email"],
     });
+
+    await db.InfluencerCoupons.create(
+      {
+        influencer_id: influencer,
+        coupon_id,
+      },
+      {
+        transaction,
+      }
+    );
+
+    const { name, email } = influencer_person;
+
+    const subject = "TheTopPlayer Influencer Coupon details";
+    const text = "Influencer Coupon details"; // plain text body
+    const html = couponCreatedMailInfluencer(
+      name,
+      coupon_code,
+      new Date(expire_in).toISOString().split("T")?.[0],
+      coupon_percentage,
+      commision_percentage
+    );
+
+    const isMailsend = await sendMail(email, subject, text, html);
+
+    if (isMailsend) {
+      console.log("Email sent:");
+    } else {
+      console.error("Error sending email:");
+    }
+
+    await transaction.commit();
 
     res.status(201).send({ message: "Coupon added successfully" });
   } catch (error) {
+    await transaction.rollback();
     console.error("Error adding coupon:", error);
     res.status(500).send({ message: "Error adding coupon" });
   }
