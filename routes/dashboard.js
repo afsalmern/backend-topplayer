@@ -66,7 +66,7 @@ const {
   getSalesDataForInfluencers,
 } = require("../controller/Influencers/influencer_person_controller");
 const { getPayoutDetailsForInfluencer, settleAmount } = require("../controller/Influencers/payouts_controller");
-const { dashboardDetails } = require("../controller/dashboard/admin_dashboard_controller");
+const { dashboardDetails, getRevenues } = require("../controller/dashboard/admin_dashboard_controller");
 
 const router = express.Router();
 
@@ -288,6 +288,7 @@ router.put("/devices", authMiddleware.checkUserAuth, updateDeviceCountGlobally);
 
 //Dashboard
 router.get("/admin-dashboard", [authMiddleware.checkUserAuth], dashboardDetails);
+router.get("/admin-revenues-orders", [authMiddleware.checkUserAuth], getRevenues);
 
 
 

@@ -7,13 +7,13 @@ const calculatePaymentDetails = (amount,currency) => {
   // Set rates based on currency
   switch (currency) {
     case "SAR": // Saudi Arabia
-      variableFeePercentage = 6.99;
+      variableFeePercentage = 5.99;
       fixedFee = 1.5;
       taxRate = 15;
       break;
     case "AED": // United Arab Emirates
       variableFeePercentage = 5.99; // Assuming during pilot period
-      fixedFee = 1;
+      fixedFee = 1.5;
       taxRate = 5;
       break;
     case "KWD": // Kuwait
