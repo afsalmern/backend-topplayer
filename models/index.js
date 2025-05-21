@@ -15,14 +15,21 @@ dotenv.config();
 
 const sequelize = new Sequelize(process.env.DB_URL, {
   dialect: "mysql",
-  logging: console.log, // Enable logging for debugging (remove in production)
+  logging: false, // Turn off in production
   dialectOptions: {
     ssl: {
       require: false,
-      rejectUnauthorized: false, // Railway might require this
+      rejectUnauthorized: false,
     },
   },
-})
+  pool: {
+    max: 5,         // Max connections
+    min: 0,         // Min connections
+    acquire: 30000, // Max time (ms) Sequelize will try to get connection before throwing error
+    idle: 10000     // Max time (ms) a connection can be idle before being released
+  }
+});
+
 
 db = {};
 db.Sequelize = Sequelize;
