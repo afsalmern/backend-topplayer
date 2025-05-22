@@ -52,6 +52,7 @@ exports.handleStripeWebhook = async (req, res) => {
 async function handlePaymentIntentSucceeded(paymentIntent) {
   const { id, customer, metadata } = paymentIntent;
   console.log(`PaymentIntent was successful for customer ${customer}: ${id}`);
+  console.log("Payment metadata:", metadata);
   // Additional logic for successful payment can be added here if needed
 }
 
@@ -74,6 +75,8 @@ async function handleChargeUpdated(charge, transaction) {
   const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
   const amount = Number(amountInBaseCurrency.toFixed(2));
 
+  const amountPassed = metadata?.amount || amount;
+
   // Extract metadata
   const customerId = paymentIntentData.customer;
   const courseId = paymentIntentData.metadata?.courseId;
@@ -94,7 +97,7 @@ async function handleChargeUpdated(charge, transaction) {
   await updateOrCreateCourseRegistration(userId, courseId, transaction);
 
   // Create payment record
-  const paymentData = await createPaymentRecord(userId, courseId, amount, netAmount, fee, paymentIntentData.id, user.mobile, transaction);
+  const paymentData = await createPaymentRecord(userId, courseId, amountPassed, netAmount, fee, paymentIntentData.id, user.mobile, transaction);
 
   // Process coupon if available
   if (coupon_code) {
