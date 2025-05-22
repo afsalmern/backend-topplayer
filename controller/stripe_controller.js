@@ -74,13 +74,36 @@ async function handleChargeUpdated(charge, transaction) {
   const exchangeRate = balanceTransaction.exchange_rate || 1;
   const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
   const amount = Number(amountInBaseCurrency.toFixed(2));
+  const currency = paymentIntentData.currency?.toUpperCase(); // e.g., "AED", "USD"
 
   // Extract metadata
   const customerId = paymentIntentData.customer;
   const courseId = paymentIntentData.metadata?.courseId;
   const userId = paymentIntentData.metadata?.userId;
   const coupon_code = paymentIntentData.metadata?.coupon;
-  const amountPassed = paymentIntentData.metadata?.amount / 100;
+
+
+  // Determine decimal places
+  let decimalPlaces = 2;
+  switch (currency) {
+    case "KWD": // Kuwaiti Dinar
+    case "BHD": // Bahraini Dinar
+    case "OMR": // Omani Rial
+    case "JOD": // Jordanian Dinar
+    case "TND": // Tunisian Dinar
+      decimalPlaces = 3;
+      break;
+    default:
+      decimalPlaces = 2;
+      break;
+  }
+
+  // Calculate divisor
+  const divisor = Math.pow(10, decimalPlaces);
+
+  // Calculate amountPassed
+  const amountPassedRaw = paymentIntentData.metadata?.amount || 0;
+  const amountPassed = Number((amountPassedRaw / divisor).toFixed(decimalPlaces));
 
   console.log("Payment metadata:", paymentIntentData.metadata);
 
