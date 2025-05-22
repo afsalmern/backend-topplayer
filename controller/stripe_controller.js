@@ -75,13 +75,12 @@ async function handleChargeUpdated(charge, transaction) {
   const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
   const amount = Number(amountInBaseCurrency.toFixed(2));
 
-
   // Extract metadata
   const customerId = paymentIntentData.customer;
   const courseId = paymentIntentData.metadata?.courseId;
   const userId = paymentIntentData.metadata?.userId;
   const coupon_code = paymentIntentData.metadata?.coupon;
-  const amountPassed = paymentIntentData.metadata?.amount;
+  const amountPassed = paymentIntentData.metadata?.amount / 100;
 
   console.log("Payment metadata:", paymentIntentData.metadata);
 
