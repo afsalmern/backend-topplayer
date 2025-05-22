@@ -94,7 +94,7 @@ async function handleChargeUpdated(charge, transaction) {
   await updateOrCreateCourseRegistration(userId, courseId, transaction);
 
   // Create payment record
-  const paymentData = await createPaymentRecord(userId, courseId, amount, netAmount, fee, paymentIntentData.id, transaction);
+  const paymentData = await createPaymentRecord(userId, courseId, amount, netAmount, fee, paymentIntentData.id, user.mobile, transaction);
 
   // Process coupon if available
   if (coupon_code) {
@@ -144,7 +144,8 @@ async function updateOrCreateCourseRegistration(userId, courseId, transaction) {
 /**
  * Create a payment record in the database
  */
-async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, transaction) {
+async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, mobile, transaction) {
+  const country_name = getCountryFromPhone(mobile);
   return await db.payment.create(
     {
       userId,
@@ -153,6 +154,7 @@ async function createPaymentRecord(userId, courseId, amount, netAmount, fee, str
       net_amount: netAmount,
       stripe_fee: fee,
       stripeId,
+      country_name,
     },
     { transaction }
   );
