@@ -394,13 +394,14 @@ const getVisitorsData = async () => {
   try {
     const visitors = await db.sequelize.query(
       `
-      SELECT
-       COUNT ip AS visitors,
-MONTH(createdAt) AS month
+    SELECT
+  COUNT(ip) AS visitors,
+  MONTH(createdAt) AS month
 FROM visitors
 WHERE YEAR(createdAt) = YEAR(CURDATE())
 GROUP BY MONTH(createdAt)
 ORDER BY month;
+
       `,
       {
         type: db.sequelize.QueryTypes.SELECT,
