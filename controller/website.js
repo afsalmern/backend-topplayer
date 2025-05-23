@@ -1249,7 +1249,7 @@ exports.applyCoupon = async (req, res) => {
   const currentDate = new Date();
   const formatDate = (date) => date.toISOString().split("T")[0];
 
-  const amount = Math.ceil((courseAmount * currentCurrency?.currency_rate).toFixed(2));
+  const amount = (courseAmount * currentCurrency?.currency_rate).toFixed(2);
 
   try {
     const couponExist = await db.influencer.findOne({

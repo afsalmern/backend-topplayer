@@ -386,6 +386,7 @@ exports.tamaraWebHook = async (req, res) => {
       case "order_approved": {
         const authorised_data = await tamara.authoriseOrder(orderId);
         console.log("[Tamara] Authorised:", authorised_data);
+        const country_name = getCountryFromPhone(user?.mobile);
 
         const captured_data = await tamara.capture({
           items: [
@@ -429,6 +430,7 @@ exports.tamaraWebHook = async (req, res) => {
             amount,
             net_amount: totalAmountAfterDeductions || amount,
             stripe_fee: totalDeductedAmount || 0,
+            country_name,
             fromTamara: true,
           },
           { transaction: t }
@@ -459,7 +461,6 @@ exports.tamaraWebHook = async (req, res) => {
               { transaction: t }
             );
 
-            const country_name = getCountryFromPhone(user?.mobile);
             const commissionAmount = getCommisionAmount(totalAmountAfterDeductions, coupon.commision_percentage);
 
             const commissionRecord = await db.InfluencerCommisions.create(
