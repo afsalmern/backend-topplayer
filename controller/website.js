@@ -335,7 +335,6 @@ exports.getCourseMaterial = async (req, res, next) => {
     monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
 
     console.log(`userid ${userId} course id ${courseId}`);
-    console.log(monthsAgo);
 
     const registeredCourse = await db.registeredCourse.findOne({
       where: {
@@ -369,9 +368,6 @@ exports.getCourseMaterial = async (req, res, next) => {
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + courseDB.duration);
 
-      console.log("START", startDate);
-      console.log("END", endDate);
-
       const watched_videos_id = watchedVideo.map((item) => item.videoId);
       const final_course = {};
       final_course.id = courseDB.id;
@@ -394,12 +390,7 @@ exports.getCourseMaterial = async (req, res, next) => {
 
         for (let day = 1; day <= 20; day++) {
           let course_videos = subCourse.videos;
-
-          console.log(course_videos);
-
           let videos_day_id = course_videos.filter((video) => video.day === day).map((item) => item.id);
-          console.log(videos_day_id);
-
           if (videos_day_id.every((item) => watched_videos_id.includes(item)) && videos_day_id.length > 0) finished_days.push(day);
         }
 
@@ -417,8 +408,6 @@ exports.getCourseMaterial = async (req, res, next) => {
           finished_weeks: finished_weeks,
         });
       }
-
-      console.log("FINAL", final_course);
 
       res.status(200).send(final_course);
     } else {
@@ -450,8 +439,6 @@ exports.getCourseMaterial = async (req, res, next) => {
         });
       }
 
-      console.log("FINAL =====<<<<<<>>>>>>>>", final_course);
-
       return res.status(200).send(final_course);
     }
   } catch (error) {
@@ -472,9 +459,6 @@ exports.getSubCourseMaterial = async (req, res, next) => {
     }
     const monthsAgo = new Date();
     monthsAgo.setMonth(monthsAgo.getMonth() - monthCount);
-
-    console.log(`userid ${userId} course id ${courseId}`);
-    console.log(monthsAgo);
 
     const registeredCourse = await db.registeredCourse.findOne({
       where: {
@@ -751,8 +735,6 @@ exports.getSubscribedCourse = (req, res, next) => {
         return res.status(404).send({ message: "User not found" });
       }
 
-      console.log("USER", user);
-
       const subscribedCourses = user.courses.map((course) => ({
         courseId: course.id,
         courseName: course.name,
@@ -837,7 +819,6 @@ exports.getMyCourses = async (req, res, next) => {
 exports.watchVideo = (req, res, next) => {
   const videoId = req.body.videoId;
   const userId = req.userDecodeId;
-  console.log(`userid ${userId} is registering a video id ${videoId} `);
 
   if (!userId) {
     return res.status(200).send({ message: "user watched video successfully" });
