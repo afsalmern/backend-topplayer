@@ -15,7 +15,7 @@ const { handleStripeWebhook } = require("./controller/stripe_controller");
 
 const port = process.env.PORT || 7707;
 
-app.set("trust proxy", 1); 
+app.set("trust proxy", 1);
 // Secure headers with helmet
 app.use(
   helmet({
@@ -42,37 +42,17 @@ app.use(
       includeSubDomains: true,
       preload: true,
     },
-    permissionsPolicy: {
-      features: {
-        geolocation: ["'self'"], // ✅ allow geolocation
-        camera: [],
-        microphone: [],
-        fullscreen: [],
-        magnetometer: [],
-        usb: [],
-        vr: [],
-        payment: [],
-        accelerometer: [],
-        ambientLightSensor: [],
-        autoplay: [],
-        clipboardRead: [],
-        clipboardWrite: [],
-        displayCapture: [],
-        documentDomain: [],
-        encryptedMedia: [],
-        executionWhileNotRendered: [],
-        executionWhileOutOfViewport: [],
-        gyroscope: [],
-        pictureInPicture: [],
-        publickeyCredentialsGet: [],
-        screenWakeLock: [],
-        syncXHR: [],
-        webShare: [],
-        xrSpatialTracking: [],
-      },
-    },
   })
 );
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    "geolocation=(self), camera=(), microphone=(), fullscreen=(), payment=()"
+  );
+  next();
+});
+
 
 app.disable("x-powered-by");
 
