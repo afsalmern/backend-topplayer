@@ -29,6 +29,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "googleapis": "^131.0.0",
     "helmet": "^8.1.0",
+    "https": "^1.0.0",
     "i18n": "^0.15.1",
     "i18n-iso-countries": "^7.14.0",
     "jsonwebtoken": "^9.0.2",

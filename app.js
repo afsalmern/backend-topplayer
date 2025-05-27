@@ -1,3 +1,4 @@
+const https = require("https");
 const express = require("express");
 const path = require("path");
 const rateLimit = require("express-rate-limit");
@@ -6,7 +7,7 @@ const helmet = require("helmet");
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per window
-  message: 'Too many requests, please try again later.'
+  message: "Too many requests, please try again later.",
 });
 
 const adminRoute = require("./routes/admin");
@@ -57,8 +58,11 @@ db.sequelize
   // .sync({ alter: true })
   .authenticate()
   .then(async (result) => {
-    app.listen(port, () => {
-      console.log(`TP Backend listens to ${port}`);
+    // app.listen(port, () => {
+    //   console.log(`TP Backend listens to ${port}`);
+    // });
+    https.createServer(options, app).listen(7707, () => {
+      console.log(`TP Backend listens to https://localhost:7707`);
     });
   })
   .catch((err) => {
