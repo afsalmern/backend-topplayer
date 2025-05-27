@@ -21,10 +21,9 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://trusted.cdn.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'", "https://api.yourdomain.com"],
+      connectSrc: ["'self'", "https://backend.thetopplayer.com"],
       formAction: ["'self'"],
       frameAncestors: ["'self'"],
       objectSrc: ["'none'"],
@@ -52,7 +51,7 @@ app.use(rateLimit({
 
 // CORS with trusted origins
 app.use(cors({
-  origin: ['https://localhost:7707', 'https://yourfrontend.com'], // Replace with your frontend URL
+  origin: ['http://localhost:3000', 'https://thetopplayer.com'], // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'X-localization']
 }));
