@@ -33,6 +33,9 @@ app.use(
         scriptSrcAttr: ["'none'"],
       },
     },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    xFrameOptions: { action: "DENY" },
+    xContentTypeOptions: true,
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,
