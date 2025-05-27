@@ -41,6 +41,35 @@ app.use(
       includeSubDomains: true,
       preload: true,
     },
+    permissionsPolicy: {
+      features: {
+        geolocation: ["'self'"], // ✅ allow geolocation
+        camera: [],
+        microphone: [],
+        fullscreen: [],
+        magnetometer: [],
+        usb: [],
+        vr: [],
+        payment: [],
+        accelerometer: [],
+        ambientLightSensor: [],
+        autoplay: [],
+        clipboardRead: [],
+        clipboardWrite: [],
+        displayCapture: [],
+        documentDomain: [],
+        encryptedMedia: [],
+        executionWhileNotRendered: [],
+        executionWhileOutOfViewport: [],
+        gyroscope: [],
+        pictureInPicture: [],
+        publickeyCredentialsGet: [],
+        screenWakeLock: [],
+        syncXHR: [],
+        webShare: [],
+        xrSpatialTracking: [],
+      },
+    },
   })
 );
 app.disable("x-powered-by");
