@@ -10,6 +10,11 @@ const limiter = rateLimit({
   message: "Too many requests, please try again later.",
 });
 
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
+
 const adminRoute = require("./routes/admin");
 const dashRoute = require("./routes/dashboard");
 const websiteRoute = require("./routes/website");
