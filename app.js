@@ -28,7 +28,10 @@ app.use(helmet({
       formAction: ["'self'"],
       frameAncestors: ["'self'"],
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
+      upgradeInsecureRequests: [],
+      baseUri: ["'self'"],
+      fontSrc: ["'self'", "https:", "data:"],
+      scriptSrcAttr: ["'none'"]
     }
   },
   hsts: {
@@ -49,7 +52,7 @@ app.use(rateLimit({
 
 // CORS with trusted origins
 app.use(cors({
-  origin: ['https://localhost:7707', 'https://yourfrontend.com'], // Replace with your frontend
+  origin: ['https://localhost:7707', 'https://yourfrontend.com'], // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'X-localization']
 }));
