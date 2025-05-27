@@ -15,6 +15,7 @@ const { handleStripeWebhook } = require("./controller/stripe_controller");
 
 const port = process.env.PORT || 7707;
 
+app.set("trust proxy", 1); 
 // Secure headers with helmet
 app.use(
   helmet({
