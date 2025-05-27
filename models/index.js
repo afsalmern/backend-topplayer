@@ -3,33 +3,10 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-// const sequelize = new Sequelize(
-//   process.env.DB_dbname,
-//   process.env.DB_user,
-//   process.env.DB_pss,
-//   {
-//     dialect: "mysql",
-//     host: process.env.DB_host,
-//   }
-// );
-
-const sequelize = new Sequelize(process.env.DB_URL, {
+const sequelize = new Sequelize(process.env.DB_dbname, process.env.DB_user, process.env.DB_pss, {
   dialect: "mysql",
-  logging: false, // Turn off in production
-  dialectOptions: {
-    ssl: {
-      require: false,
-      rejectUnauthorized: false,
-    },
-  },
-  pool: {
-    max: 5,         // Max connections
-    min: 0,         // Min connections
-    acquire: 30000, // Max time (ms) Sequelize will try to get connection before throwing error
-    idle: 10000     // Max time (ms) a connection can be idle before being released
-  }
+  host: process.env.DB_host,
 });
-
 
 db = {};
 db.Sequelize = Sequelize;

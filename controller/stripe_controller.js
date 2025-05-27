@@ -52,6 +52,7 @@ exports.handleStripeWebhook = async (req, res) => {
 async function handlePaymentIntentSucceeded(paymentIntent) {
   const { id, customer, metadata } = paymentIntent;
   console.log(`PaymentIntent was successful for customer ${customer}: ${id}`);
+  console.log("Payment metadata:", metadata);
   // Additional logic for successful payment can be added here if needed
 }
 
@@ -73,12 +74,36 @@ async function handleChargeUpdated(charge, transaction) {
   const exchangeRate = balanceTransaction.exchange_rate || 1;
   const amountInBaseCurrency = (charge.amount / 100) * exchangeRate;
   const amount = Number(amountInBaseCurrency.toFixed(2));
+  const currency = paymentIntentData.currency?.toUpperCase(); // e.g., "AED", "USD"
 
   // Extract metadata
   const customerId = paymentIntentData.customer;
   const courseId = paymentIntentData.metadata?.courseId;
   const userId = paymentIntentData.metadata?.userId;
   const coupon_code = paymentIntentData.metadata?.coupon;
+
+
+  // Determine decimal places
+  let decimalPlaces = 2;
+  switch (currency) {
+    case "KWD": // Kuwaiti Dinar
+    case "BHD": // Bahraini Dinar
+    case "OMR": // Omani Rial
+    case "JOD": // Jordanian Dinar
+    case "TND": // Tunisian Dinar
+      decimalPlaces = 3;
+      break;
+    default:
+      decimalPlaces = 2;
+      break;
+  }
+
+  // Calculate divisor
+  const divisor = Math.pow(10, decimalPlaces);
+
+  // Calculate amountPassed
+  const amountPassedRaw = paymentIntentData.metadata?.amount || 0;
+  const amountPassed = Number((amountPassedRaw / divisor).toFixed(decimalPlaces));
 
   console.log("Payment metadata:", paymentIntentData.metadata);
 
@@ -94,7 +119,7 @@ async function handleChargeUpdated(charge, transaction) {
   await updateOrCreateCourseRegistration(userId, courseId, transaction);
 
   // Create payment record
-  const paymentData = await createPaymentRecord(userId, courseId, amount, netAmount, fee, paymentIntentData.id, transaction);
+  const paymentData = await createPaymentRecord(userId, courseId, amountPassed, netAmount, fee, paymentIntentData.id, user.mobile, transaction);
 
   // Process coupon if available
   if (coupon_code) {
@@ -144,7 +169,8 @@ async function updateOrCreateCourseRegistration(userId, courseId, transaction) {
 /**
  * Create a payment record in the database
  */
-async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, transaction) {
+async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, mobile, transaction) {
+  const country_name = getCountryFromPhone(mobile);
   return await db.payment.create(
     {
       userId,
@@ -153,6 +179,7 @@ async function createPaymentRecord(userId, courseId, amount, netAmount, fee, str
       net_amount: netAmount,
       stripe_fee: fee,
       stripeId,
+      country_name,
     },
     { transaction }
   );
