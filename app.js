@@ -15,6 +15,12 @@ const { handleStripeWebhook } = require("./controller/stripe_controller");
 
 const port = process.env.PORT || 7707;
 
+// Enable CORS for all static file requests (including videos)
+app.use('/banner_videos', cors({ origin: 'https://thetopplayer.com' }), express.static(path.join(__dirname, 'public/banner_videos')));
+app.use('/who_we_videos', cors({ origin: 'https://thetopplayer.com' }), express.static(path.join(__dirname, 'public/who_we_videos')));
+
+// Then your general static files
+app.use(express.static(path.join(__dirname, 'public')));
 app.set("trust proxy", 1);
 // Secure headers with helmet
 app.use(
