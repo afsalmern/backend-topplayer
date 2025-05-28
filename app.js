@@ -75,7 +75,7 @@ app.use(
 // CORS with trusted origins
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://thetopplayer.com", "https://www.thetopplayer.com"], // Replace with your frontend URL
+    origin: ["http://localhost:4000", "https://thetopplayer.com", "https://www.thetopplayer.com"], // Replace with your frontend URL
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "x-access-token", "X-localization"],
   })
