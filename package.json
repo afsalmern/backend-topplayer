@@ -4,7 +4,7 @@
   "description": "Where You Become The Top Player",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node app.js",
     "start-dev": "nodemon app.js"
   },
@@ -21,12 +21,15 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.0",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.5.0",
     "express-validator": "^7.0.1",
     "ffmpeg": "^0.0.4",
     "ffmpeg-extract-frames": "^2.0.2",
     "ffmpeg-probe": "^1.0.6",
     "fluent-ffmpeg": "^2.1.2",
     "googleapis": "^131.0.0",
+    "helmet": "^8.1.0",
+    "https": "^1.0.0",
     "i18n": "^0.15.1",
     "i18n-iso-countries": "^7.14.0",
     "jsonwebtoken": "^9.0.2",
@@ -42,6 +45,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.0.3"
   }
 }
