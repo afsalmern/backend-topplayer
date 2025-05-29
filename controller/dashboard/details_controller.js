@@ -232,6 +232,7 @@ exports.getOrders = async (req, res) => {
 
     const orders = await getOrders(where, whereClause);
     const numberOfOrders = await db.payment.count({
+
       where,
       distinct: true,
       col: 'id',
@@ -265,7 +266,6 @@ exports.getOrders = async (req, res) => {
       return acc + (payment.totalRevenue || 0);
     }, 0);
 
-    // const numberOfOrders = orders.length;
 
     res.status(200).json({
       payments,
