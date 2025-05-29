@@ -5,13 +5,32 @@ const { generateLightColors } = require("../utils/color_generator");
 const getCardData = async () => {
   try {
     const totalUsers = (await db.user.count())?.toString();
-    const totalOrders = (await db.payment.count())?.toString();
+    // const totalOrders = (await db.payment.count())?.toString();
+    const numberOfOrders = await db.payment.count({
+
+      distinct: true,
+      col: 'id',
+      include: [
+        {
+          model: db.course,
+          include: {
+            model: db.category,
+          },
+          required: true,
+        },
+        {
+          model: db.user,
+          as: "users",
+          required: true,
+        },
+      ],
+    });
     const totalVisitors = (await db.visitors.count())?.toString();
     const totalSales = (await db.payment.sum("net_amount"))?.toFixed(2) || "0";
 
     return {
       totalUsers,
-      totalOrders,
+      totalOrders: numberOfOrders?.toString(),
       totalVisitors,
       totalSales,
     };
