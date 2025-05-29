@@ -230,11 +230,9 @@ exports.getOrders = async (req, res) => {
       whereClause = { iscamp: false, isDeleted: false };
     }
 
-    const orders = await getOrders(where, whereClause);
     const numberOfOrders = await db.payment.count({
 
       where,
-      distinct: true,
       col: 'id',
       include: [
         {
@@ -245,13 +243,9 @@ exports.getOrders = async (req, res) => {
           },
           required: true,
         },
-        {
-          model: db.user,
-          as: "users",
-          required: true,
-        },
       ],
     });
+    const orders = await getOrders(where, whereClause);
 
 
     const payments = await getPayments(where, whereClause);
