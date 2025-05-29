@@ -231,7 +231,6 @@ exports.getOrders = async (req, res) => {
     }
 
     const numberOfOrders = await db.payment.count({
-
       where,
       col: 'id',
       include: [
@@ -241,10 +240,11 @@ exports.getOrders = async (req, res) => {
             model: db.category,
             where: whereClause,
           },
-          required: true,
         },
       ],
+      logging: console.log, // 👈 This logs the raw SQL to the console
     });
+
     const orders = await getOrders(where, whereClause);
 
 

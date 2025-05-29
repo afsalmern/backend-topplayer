@@ -24,6 +24,7 @@ const getCardData = async () => {
           required: true,
         },
       ],
+      logging: console.log
     });
     const totalVisitors = (await db.visitors.count())?.toString();
     const totalSales = (await db.payment.sum("net_amount"))?.toFixed(2) || "0";
