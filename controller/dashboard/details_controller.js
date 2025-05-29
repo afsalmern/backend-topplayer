@@ -231,6 +231,28 @@ exports.getOrders = async (req, res) => {
     }
 
     const orders = await getOrders(where, whereClause);
+    const numberOfOrders = await db.payment.count({
+      where,
+      distinct: true,
+      col: 'id',
+      include: [
+        {
+          model: db.course,
+          include: {
+            model: db.category,
+            where: whereClause,
+          },
+          required: true,
+        },
+        {
+          model: db.user,
+          as: "users",
+          required: true,
+        },
+      ],
+    });
+
+
     const payments = await getPayments(where, whereClause);
 
     const enrolledUsersPerCourse = await getEnrolledUsersPerCourse(where, whereClause);
@@ -243,7 +265,7 @@ exports.getOrders = async (req, res) => {
       return acc + (payment.totalRevenue || 0);
     }, 0);
 
-    const numberOfOrders = orders.length;
+    // const numberOfOrders = orders.length;
 
     res.status(200).json({
       payments,
