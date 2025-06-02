@@ -23,8 +23,8 @@ exports.addInfluencerPerson = async (req, res) => {
   try {
     // Check if email or phone already exists in parallel
     const [existingEmail, existingPhone] = await Promise.all([
-      db.influencerPersons.findOne({ where: { email } }),
-      db.influencerPersons.findOne({ where: { phone } }),
+      db.influencerPersons.findOne({ where: { email, is_deleted: false } }),
+      db.influencerPersons.findOne({ where: { phone, is_deleted: false } }),
     ]);
 
     if (existingEmail) return res.status(400).json({ message: "Email already in use" });
@@ -152,6 +152,7 @@ exports.getCouponsForInfluncers = async (req, res) => {
   try {
     const influencer = await db.influencerPersons.findByPk(influencer_id, {
       attributes: ["id", "name", "email", "phone"],
+      where: { is_deleted: false },
     });
     if (!influencer) return res.status(404).json({ message: "Influencer person not found" });
 
@@ -160,6 +161,7 @@ exports.getCouponsForInfluncers = async (req, res) => {
       include: [
         {
           model: db.influencer,
+          where: { is_deleted: false },
           through: {
             attributes: [],
           },
@@ -178,6 +180,7 @@ exports.getAllInfluencerPersons = async (req, res) => {
   try {
     const influencerPersons = await db.influencerPersons.findAll({
       attributes: ["id", "name", "phone", "email", "status"],
+      where: { is_deleted: false },
       include: [
         {
           model: db.influencer,
@@ -207,7 +210,8 @@ exports.deleteInfluencerPerson = async (req, res) => {
     const adminUser = await db.adminUser.findOne({ where: { email: influencerPerson.email } });
     if (adminUser) await adminUser.destroy();
 
-    await influencerPerson.destroy();
+    // await influencerPerson.destroy();
+    await influencerPerson.update({ is_deleted: true });
 
     res.status(200).json({ message: "Influencer deleted successfully" });
   } catch (error) {

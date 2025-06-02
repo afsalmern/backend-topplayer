@@ -14,12 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
       phone: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
       password: {
         type: DataTypes.STRING,
@@ -34,6 +32,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("influencer"),
         allowNull: false,
         defaultValue: "influencer",
+      },
+      is_deleted: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: false,
       },
     },
     {

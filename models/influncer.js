@@ -43,6 +43,11 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: true,
     },
+    is_deleted: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
     max_apply_limit: {
       type: Sequelize.STRING,
       allowNull: false,

@@ -1274,6 +1274,7 @@ exports.applyCoupon = async (req, res) => {
     const couponExist = await db.influencer.findOne({
       where: db.Sequelize.where(db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")), coupon_code),
       attributes: ["id", "coupon_code", "start_in", "expire_in", "is_active", "coupon_percentage"],
+      where: { is_deleted: false },
       include: [
         {
           model: db.influencerPersons,

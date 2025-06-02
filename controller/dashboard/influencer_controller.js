@@ -9,7 +9,7 @@ exports.addInfluencer = async function (req, res) {
 
   try {
     const existingCouponCode = await db.influencer.findOne({
-      where: { coupon_code },
+      where: { coupon_code, is_deleted: false },
     });
 
     if (existingCouponCode) {
@@ -240,7 +240,10 @@ exports.deleteInfluencer = async function (req, res) {
       return res.status(404).json({ error: "Coupon not found" });
     }
 
-    await influencer.destroy();
+    // await influencer.destroy();
+    await influencer.update({ is_deleted: true });
+
+
 
     console.log(`Coupon with ID ${id} deleted successfully`);
     res.status(200).send({ message: "Coupon deleted successfully" });

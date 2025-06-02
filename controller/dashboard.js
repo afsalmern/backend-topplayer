@@ -220,11 +220,29 @@ exports.checkUsersWhoDontHavePurchase = async (req, res) => {
 };
 
 exports.sendMail = async (req, res) => {
-  const { mobile } = req.body;
+  const { coupon_code } = req.body;
   try {
-    const country = getCountryFromPhone(mobile);
+    const couponExist = await db.influencer.findOne({
+      where: db.Sequelize.where(db.Sequelize.fn("BINARY", db.Sequelize.col("coupon_code")), coupon_code),
+      attributes: ["id", "coupon_code", "start_in", "expire_in", "is_active", "coupon_percentage"],
+      where: { is_deleted: false },
+      include: [
+        {
+          model: db.influencerPersons,
+          attributes: ["id", "status"],
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+    });
 
-    return res.status(200).json({ country });
+    if (!couponExist) {
+      return res.status(400).send("Coupon not found");
+    }
+    
+    return res.status(200).send("found");
+
   } catch (err) {
     console.error(`Error in sending email: ${err.toString()}`);
     res.status(500).json({ message: "Failed to send email." });
