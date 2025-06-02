@@ -221,31 +221,36 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, mobi
     const country_name = getCountryFromPhone(mobile);
 
     // Calculate and create commission record
-    const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
-    const commissionRecord = await db.InfluencerCommisions.create(
-      {
-        payment_id: paymentId,
-        coupon_id: coupon.id,
-        influencer_id: coupon?.influencer_persons?.[0]?.id,
-        net_amount: netAmount,
-        commision_amount: commission,
-        commision_percentage: coupon.commision_percentage,
-        total_amount: totalAmount,
-        country_name,
-      },
-      { transaction }
-    );
-    await db.Payouts.create(
-      {
-        influencer_id: coupon?.influencer_persons?.[0]?.id,
-        commision_history_id: commissionRecord.id,
-        amount: commission,
-        type: "Settlement pending",
-      },
-      {
-        transaction,
-      }
-    );
+
+    if (coupon.commision_percentage > 0) {
+
+      const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
+      const commissionRecord = await db.InfluencerCommisions.create(
+        {
+          payment_id: paymentId,
+          coupon_id: coupon.id,
+          influencer_id: coupon?.influencer_persons?.[0]?.id,
+          net_amount: netAmount,
+          commision_amount: commission,
+          commision_percentage: coupon.commision_percentage,
+          total_amount: totalAmount,
+          country_name,
+        },
+        { transaction }
+      );
+      await db.Payouts.create(
+        {
+          influencer_id: coupon?.influencer_persons?.[0]?.id,
+          commision_history_id: commissionRecord.id,
+          amount: commission,
+          type: "Settlement pending",
+        },
+        {
+          transaction,
+        }
+      );
+    }
+
   }
 }
 
