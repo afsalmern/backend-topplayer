@@ -882,15 +882,15 @@ exports.postStripePayment = async (req, res) => {
       const finalisedDiscountAmount = courseDB && currency_rate
         ? (discountAmount * currency_rate)
         : 0;
-    
+
       const rawConverted = (courseDB?.offerAmount * currency_rate) - finalisedDiscountAmount;
-    
+
       convertedAmount = Number(rawConverted % 1 === 0 ? rawConverted : rawConverted.toFixed(2));
     } else {
       const rawConverted = courseDB?.offerAmount * currency_rate;
       convertedAmount = Number(rawConverted % 1 === 0 ? rawConverted : rawConverted.toFixed(2));
     }
-    
+
 
     const amount = await convertAmountForStripe(convertedAmount, currency_code);
 
@@ -1189,11 +1189,19 @@ exports.payments = async (req, res, next) => {
 exports.getAllWhoAreWeData = async (req, res, next) => {
   try {
     const data = await db.whoAreWe.findAll();
+    const totalUsers = await db.user.count();
 
-    let { counts, units } = splitCount(data[0]?.users);
+    if (data.length > 0) {
 
-    console.log(`Retrieved all who are we data successfully`);
-    res.status(200).send({ data, counts, units });
+      let { counts, units } = splitCount(data[0]?.users);
+
+      console.log(`Retrieved all who are we data successfully`);
+      res.status(200).send({ data, counts, units, totalUsers });
+    } else {
+      console.log(`Retrieved all who are we data successfully`);
+      res.status(200).send({ data, totalUsers });
+    }
+
   } catch (err) {
     console.error(`Error in retrieving who are we data: ${err.toString()}`);
     res.status(500).send({ message: messages_en.server_error });
