@@ -222,6 +222,7 @@ exports.getOrders = async (req, res) => {
     //   };
     // }
 
+
     if (from && to) {
       const fromDate = new Date(from);
       const toDate = new Date(to);
@@ -230,7 +231,7 @@ exports.getOrders = async (req, res) => {
       toDate.setHours(23, 59, 59, 999);
 
       where.createdAt = {
-        [Op.between]: [fromDate, toDate],
+       [Sequelize.Op.between]: [fromDate, toDate],
       };
     }
 
