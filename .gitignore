@@ -1,4 +1,4 @@
 node_modules
 assets
 .env
-public
+public/.DS_Store
