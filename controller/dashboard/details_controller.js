@@ -198,7 +198,7 @@ exports.getOrders = async (req, res) => {
     // let maxFromDate = "2024-06-15";
     const { filter, from, to } = req.query;
     // let maxFromDate = "2024-06-15";
-    // const where = {};
+    const where = {};
 
     // if (from !== undefined) {
     //   if (from < maxFromDate) {
@@ -223,7 +223,7 @@ exports.getOrders = async (req, res) => {
     //   };
     // }
 
-    if (from !== undefined && to !== undefined) {
+    if (from !==undefined && to !== undefined) {
       const fromDate = new Date(from);
       const toDate = new Date(to);
 
@@ -231,7 +231,7 @@ exports.getOrders = async (req, res) => {
       toDate.setHours(23, 59, 59, 999);
 
       where.createdAt = {
-        [Sequelize.Op.between]: [fromDate, toDate],
+       [Sequelize.Op.between]: [fromDate, toDate],
       };
     }
 
@@ -258,6 +258,7 @@ exports.getOrders = async (req, res) => {
       logging: console.log, // 👈 This logs the raw SQL to the console
     });
 
+    
     const orders = await getOrders(where, whereClause);
 
     const payments = await getPayments(where, whereClause);
