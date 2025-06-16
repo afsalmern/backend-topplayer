@@ -223,7 +223,7 @@ exports.getOrders = async (req, res) => {
     //   };
     // }
 
-    if (from && to) {
+    if (from !== undefined && to !== undefined) {
       const fromDate = new Date(from);
       const toDate = new Date(to);
 
@@ -231,7 +231,7 @@ exports.getOrders = async (req, res) => {
       toDate.setHours(23, 59, 59, 999);
 
       where.createdAt = {
-       [Sequelize.Op.between]: [fromDate, toDate],
+        [Sequelize.Op.between]: [fromDate, toDate],
       };
     }
 
@@ -258,7 +258,6 @@ exports.getOrders = async (req, res) => {
       logging: console.log, // 👈 This logs the raw SQL to the console
     });
 
-    
     const orders = await getOrders(where, whereClause);
 
     const payments = await getPayments(where, whereClause);
