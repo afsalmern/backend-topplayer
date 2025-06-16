@@ -195,30 +195,42 @@ exports.getDashboardDetails = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
+    // let maxFromDate = "2024-06-15";
     const { filter, from, to } = req.query;
-    let maxFromDate = "2024-06-15";
     const where = {};
 
-    if (from !== undefined) {
-      if (from < maxFromDate) {
-        return res.status(500).json({ message: "Invalid date provided" });
-      }
-    }
+    // if (from !== undefined) {
+    //   if (from < maxFromDate) {
+    //     return res.status(500).json({ message: "Invalid date provided" });
+    //   }
+    // }
 
-    if (from === undefined) {
-      where.createdAt = {
-        [Sequelize.Op.gte]: new Date(maxFromDate).toISOString(),
-      };
-    } else if (from >= maxFromDate) {
-      where.createdAt = {
-        [Sequelize.Op.gte]: new Date(from).toISOString(),
-      };
-    }
+    // if (from === undefined) {
+    //   where.createdAt = {
+    //     [Sequelize.Op.gte]: new Date(maxFromDate).toISOString(),
+    //   };
+    // } else if (from >= maxFromDate) {
+    //   where.createdAt = {
+    //     [Sequelize.Op.gte]: new Date(from).toISOString(),
+    //   };
+    // }
 
-    if (to !== undefined) {
-      console.log("HERE");
+    // if (to !== undefined) {
+    //   console.log("HERE");
+    //   where.createdAt = {
+    //     [Sequelize.Op.between]: [new Date(from).toISOString(), new Date(new Date(to).setDate(new Date(to).getDate() + 1)).toISOString()],
+    //   };
+    // }
+
+    if (from && to) {
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+
+      // Extend toDate to end of day
+      toDate.setHours(23, 59, 59, 999);
+
       where.createdAt = {
-        [Sequelize.Op.between]: [new Date(from).toISOString(), new Date(new Date(to).setDate(new Date(to).getDate() + 1)).toISOString()],
+        [Sequelize.Op.between]: [fromDate, toDate],
       };
     }
 
@@ -232,7 +244,7 @@ exports.getOrders = async (req, res) => {
 
     const numberOfOrders = await db.payment.count({
       where,
-      col: 'id',
+      col: "id",
       include: [
         {
           model: db.course,
@@ -247,7 +259,6 @@ exports.getOrders = async (req, res) => {
 
     const orders = await getOrders(where, whereClause);
 
-
     const payments = await getPayments(where, whereClause);
 
     const enrolledUsersPerCourse = await getEnrolledUsersPerCourse(where, whereClause);
@@ -259,7 +270,6 @@ exports.getOrders = async (req, res) => {
     const totalRevenue = payments.reduce((acc, payment) => {
       return acc + (payment.totalRevenue || 0);
     }, 0);
-
 
     res.status(200).json({
       payments,
@@ -298,8 +308,6 @@ exports.getOrdersUsd = async (req, res) => {
         [Sequelize.Op.lte]: new Date(to).toISOString(),
       };
     }
-    console.log("WHERE", where);
-    console.log("DATES>>>>", from, to);
 
     if (from !== undefined) {
       where.createdAt = {
