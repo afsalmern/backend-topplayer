@@ -257,6 +257,7 @@ exports.getOrders = async (req, res) => {
       logging: console.log, // 👈 This logs the raw SQL to the console
     });
 
+    
     const orders = await getOrders(where, whereClause);
 
     const payments = await getPayments(where, whereClause);
