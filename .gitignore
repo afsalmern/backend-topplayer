@@ -3,3 +3,4 @@ assets
 .env
 public/
 .DS_Store
+mydb_backup.sql
