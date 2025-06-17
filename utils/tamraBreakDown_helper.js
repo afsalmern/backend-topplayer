@@ -7,7 +7,7 @@ const calculatePaymentDetails = (amount,currency) => {
   // Set rates based on currency
   switch (currency) {
     case "SAR": // Saudi Arabia
-      variableFeePercentage = 5.99;
+      variableFeePercentage = 6.99;
       fixedFee = 1.5;
       taxRate = 15;
       break;
