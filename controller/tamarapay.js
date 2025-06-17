@@ -416,8 +416,11 @@ exports.tamaraWebHook = async (req, res) => {
           calculatePaymentDetails(amount, currency_code),
         ]);
 
+        let isRenewal = false;
+
         if (existingData) {
           await db.registeredCourse.update({ createdAt: new Date() }, { where: { userId, courseId }, transaction: t });
+          isRenewal = true;
         } else {
           await db.registeredCourse.create({ userId, courseId }, { transaction: t });
         }
@@ -432,6 +435,7 @@ exports.tamaraWebHook = async (req, res) => {
             stripe_fee: totalDeductedAmount || 0,
             country_name,
             fromTamara: true,
+            isRenewal,
           },
           { transaction: t }
         );
