@@ -82,7 +82,6 @@ async function handleChargeUpdated(charge, transaction) {
   const userId = paymentIntentData.metadata?.userId;
   const coupon_code = paymentIntentData.metadata?.coupon;
 
-
   // Determine decimal places
   let decimalPlaces = 2;
   switch (currency) {
@@ -116,10 +115,20 @@ async function handleChargeUpdated(charge, transaction) {
   }
 
   // Update or create course registration
-  await updateOrCreateCourseRegistration(userId, courseId, transaction);
+  const isRenewal = await updateOrCreateCourseRegistration(userId, courseId, transaction);
 
   // Create payment record
-  const paymentData = await createPaymentRecord(userId, courseId, amountPassed, netAmount, fee, paymentIntentData.id, user.mobile, transaction);
+  const paymentData = await createPaymentRecord(
+    userId,
+    courseId,
+    amountPassed,
+    netAmount,
+    fee,
+    paymentIntentData.id,
+    user.mobile,
+    isRenewal,
+    transaction
+  );
 
   // Process coupon if available
   if (coupon_code) {
@@ -138,38 +147,42 @@ async function handlePaymentIntentFailed(paymentIntent) {
   console.log(`PaymentIntent failed for customer ${customerId}: ${paymentIntent.id}`);
 }
 
+// async function updateOrCreateCourseRegistration(userId, courseId, transaction) {
+//   const existingData = await db.registeredCourse.findOne({
+//     where: { userId, courseId },
+//   });
+
+//   if (existingData) {
+//     console.log("Updating existing course registration");
+//     await db.registeredCourse.update({ createdAt: new Date() }, { where: { userId, courseId } });
+//   } else {
+//     console.log("Creating new course registration");
+//     await db.registeredCourse.create({ userId, courseId }, { transaction });
+//   }
+// }
+
 async function updateOrCreateCourseRegistration(userId, courseId, transaction) {
   const existingData = await db.registeredCourse.findOne({
     where: { userId, courseId },
   });
+  let isRenewal = false;
 
   if (existingData) {
     console.log("Updating existing course registration");
     await db.registeredCourse.update({ createdAt: new Date() }, { where: { userId, courseId } });
+    isRenewal = true;
+    return isRenewal;
   } else {
     console.log("Creating new course registration");
     await db.registeredCourse.create({ userId, courseId }, { transaction });
-  }
-}
-
-async function updateOrCreateCourseRegistration(userId, courseId, transaction) {
-  const existingData = await db.registeredCourse.findOne({
-    where: { userId, courseId },
-  });
-
-  if (existingData) {
-    console.log("Updating existing course registration");
-    await db.registeredCourse.update({ createdAt: new Date() }, { where: { userId, courseId } });
-  } else {
-    console.log("Creating new course registration");
-    await db.registeredCourse.create({ userId, courseId }, { transaction });
+    return isRenewal;
   }
 }
 
 /**
  * Create a payment record in the database
  */
-async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, mobile, transaction) {
+async function createPaymentRecord(userId, courseId, amount, netAmount, fee, stripeId, mobile, isRenewal, transaction) {
   const country_name = getCountryFromPhone(mobile);
   return await db.payment.create(
     {
@@ -180,6 +193,7 @@ async function createPaymentRecord(userId, courseId, amount, netAmount, fee, str
       stripe_fee: fee,
       stripeId,
       country_name,
+      isRenewal,
     },
     { transaction }
   );
@@ -223,7 +237,6 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, mobi
     // Calculate and create commission record
 
     if (coupon.commision_percentage > 0) {
-
       const commission = getCommisionAmount(netAmount, coupon.commision_percentage);
       const commissionRecord = await db.InfluencerCommisions.create(
         {
@@ -250,7 +263,6 @@ async function processCoupon(couponCode, paymentId, netAmount, totalAmount, mobi
         }
       );
     }
-
   }
 }
 
