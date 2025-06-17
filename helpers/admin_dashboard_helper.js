@@ -7,9 +7,8 @@ const getCardData = async () => {
     const totalUsers = (await db.user.count())?.toString();
     // const totalOrders = (await db.payment.count())?.toString();
     const numberOfOrders = await db.payment.count({
-
       distinct: true,
-      col: 'id',
+      col: "id",
       include: [
         {
           model: db.course,
@@ -24,7 +23,7 @@ const getCardData = async () => {
           required: true,
         },
       ],
-      logging: console.log
+      logging: console.log,
     });
     const totalVisitors = (await db.visitors.count())?.toString();
     const totalSales = (await db.payment.sum("net_amount"))?.toFixed(2) || "0";
@@ -102,9 +101,21 @@ WHERE c.isDeleted = false;`,
       }
     );
 
+    const renewalCountsResult = await db.sequelize.query(
+      `
+  SELECT COUNT(id) AS count FROM payments WHERE isRenewal = true;
+  `,
+      {
+        type: db.sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const renewalCounts = renewalCountsResult?.[0]?.count || 0;
+
     const orders = {
-      expired: Number(ordersData[0].expired),
-      active: Number(ordersData[0].active),
+      expired: Number(ordersData?.[0]?.expired || 0),
+      active: Number(ordersData?.[0]?.active || 0),
+      renewal: renewalCounts,
     };
 
     return orders;
@@ -296,7 +307,7 @@ ORDER BY total_sales DESC;
 const getRecentOrders = async () => {
   try {
     const orders = await db.payment.findAll({
-      attributes: ["stripe_fee", "net_amount", "createdAt", "amount", "fromTamara"],
+      attributes: ["stripe_fee", "net_amount", "createdAt", "amount", "fromTamara","isRenewal"],
       include: [
         {
           model: db.course,
@@ -329,6 +340,7 @@ const getRecentOrders = async () => {
       user: order.users.username,
       email: order.users.email,
       mobile: order?.users?.mobile,
+      renewal : order?.isRenewal
     }));
 
     return formattedOrders;

@@ -30,6 +30,11 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: true,
       defaultValue: false,
     },
+    isRenewal: {
+      type: Sequelize.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
   });
 
   return Payment;
