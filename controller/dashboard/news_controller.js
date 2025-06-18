@@ -49,14 +49,14 @@ exports.addNews = async (req, res, next) => {
 
     await transaction.commit();
 
-    // const command = new GetSendQuotaCommand({});
-    // const data = await ses.send(command);
-    // const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
+    const command = new GetSendQuotaCommand({});
+    const data = await ses.send(command);
+    const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
 
-    // if (remainingQuota > 0) {
-    //   const newsId = createdNews?.id;
-    //   sendEmails(newsId, title_en, title_ar, description_en, description_ar, coverimage);
-    // }
+    if (remainingQuota > 0) {
+      const newsId = createdNews?.id;
+      sendEmails(newsId, title_en, title_ar, description_en, description_ar, coverimage);
+    }
 
     return res.status(200).send({
       message: messages_en.news_added_successfully,
