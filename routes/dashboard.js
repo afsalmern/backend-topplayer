@@ -172,7 +172,7 @@ const uploadNewsFiles = multer({
 });
 
 const newsFileUpload = uploadNewsFiles.fields([
-  { name: "images", maxCount: 15 },
+  // { name: "images", maxCount: 15 },
   { name: "coverimage", maxCount: 1 },
 ]);
 

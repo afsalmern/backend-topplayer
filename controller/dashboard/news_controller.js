@@ -19,17 +19,15 @@ const messages_en = {
 exports.addNews = async (req, res, next) => {
   const { title_en, title_ar, description_en, description_ar } = req.body;
 
-  if (!req.files || (!req.files.images && !req.files.coverimage)) {
+  if (!req.files || !req.files.coverimage) {
     return res.status(400).send({ message: "Please upload at least one image." });
   }
 
-  const imageUrls = req.files.images ? req.files.images.map((image) => image.filename) : [];
   const coverimage = req.files.coverimage ? req.files.coverimage[0].filename : null;
 
-  console.log(req.files.images);
 
-  let createdMobileImages = [];
-  let createdImages = [];
+  // let createdMobileImages = [];
+  // let createdImages = [];
 
   const transaction = await db.sequelize.transaction();
   try {
@@ -39,32 +37,32 @@ exports.addNews = async (req, res, next) => {
       throw new Error("Failed to create news record");
     }
 
-    if (imageUrls.length > 0) {
-      const mobileImageUrls = await createMobileImages(imageUrls); // Assuming it returns an array of file paths
+    // if (imageUrls.length > 0) {
+    //   const mobileImageUrls = await createMobileImages(imageUrls); // Assuming it returns an array of file paths
 
-      createdMobileImages = await Promise.all(
-        mobileImageUrls.map((imageUrl) => db.newsMobileImage.create({ imageUrl, newsId: createdNews.id }, { transaction }))
-      );
-    }
+    //   createdMobileImages = await Promise.all(
+    //     mobileImageUrls.map((imageUrl) => db.newsMobileImage.create({ imageUrl, newsId: createdNews.id }, { transaction }))
+    //   );
+    // }
 
-    createdImages = await Promise.all(imageUrls.map((imageUrl) => db.newsImage.create({ imageUrl, newsId: createdNews.id }, { transaction })));
+    // createdImages = await Promise.all(imageUrls.map((imageUrl) => db.newsImage.create({ imageUrl, newsId: createdNews.id }, { transaction })));
 
     await transaction.commit();
 
-    const command = new GetSendQuotaCommand({});
-    const data = await ses.send(command);
-    const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
+    // const command = new GetSendQuotaCommand({});
+    // const data = await ses.send(command);
+    // const remainingQuota = data.Max24HourSend - data.SentLast24Hours;
 
-    if (remainingQuota > 0) {
-      const newsId = createdNews?.id;
-      sendEmails(newsId, title_en, title_ar, description_en, description_ar, coverimage);
-    }
+    // if (remainingQuota > 0) {
+    //   const newsId = createdNews?.id;
+    //   sendEmails(newsId, title_en, title_ar, description_en, description_ar, coverimage);
+    // }
 
     return res.status(200).send({
       message: messages_en.news_added_successfully,
       news: createdNews,
-      images: createdImages,
-      mobileImages: createdMobileImages,
+      // images: createdImages,
+      // mobileImages: createdMobileImages,
     });
   } catch (err) {
     // Roll back transaction if any error occurs
@@ -124,17 +122,17 @@ exports.updateNews = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
 
   try {
-    let imageUrls = [];
+    // let imageUrls = [];
 
-    if (req.files.images) {
-      for (const image of req.files.images) {
-        const imageUrl = `${image.filename}`;
-        imageUrls.push(imageUrl);
-      }
-    }
+    // if (req.files.images) {
+    //   for (const image of req.files.images) {
+    //     const imageUrl = `${image.filename}`;
+    //     imageUrls.push(imageUrl);
+    //   }
+    // }
 
     const news = await db.news.findByPk(newsId, {
-      include: [{ model: db.newsImage, as: "images" }],
+      // include: [{ model: db.newsImage, as: "images" }],
       transaction, // Use transaction here
     });
 
@@ -155,24 +153,24 @@ exports.updateNews = async (req, res, next) => {
       { transaction }
     );
 
-    if (imageUrls.length > 0) {
-      const existingImageUrls = new Set(news.images.map((image) => image.imageUrl));
-      const newImageUrls = imageUrls.filter((url) => !existingImageUrls.has(url));
+    // if (imageUrls.length > 0) {
+    //   const existingImageUrls = new Set(news.images.map((image) => image.imageUrl));
+    //   const newImageUrls = imageUrls.filter((url) => !existingImageUrls.has(url));
 
-      const newMobileImageUrls = await createMobileImages(imageUrls);
+    //   const newMobileImageUrls = await createMobileImages(imageUrls);
 
-      const newImages = await db.newsImage.bulkCreate(
-        newImageUrls.map((url) => ({ imageUrl: url })),
-        { transaction }
-      );
-      const newMobileImages = await db.newsMobileImage.bulkCreate(
-        newMobileImageUrls.map((url) => ({ imageUrl: url })),
-        { transaction }
-      );
+    //   const newImages = await db.newsImage.bulkCreate(
+    //     newImageUrls.map((url) => ({ imageUrl: url })),
+    //     { transaction }
+    //   );
+    //   const newMobileImages = await db.newsMobileImage.bulkCreate(
+    //     newMobileImageUrls.map((url) => ({ imageUrl: url })),
+    //     { transaction }
+    //   );
 
-      await news.addImages(newImages, { transaction });
-      await news.addMobile(newMobileImages, { transaction });
-    }
+    //   await news.addImages(newImages, { transaction });
+    //   await news.addMobile(newMobileImages, { transaction });
+    // }
 
     await transaction.commit();
     console.log(`News with ID ${newsId} updated successfully`);
