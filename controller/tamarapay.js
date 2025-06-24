@@ -4,9 +4,9 @@ const db = require("../models");
 const sendMail = require("../utils/mailer");
 const { paymentSuccessMail } = require("../utils/mail_content");
 const { where } = require("sequelize");
-const calculatePaymentDetails = require("../utils/tamraBreakDown_helper");
 const getCountryFromPhone = require("../utils/phone_to_country");
 const { getCommisionAmount } = require("../utils/Revenue_helpers");
+const { getTamaraBreakDowns } = require("../utils/tamara_calculator");
 
 const config = {
   //test
@@ -414,7 +414,7 @@ exports.tamaraWebHook = async (req, res) => {
             transaction: t,
           }),
         ]);
-        const paymentAmounts = calculatePaymentDetails(amount, currency_code);
+        const paymentAmounts = getTamaraBreakDowns(amount, currency_code);
 
         let isRenewal = false;
 
