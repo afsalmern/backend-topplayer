@@ -408,13 +408,13 @@ exports.tamaraWebHook = async (req, res) => {
         });
         console.log("[Tamara] Captured:", captured_data);
 
-        const [existingData, paymentAmounts] = await Promise.all([
+        const [existingData] = await Promise.all([
           db.registeredCourse.findOne({
             where: { userId, courseId },
             transaction: t,
           }),
-          calculatePaymentDetails(amount, currency_code),
         ]);
+        const paymentAmounts = calculatePaymentDetails(amount, currency_code);
 
         let isRenewal = false;
 
